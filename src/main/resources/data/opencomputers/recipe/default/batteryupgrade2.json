@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:iron_nugget"
+    },
+    "B": {
+      "tag": "opencomputers:capacitor"
+    },
+    "C": {
+      "item": "minecraft:iron_bars"
+    },
+    "D": {
+      "tag": "c:nuggets/gold"
+    }
+  },
+  "result": {
+    "id": "opencomputers:batteryupgrade2",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:batteryupgrade2"
+    }
+  ]
+}

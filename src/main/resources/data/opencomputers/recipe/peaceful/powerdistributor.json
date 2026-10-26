@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/iron"
+    },
+    "B": {
+      "tag": "c:ingots/gold"
+    },
+    "C": {
+      "tag": "opencomputers:cable"
+    },
+    "D": {
+      "tag": "opencomputers:chip1"
+    },
+    "E": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:powerdistributor",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:powerdistributor"
+    }
+  ]
+}

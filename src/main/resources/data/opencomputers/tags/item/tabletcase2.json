@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:tabletcase2",
+      "required": false
+    }
+  ]
+}

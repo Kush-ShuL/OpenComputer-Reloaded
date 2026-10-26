@@ -1,0 +1,1345 @@
+{
+  "source": "MightyPirates/OpenComputers@258943363ea8fc4ef14948e6bc6f67375061580c",
+  "profile": "gregtech",
+  "generated": [
+    "acid",
+    "angelupgrade",
+    "apu1",
+    "apu2",
+    "arrowkeys",
+    "assembler",
+    "batteryupgrade1",
+    "batteryupgrade2",
+    "batteryupgrade3",
+    "buttongroup",
+    "cardcontainer1",
+    "cardcontainer2",
+    "cardcontainer3",
+    "carpetedcapacitor",
+    "chamelium",
+    "chameliumblock",
+    "chipdiamond",
+    "chunkloaderupgrade",
+    "circuitboard",
+    "componentbus1",
+    "componentbus2",
+    "componentbus3",
+    "databaseupgrade1",
+    "databaseupgrade2",
+    "databaseupgrade3",
+    "datacard1",
+    "datacard2",
+    "datacard3",
+    "disassembler",
+    "diskdrivemountable",
+    "dronecase1",
+    "dronecase2",
+    "eeprom",
+    "endstone",
+    "experienceupgrade",
+    "geolyzer",
+    "graphicscard1",
+    "graphicscard2",
+    "graphicscard3",
+    "hologram1",
+    "hologram2",
+    "hoverboots",
+    "hoverupgrade1",
+    "hoverupgrade2",
+    "ingotiron",
+    "inkcartridge",
+    "inkcartridgeempty",
+    "internetcard",
+    "interweb",
+    "inventorycontrollerupgrade",
+    "inventoryupgrade",
+    "keyboard",
+    "leashupgrade",
+    "linkedcard",
+    "loot/openos",
+    "loot/oppm",
+    "luabios",
+    "manual",
+    "mfu",
+    "microcontrollercase1",
+    "microcontrollercase2",
+    "motionsensor",
+    "nanomachines",
+    "netsplitter",
+    "numpad",
+    "pistonupgrade",
+    "printer",
+    "raid",
+    "rawcircuitboard",
+    "redstonecard1",
+    "redstonecard2",
+    "stickypistonupgrade",
+    "tabletcase1",
+    "tabletcase2",
+    "tankcontrollerupgrade",
+    "tankupgrade",
+    "terminal",
+    "terminalserver",
+    "texturepicker",
+    "tractorbeamupgrade",
+    "tradingupgrade",
+    "transposer",
+    "upgradecontainer1",
+    "upgradecontainer2",
+    "upgradecontainer3",
+    "waypoint",
+    "worldsensorcard",
+    "wrench"
+  ],
+  "requires_integration_mapping": [
+    {
+      "name": "analyzer",
+      "reason": "Legacy mod metadata needs an explicit modern mapping: {'item': 'gt.metaitem.01', 'subID': 32762}",
+      "source": {
+        "input": [
+          [
+            "oc:materialTransistor",
+            "torchRedstoneActive",
+            "oc:materialTransistor"
+          ],
+          [
+            "oc:circuitChip2",
+            {
+              "item": "gt.metaitem.01",
+              "subID": 32762
+            },
+            "oc:circuitChip2"
+          ],
+          [
+            "screwAluminium",
+            "craftingToolScrewdriver",
+            "screwAluminium"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "server1",
+      "reason": "Unmapped upstream ingredient: craftingToolScrewdriver",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip1",
+            "oc:ram4",
+            "oc:circuitChip1"
+          ],
+          [
+            "oc:circuitChip2",
+            "oc:case1",
+            "oc:circuitChip2"
+          ],
+          [
+            "craftingToolScrewdriver",
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolWrench"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "server2",
+      "reason": "Unmapped upstream ingredient: craftingToolScrewdriver",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip2",
+            "oc:ram5",
+            "oc:circuitChip2"
+          ],
+          [
+            "oc:circuitChip3",
+            "oc:case2",
+            "oc:circuitChip3"
+          ],
+          [
+            "craftingToolScrewdriver",
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolWrench"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "server3",
+      "reason": "Unmapped upstream ingredient: craftingToolScrewdriver",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip3",
+            "oc:ram6",
+            "oc:circuitChip3"
+          ],
+          [
+            "oc:circuitChip3",
+            "oc:case3",
+            "oc:circuitChip3"
+          ],
+          [
+            "craftingToolScrewdriver",
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolWrench"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ram1",
+      "reason": "Custom machine recipe type needs its integration bridge: gt_assembler",
+      "source": {
+        "input": [
+          "oc:circuitChip1",
+          "oc:materialCircuitBoardPrinted"
+        ],
+        "type": "gt_assembler",
+        "count": [
+          3,
+          3
+        ],
+        "eu": 32,
+        "time": 250
+      }
+    },
+    {
+      "name": "ram2",
+      "reason": "Unmapped upstream ingredient: craftingToolWrench",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip1",
+            "oc:circuitChip1",
+            "oc:circuitChip1"
+          ],
+          [
+            "oc:ram1",
+            "oc:materialCircuitBoardPrinted",
+            "oc:ram1"
+          ],
+          [
+            "",
+            "craftingToolWrench",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ram3",
+      "reason": "Unmapped upstream ingredient: circuitElite",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip2",
+            "oc:circuitChip2",
+            "oc:circuitChip2"
+          ],
+          [
+            "oc:ram2",
+            "oc:materialCircuitBoardPrinted",
+            "oc:ram2"
+          ],
+          [
+            "circuitElite",
+            "craftingToolWrench",
+            "circuitElite"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ram4",
+      "reason": "Unmapped upstream ingredient: circuitElite",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip2",
+            "oc:circuitChip2",
+            "oc:circuitChip2"
+          ],
+          [
+            "oc:ram3",
+            "oc:materialCircuitBoardPrinted",
+            "oc:ram3"
+          ],
+          [
+            "circuitElite",
+            "craftingToolWrench",
+            "circuitElite"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ram5",
+      "reason": "Unmapped upstream ingredient: circuitUltimate",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip3",
+            "oc:circuitChip3",
+            "oc:circuitChip3"
+          ],
+          [
+            "oc:ram4",
+            "oc:materialCircuitBoardPrinted",
+            "oc:ram4"
+          ],
+          [
+            "circuitUltimate",
+            "craftingToolWrench",
+            "circuitUltimate"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ram6",
+      "reason": "Unmapped upstream ingredient: circuitUltimate",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip3",
+            "oc:circuitChip3",
+            "oc:circuitChip3"
+          ],
+          [
+            "oc:ram5",
+            "oc:materialCircuitBoardPrinted",
+            "oc:ram5"
+          ],
+          [
+            "circuitUltimate",
+            "craftingToolWrench",
+            "circuitUltimate"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "floppy",
+      "reason": "Unmapped upstream ingredient: screwAluminium",
+      "source": {
+        "input": [
+          [
+            "screwAluminium",
+            "lever",
+            "screwAluminium"
+          ],
+          [
+            "plateAluminium",
+            "oc:materialDisk",
+            "plateAluminium"
+          ],
+          [
+            "screwAluminium",
+            "craftingToolScrewdriver",
+            "screwAluminium"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "hdd1",
+      "reason": "Unmapped upstream ingredient: screwAluminium",
+      "source": {
+        "input": [
+          [
+            "oc:ram1",
+            "oc:materialDisk",
+            "oc:ram1"
+          ],
+          [
+            "oc:ram1",
+            "oc:materialDisk",
+            "oc:ram1"
+          ],
+          [
+            "screwAluminium",
+            "craftingToolScrewdriver",
+            "oc:circuitChip2"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "hdd2",
+      "reason": "Unmapped upstream ingredient: screwTitanium",
+      "source": {
+        "input": [
+          [
+            "oc:hdd1",
+            "oc:materialCircuitBoardPrinted",
+            "oc:hdd1"
+          ],
+          [
+            "oc:circuitChip2",
+            "screwTitanium",
+            "oc:circuitChip2"
+          ],
+          [
+            "screwTitanium",
+            "craftingToolScrewdriver",
+            "screwTitanium"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "hdd3",
+      "reason": "Unmapped upstream ingredient: screwTungstenSteel",
+      "source": {
+        "input": [
+          [
+            "oc:hdd2",
+            "oc:materialCircuitBoardPrinted",
+            "oc:hdd2"
+          ],
+          [
+            "oc:circuitChip3",
+            "screwTungstenSteel",
+            "oc:circuitChip3"
+          ],
+          [
+            "screwTungstenSteel",
+            "craftingToolScrewdriver",
+            "screwTungstenSteel"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "lancard",
+      "reason": "Unmapped upstream ingredient: screwStainlessSteel",
+      "source": {
+        "input": [
+          [
+            "screwStainlessSteel",
+            "oc:circuitChip2",
+            "screwStainlessSteel"
+          ],
+          [
+            "oc:cable",
+            "oc:materialCard",
+            "oc:cable"
+          ],
+          [
+            "screwStainlessSteel",
+            "craftingToolScrewdriver",
+            "screwStainlessSteel"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "wlancard1",
+      "reason": "Unmapped upstream ingredient: screwAluminium",
+      "source": {
+        "input": [
+          [
+            "screwAluminium",
+            "oc:circuitChip2",
+            "screwAluminium"
+          ],
+          [
+            "torchRedstoneActive",
+            "oc:lanCard",
+            "torchRedstoneActive"
+          ],
+          [
+            "screwAluminium",
+            "craftingToolScrewdriver",
+            "screwAluminium"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "wlancard2",
+      "reason": "Unmapped upstream ingredient: screwTitanium",
+      "source": {
+        "input": [
+          [
+            "screwTitanium",
+            "oc:circuitChip3",
+            "screwTitanium"
+          ],
+          [
+            "materialEnderPearl",
+            "oc:lanCard",
+            "materialEnderPearl"
+          ],
+          [
+            "screwTitanium",
+            "craftingToolScrewdriver",
+            "screwTitanium"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "abstractbuscard",
+      "reason": "Unmapped upstream ingredient: StargateTech2:block.busCable",
+      "source": {
+        "input": [
+          [
+            {
+              "block": "StargateTech2:block.busCable"
+            },
+            {
+              "item": "StargateTech2:naquadah",
+              "subID": 3
+            },
+            ""
+          ],
+          [
+            "",
+            "oc:materialCard",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "name": "craftingupgrade",
+      "reason": "Unmapped upstream ingredient: screwStainlessSteel",
+      "source": {
+        "input": [
+          [
+            "screwStainlessSteel",
+            "oc:materialCircuitBoardPrinted",
+            "screwStainlessSteel"
+          ],
+          [
+            "oc:circuitChip2",
+            {
+              "block": "gt.blockcasings",
+              "subID": 1
+            },
+            "oc:circuitChip2"
+          ],
+          [
+            "screwStainlessSteel",
+            "craftingToolScrewdriver",
+            "screwStainlessSteel"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "generatorupgrade",
+      "reason": "Unmapped upstream ingredient: screwStainlessSteel",
+      "source": {
+        "input": [
+          [
+            "screwStainlessSteel",
+            "oc:materialCircuitBoardPrinted",
+            "screwStainlessSteel"
+          ],
+          [
+            "oc:circuitChip2",
+            "craftingGenerator",
+            "oc:circuitChip2"
+          ],
+          [
+            "screwStainlessSteel",
+            "craftingToolScrewdriver",
+            "screwStainlessSteel"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "navigationupgrade",
+      "reason": "Legacy mod metadata needs an explicit modern mapping: {'block': 'gt.blockcasings', 'subID': 2}",
+      "source": {
+        "input": [
+          [
+            {
+              "block": "gt.blockcasings",
+              "subID": 2
+            },
+            "compass",
+            "screwStainlessSteel"
+          ],
+          [
+            "oc:circuitChip3",
+            {
+              "item": "filled_map",
+              "subID": "any"
+            },
+            "oc:circuitChip3"
+          ],
+          [
+            "screwStainlessSteel",
+            "potion",
+            "craftingToolScrewdriver"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "signupgrade",
+      "reason": "Unmapped upstream ingredient: screwAluminium",
+      "source": {
+        "input": [
+          [
+            "screwAluminium",
+            "dyeBlack",
+            "screwAluminium"
+          ],
+          [
+            "oc:circuitChip1",
+            "stickWood",
+            "oc:circuitChip1"
+          ],
+          [
+            "screwAluminium",
+            "craftingToolScrewdriver",
+            "screwAluminium"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "solargeneratorupgrade",
+      "reason": "Unmapped upstream ingredient: screwTitanium",
+      "source": {
+        "input": [
+          [
+            "screwTitanium",
+            "",
+            "screwTitanium"
+          ],
+          [
+            "oc:circuitChip3",
+            {
+              "item": "gt.metaitem.01",
+              "subID": 32750
+            },
+            "oc:circuitChip3"
+          ],
+          [
+            "screwTitanium",
+            "craftingToolScrewdriver",
+            "screwTitanium"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "cuttingwire",
+      "reason": "Unmapped upstream ingredient: ingotTin",
+      "source": {
+        "input": [
+          [
+            "stickWood",
+            "ingotTin",
+            "stickWood"
+          ],
+          [
+            "",
+            "craftingToolWireCutter",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "name": "disk",
+      "reason": "Unmapped upstream ingredient: plateAluminium",
+      "source": {
+        "input": [
+          [
+            "",
+            "plateAluminium",
+            ""
+          ],
+          [
+            "plateAluminium",
+            "",
+            "plateAluminium"
+          ],
+          [
+            "",
+            "plateAluminium",
+            ""
+          ]
+        ]
+      }
+    },
+    {
+      "name": "transistor",
+      "reason": "Custom machine recipe type needs its integration bridge: gt_assembler",
+      "source": {
+        "input": [
+          "redstone",
+          "stickIron"
+        ],
+        "output": 6,
+        "type": "gt_assembler",
+        "count": [
+          1,
+          3
+        ],
+        "eu": 16,
+        "time": 500
+      }
+    },
+    {
+      "name": "chip1",
+      "reason": "Custom machine recipe type needs its integration bridge: gt_assembler",
+      "source": {
+        "input": [
+          "ic2.itemPartCircuit",
+          "oc:materialTransistor"
+        ],
+        "output": 4,
+        "type": "gt_assembler",
+        "count": [
+          1,
+          4
+        ],
+        "eu": 25,
+        "time": 480
+      }
+    },
+    {
+      "name": "chip2",
+      "reason": "Custom machine recipe type needs its integration bridge: gt_assembler",
+      "source": {
+        "input": [
+          "ic2.itemPartCircuitAdv",
+          "oc:materialTransistor"
+        ],
+        "output": 4,
+        "type": "gt_assembler",
+        "count": [
+          1,
+          8
+        ],
+        "eu": 25,
+        "time": 640
+      }
+    },
+    {
+      "name": "chip3",
+      "reason": "Custom machine recipe type needs its integration bridge: gt_assembler",
+      "source": {
+        "input": [
+          "circuitData",
+          "oc:materialTransistor"
+        ],
+        "output": 4,
+        "type": "gt_assembler",
+        "count": [
+          1,
+          16
+        ],
+        "eu": 25,
+        "time": 800
+      }
+    },
+    {
+      "name": "alu",
+      "reason": "Custom machine recipe type needs its integration bridge: gt_assembler",
+      "source": {
+        "input": [
+          "comparator",
+          "oc:circuitChip1"
+        ],
+        "type": "gt_assembler",
+        "count": [
+          3,
+          1
+        ],
+        "eu": 24,
+        "time": 500,
+        "output": 1
+      }
+    },
+    {
+      "name": "cpu1",
+      "reason": "Unmapped upstream ingredient: plateAluminium",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip2",
+            "oc:materialALU",
+            "oc:circuitChip2"
+          ],
+          [
+            "plateAluminium",
+            "oc:materialCU",
+            "plateAluminium"
+          ],
+          [
+            "screwAluminium",
+            "craftingToolScrewdriver",
+            "screwAluminium"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "cpu2",
+      "reason": "Unmapped upstream ingredient: plateStainlessSteel",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip2",
+            "plateStainlessSteel",
+            "oc:circuitChip2"
+          ],
+          [
+            "oc:ram3",
+            "oc:cpu1",
+            "oc:ram3"
+          ],
+          [
+            "oc:circuitChip2",
+            "craftingToolScrewdriver",
+            "oc:circuitChip2"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "cpu3",
+      "reason": "Unmapped upstream ingredient: plateTitanium",
+      "source": {
+        "input": [
+          [
+            "oc:circuitChip3",
+            "plateTitanium",
+            "oc:circuitChip3"
+          ],
+          [
+            "oc:ram5",
+            "oc:cpu2",
+            "oc:ram5"
+          ],
+          [
+            "oc:circuitChip3",
+            "craftingToolScrewdriver",
+            "oc:circuitChip3"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "cu",
+      "reason": "Custom machine recipe type needs its integration bridge: gt_assembler",
+      "source": {
+        "input": [
+          "circuitElite",
+          "oc:materialTransistor"
+        ],
+        "type": "gt_assembler",
+        "count": [
+          1,
+          6
+        ],
+        "eu": 32,
+        "time": 750,
+        "output": 3
+      }
+    },
+    {
+      "name": "printedcircuitboard",
+      "reason": "Unmapped upstream ingredient: dustTinyGold",
+      "source": {
+        "type": "shaped",
+        "input": [
+          [
+            "dustTinyGold",
+            "cellSulfuricAcid"
+          ],
+          [
+            "oc:materialCircuitBoard",
+            "dustTinyGold"
+          ]
+        ],
+        "output": 1
+      }
+    },
+    {
+      "name": "card",
+      "reason": "Unmapped upstream ingredient: stickIron",
+      "source": {
+        "input": [
+          [
+            "stickIron",
+            "oc:circuitChip2",
+            "oc:materialTransistor"
+          ],
+          [
+            "stickIron",
+            "oc:materialCircuitBoardPrinted",
+            "oc:materialCircuitBoardPrinted"
+          ],
+          [
+            "craftingToolScrewdriver",
+            "nuggetGold",
+            "nuggetGold"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "adapter",
+      "reason": "Legacy mod metadata needs an explicit modern mapping: {'block': 'gt.blockcasings', 'subID': 1}",
+      "source": {
+        "input": [
+          [
+            "oc:cable",
+            "oc:circuitChip1",
+            "oc:cable"
+          ],
+          [
+            "",
+            {
+              "block": "gt.blockcasings",
+              "subID": 1
+            },
+            ""
+          ],
+          [
+            "oc:materialCircuitBoardPrinted",
+            "oc:cable",
+            "craftingToolWrench"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "cable",
+      "reason": "Custom machine recipe type needs its integration bridge: gt_assembler",
+      "source": {
+        "input": [
+          "craftingWireCopper",
+          "dustEmerald"
+        ],
+        "output": 8,
+        "type": "gt_assembler",
+        "count": [
+          8,
+          1
+        ],
+        "eu": 32,
+        "time": 64
+      }
+    },
+    {
+      "name": "capacitor",
+      "reason": "Legacy mod metadata needs an explicit modern mapping: {'item': 'ic2.blockElectric', 'subID': 7}",
+      "source": {
+        "input": [
+          [
+            "",
+            {
+              "item": "ic2.blockElectric",
+              "subID": 7
+            },
+            ""
+          ],
+          [
+            {
+              "block": "gt.blockcasings",
+              "subID": 1
+            },
+            "oc:materialTransistor",
+            {
+              "block": "gt.blockcasings",
+              "subID": 1
+            }
+          ],
+          [
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolWrench",
+            "oc:materialCircuitBoardPrinted"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "charger",
+      "reason": "Unmapped upstream ingredient: plateStainlessSteel",
+      "source": {
+        "input": [
+          [
+            "",
+            "plateStainlessSteel",
+            ""
+          ],
+          [
+            {
+              "item": "ic2.blockChargepad",
+              "subID": 2
+            },
+            {
+              "block": "gt.blockcasings",
+              "subID": 3
+            },
+            {
+              "item": "ic2.blockChargepad",
+              "subID": 2
+            }
+          ],
+          [
+            "oc:circuitChip3",
+            "craftingToolWrench",
+            "oc:materialCircuitBoardPrinted"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "case1",
+      "reason": "Unmapped upstream ingredient: screwAluminium",
+      "source": {
+        "input": [
+          [
+            "screwAluminium",
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolWrench"
+          ],
+          [
+            "ic2.reactorVentSpread",
+            {
+              "block": "gt.blockcasings",
+              "subID": 1
+            },
+            "ic2.reactorVentSpread"
+          ],
+          [
+            "screwAluminium",
+            "oc:circuitChip1",
+            "craftingToolScrewdriver"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "case2",
+      "reason": "Unmapped upstream ingredient: screwStainlessSteel",
+      "source": {
+        "input": [
+          [
+            "screwStainlessSteel",
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolWrench"
+          ],
+          [
+            {
+              "item": "ic2.reactorVentGold",
+              "subID": 1
+            },
+            "oc:case1",
+            {
+              "item": "ic2.reactorVentGold",
+              "subID": 1
+            }
+          ],
+          [
+            "screwStainlessSteel",
+            "oc:circuitChip2",
+            "craftingToolScrewdriver"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "case3",
+      "reason": "Unmapped upstream ingredient: screwTitanium",
+      "source": {
+        "input": [
+          [
+            "screwTitanium",
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolWrench"
+          ],
+          [
+            {
+              "item": "ic2.reactorVentDiamond",
+              "subID": 1
+            },
+            "oc:case2",
+            {
+              "item": "ic2.reactorVentDiamond",
+              "subID": 1
+            }
+          ],
+          [
+            "screwTitanium",
+            "oc:circuitChip3",
+            "craftingToolScrewdriver"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "diskdrive",
+      "reason": "Legacy mod metadata needs an explicit modern mapping: {'block': 'gt.blockcasings', 'subID': 1}",
+      "source": {
+        "input": [
+          [
+            "",
+            "oc:circuitChip2",
+            ""
+          ],
+          [
+            "craftingPiston",
+            {
+              "block": "gt.blockcasings",
+              "subID": 1
+            },
+            "craftingLensWhite"
+          ],
+          [
+            "oc:circuitChip2",
+            "craftingToolWrench",
+            "oc:circuitChip2"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "powerconverter",
+      "reason": "Unmapped upstream ingredient: plateAluminium",
+      "source": {
+        "input": [
+          [
+            "",
+            "oc:circuitChip2",
+            ""
+          ],
+          [
+            "plateAluminium",
+            {
+              "item": "ic2.blockElectric",
+              "subID": 4
+            },
+            "plateAluminium"
+          ],
+          [
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolWrench",
+            "oc:materialCircuitBoardPrinted"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "powerdistributor",
+      "reason": "Unmapped upstream ingredient: plateAluminium",
+      "source": {
+        "input": [
+          [
+            "",
+            "plateAluminium",
+            ""
+          ],
+          [
+            {
+              "item": "ic2.blockElectric",
+              "subID": 7
+            },
+            {
+              "block": "gt.blockcasings",
+              "subID": 2
+            },
+            "circuitMaster"
+          ],
+          [
+            "oc:materialCircuitBoardPrinted",
+            "plateAluminium",
+            "craftingToolWrench"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "rack",
+      "reason": "Unmapped upstream ingredient: craftingToolScrewdriver",
+      "source": {
+        "input": [
+          [
+            "craftingToolScrewdriver",
+            "oc:wlanCard2",
+            "craftingToolWrench"
+          ],
+          [
+            {
+              "item": "ic2.reactorVentDiamond",
+              "subID": 1
+            },
+            "chest",
+            {
+              "item": "ic2.reactorVentDiamond",
+              "subID": 1
+            }
+          ],
+          [
+            "oc:relay",
+            "oc:materialCircuitBoardPrinted",
+            "oc:powerDistributor"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "redstone",
+      "reason": "Unmapped upstream ingredient: plateRedstone",
+      "source": {
+        "input": [
+          [
+            "plateRedstone",
+            "oc:materialCircuitBoardPrinted",
+            "plateRedstone"
+          ],
+          [
+            {
+              "item": "gt.metaitem.01",
+              "subID": 32731
+            },
+            {
+              "block": "gt.blockcasings",
+              "subID": 2
+            },
+            "oc:redstoneCard1"
+          ],
+          [
+            "oc:circuitChip2",
+            "oc:materialCircuitBoardPrinted",
+            "oc:circuitChip2"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "relay",
+      "reason": "Legacy mod metadata needs an explicit modern mapping: {'block': 'gt.blockcasings', 'subID': 2}",
+      "source": {
+        "input": [
+          [
+            "",
+            "oc:lanCard",
+            ""
+          ],
+          [
+            "oc:cable",
+            {
+              "block": "gt.blockcasings",
+              "subID": 2
+            },
+            "oc:cable"
+          ],
+          [
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolWrench",
+            "oc:materialCircuitBoardPrinted"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "screen1",
+      "reason": "Unmapped upstream ingredient: plateAluminium",
+      "source": {
+        "input": [
+          [
+            "plateAluminium",
+            "plateAluminium",
+            "craftingToolWrench"
+          ],
+          [
+            "redstone",
+            "oc:materialTransistor",
+            "paneGlass"
+          ],
+          [
+            "plateAluminium",
+            "plateAluminium",
+            "craftingToolScrewdriver"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "screen2",
+      "reason": "Unmapped upstream ingredient: plateStainlessSteel",
+      "source": {
+        "input": [
+          [
+            "plateStainlessSteel",
+            "screwStainlessSteel",
+            "craftingToolWrench"
+          ],
+          [
+            "oc:circuitChip2",
+            "oc:screen1",
+            {
+              "item": "gt.metaitem.01",
+              "subID": 32740
+            }
+          ],
+          [
+            "plateStainlessSteel",
+            "screwStainlessSteel",
+            "craftingToolScrewdriver"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "screen3",
+      "reason": "Unmapped upstream ingredient: plateTitanium",
+      "source": {
+        "input": [
+          [
+            "plateTitanium",
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolWrench"
+          ],
+          [
+            "oc:circuitChip3",
+            "oc:screen2",
+            "oc:circuitChip3"
+          ],
+          [
+            "plateTitanium",
+            "oc:materialCircuitBoardPrinted",
+            "craftingToolScrewdriver"
+          ]
+        ]
+      }
+    },
+    {
+      "name": "redstonecard",
+      "reason": "Unmapped upstream ingredient: screwStainlessSteel",
+      "source": {
+        "input": [
+          [
+            "screwStainlessSteel",
+            "oc:circuitChip2",
+            "screwStainlessSteel"
+          ],
+          [
+            "comparator",
+            "oc:materialCard",
+            "diode"
+          ],
+          [
+            "screwStainlessSteel",
+            "craftingToolScrewdriver",
+            "screwStainlessSteel"
+          ]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:iron_nugget"
+    },
+    "B": {
+      "item": "minecraft:dropper"
+    },
+    "C": {
+      "tag": "opencomputers:transistor"
+    },
+    "D": {
+      "item": "minecraft:bucket"
+    },
+    "E": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:inkcartridgeempty",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:inkcartridgeempty"
+    }
+  ]
+}

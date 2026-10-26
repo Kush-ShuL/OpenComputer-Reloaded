@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AAB",
+    " C "
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:chip3"
+    },
+    "B": {
+      "tag": "opencomputers:ram5"
+    },
+    "C": {
+      "tag": "opencomputers:graphicscard2"
+    }
+  },
+  "result": {
+    "id": "opencomputers:graphicscard3",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:graphicscard3"
+    }
+  ]
+}

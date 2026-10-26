@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:iron_nugget"
+    },
+    "B": {
+      "tag": "opencomputers:cpu3"
+    },
+    "C": {
+      "tag": "opencomputers:ram1"
+    },
+    "D": {
+      "tag": "opencomputers:diskdrive"
+    },
+    "E": {
+      "tag": "opencomputers:chip2"
+    }
+  },
+  "result": {
+    "id": "opencomputers:raid",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:raid"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/iron"
+    },
+    "B": {
+      "tag": "opencomputers:chip3"
+    },
+    "C": {
+      "tag": "c:storage_blocks/redstone"
+    },
+    "D": {
+      "tag": "opencomputers:redstonecard1"
+    },
+    "E": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:redstone",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:redstone"
+    }
+  ]
+}

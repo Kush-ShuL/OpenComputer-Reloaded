@@ -1,0 +1,59 @@
+package li.cil.oc.server.fs;
+
+import li.cil.oc.Settings;
+import li.cil.oc.api.fs.Mode;
+import net.minecraft.nbt.*;
+import java.io.*;
+import java.util.*;
+
+/** Hierarchical in-memory files, capacity accounting, sparse seeks, and persistent descriptors. */
+public class VirtualFileSystem extends AbstractFileSystem {
+    protected static final class Entry {
+        final boolean directory; byte[] bytes = new byte[0]; long modified=System.currentTimeMillis();
+        Entry(boolean directory){this.directory=directory;}
+        Entry copy(){Entry copy=new Entry(directory);copy.bytes=bytes.clone();copy.modified=modified;return copy;}
+    }
+    protected final LinkedHashMap<String,Entry> entries = new LinkedHashMap<>();
+    protected final long capacity;
+    protected boolean ignoreCapacity;
+    public VirtualFileSystem(long capacity){this.capacity=capacity;entries.put("",new Entry(true));}
+    public boolean isReadOnly(){return false;}
+    public long spaceTotal(){return capacity;}
+    public synchronized long spaceUsed(){long used=0;for(Entry entry:entries.values())used+=Settings.get().fileCost+(entry.directory?0:entry.bytes.length);return used;}
+    protected void ensureCapacity(long growth)throws IOException{if(!ignoreCapacity&&capacity>=0&&growth>Math.max(0,capacity-spaceUsed()))throw new IOException("not enough space");}
+    public synchronized boolean exists(String path){try{return entries.containsKey(clean(path));}catch(RuntimeException error){return false;}}
+    public synchronized boolean isDirectory(String path){try{Entry entry=entries.get(clean(path));return entry!=null&&entry.directory;}catch(RuntimeException error){return false;}}
+    public synchronized long size(String path){try{Entry entry=entries.get(clean(path));return entry==null||entry.directory?0:entry.bytes.length;}catch(RuntimeException error){return 0;}}
+    public synchronized long lastModified(String path){try{Entry entry=entries.get(clean(path));return entry==null?0:entry.modified;}catch(RuntimeException error){return 0;}}
+    private static String parent(String path){int index=path.lastIndexOf('/');return index<0?"":path.substring(0,index);}
+    public synchronized String[] list(String path){String key=clean(path);if(!isDirectory(key))return null;String prefix=key.isEmpty()?"":key+"/";List<String> result=new ArrayList<>();for(var item:entries.entrySet()){String name=item.getKey();if(!name.equals(key)&&name.startsWith(prefix)&&name.indexOf('/',prefix.length())<0)result.add(name.substring(prefix.length())+(item.getValue().directory?"/":""));}return result.toArray(String[]::new);}
+    public synchronized boolean makeDirectory(String path){String key=clean(path);if(key.isEmpty()||entries.containsKey(key)||!isDirectory(parent(key)))return false;try{ensureCapacity(Settings.get().fileCost);}catch(IOException error){throw FileSystem.failure(error);}entries.put(key,new Entry(true));entries.get(parent(key)).modified=System.currentTimeMillis();return true;}
+    public synchronized boolean delete(String path){String key=clean(path);Entry entry=entries.get(key);if(key.isEmpty()||entry==null||(entry.directory&&list(key).length>0))return false;for(OpenHandle handle:handles.values())if(handle.path.equals(key)&&handle.mode!=Mode.Read)return false;entries.remove(key);entries.get(parent(key)).modified=System.currentTimeMillis();return true;}
+    public synchronized boolean rename(String from,String to)throws FileNotFoundException{
+        String source=clean(from),target=clean(to);if(source.isEmpty()||!entries.containsKey(source))throw new FileNotFoundException(from);if(source.equals(target))return true;if(target.isEmpty()||target.startsWith(source+"/")||!isDirectory(parent(target)))return false;if(entries.containsKey(target)&&!delete(target))return false;
+        LinkedHashMap<String,Entry> moved=new LinkedHashMap<>();for(var item:entries.entrySet())if(item.getKey().equals(source)||item.getKey().startsWith(source+"/"))moved.put(target+item.getKey().substring(source.length()),item.getValue());
+        entries.keySet().removeIf(key->key.equals(source)||key.startsWith(source+"/"));entries.putAll(moved);for(OpenHandle handle:handles.values())if(handle.path.equals(source)||handle.path.startsWith(source+"/"))handle.path=target+handle.path.substring(source.length());entries.get(parent(source)).modified=System.currentTimeMillis();entries.get(parent(target)).modified=System.currentTimeMillis();return true;
+    }
+    public synchronized boolean setLastModified(String path,long time){Entry entry=entries.get(clean(path));if(entry==null||time<0)return false;entry.modified=time;return true;}
+    protected synchronized OpenHandle createHandle(int id,String path,Mode mode)throws IOException{
+        Entry entry=entries.get(path);
+        if(mode==Mode.Read){if(entry==null||entry.directory)throw new FileNotFoundException(path);for(OpenHandle open:handles.values())if(open.path.equals(path)&&open.mode!=Mode.Read)throw new FileNotFoundException("file is open for writing");}
+        else{
+            if(!isDirectory(parent(path))||path.isEmpty()||(entry!=null&&entry.directory))throw new FileNotFoundException(path);
+            if(entry==null){ensureCapacity(Settings.get().fileCost);entry=new Entry(false);entries.put(path,entry);}
+            if(mode==Mode.Write){entry.bytes=new byte[0];entry.modified=System.currentTimeMillis();}
+        }
+        Entry file=entry;return new OpenHandle(id,path,mode){long position=mode==Mode.Append?file.bytes.length:0;
+            public long position(){return position;}
+            public long length(){synchronized(VirtualFileSystem.this){return file.bytes.length;}}
+            public int read(byte[] into)throws IOException{synchronized(VirtualFileSystem.this){readable();if(into.length==0)return 0;if(position>=file.bytes.length)return -1;int count=(int)Math.min(into.length,file.bytes.length-position);System.arraycopy(file.bytes,(int)position,into,0,count);position+=count;return count;}}
+            public long seek(long to)throws IOException{checkOpen();if(to<0)throw new IOException("invalid offset");position=to;return position;}
+            public void write(byte[] value)throws IOException{synchronized(VirtualFileSystem.this){writable();long end=position+value.length;if(end>Integer.MAX_VALUE||end<position)throw new IOException("not enough space");long growth=Math.max(0,end-file.bytes.length);ensureCapacity(growth);if(growth>0)file.bytes=Arrays.copyOf(file.bytes,(int)end);System.arraycopy(value,0,file.bytes,(int)position,value.length);position=end;file.modified=System.currentTimeMillis();}}
+        };
+    }
+    protected synchronized void loadEntries(CompoundTag nbt){entries.clear();readEntry("",nbt);if(!entries.containsKey(""))entries.put("",new Entry(true));}
+    private void readEntry(String path,CompoundTag tag){boolean directory=path.isEmpty()||tag.getBoolean("isDirectory");Entry entry=new Entry(directory);if(tag.contains("lastModified"))entry.modified=tag.getLong("lastModified");if(!directory)entry.bytes=tag.getByteArray("data");entries.put(path,entry);if(directory)for(Tag raw:tag.getList("children",Tag.TAG_COMPOUND)){CompoundTag child=(CompoundTag)raw;String name=child.getString("name");if(!name.isEmpty()&&!name.contains("/")&&FileSystem.isValidFilename(name))readEntry(path.isEmpty()?name:path+"/"+name,child);}}
+    private CompoundTag writeEntry(String path){Entry entry=entries.get(path);CompoundTag tag=new CompoundTag();tag.putLong("lastModified",entry.modified);tag.putBoolean("isDirectory",entry.directory);if(!entry.directory)tag.putByteArray("data",entry.bytes);else{ListTag children=new ListTag();for(String name:list(path)){String cleanName=name.endsWith("/")?name.substring(0,name.length()-1):name;CompoundTag child=writeEntry(path.isEmpty()?cleanName:path+"/"+cleanName);child.putString("name",cleanName);children.add(child);}tag.put("children",children);}return tag;}
+    public synchronized void load(CompoundTag nbt){closeHandles();loadEntries(nbt);super.load(nbt);}
+    public synchronized void save(CompoundTag nbt){super.save(nbt);nbt.merge(writeEntry(""));}
+}

@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:nuggets/gold"
+    },
+    "B": {
+      "tag": "opencomputers:transistor"
+    },
+    "C": {
+      "item": "minecraft:paper"
+    },
+    "D": {
+      "tag": "opencomputers:chip1"
+    },
+    "E": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "result": {
+    "id": "opencomputers:eeprom",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:eeprom"
+    }
+  ]
+}

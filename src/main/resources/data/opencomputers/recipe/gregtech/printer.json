@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/iron"
+    },
+    "B": {
+      "item": "minecraft:hopper"
+    },
+    "C": {
+      "item": "minecraft:piston"
+    },
+    "D": {
+      "tag": "opencomputers:chip3"
+    },
+    "E": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:printer",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:printer"
+    }
+  ]
+}

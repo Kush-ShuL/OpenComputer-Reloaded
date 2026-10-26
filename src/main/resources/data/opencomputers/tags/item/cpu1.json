@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:cpu1",
+      "required": false
+    }
+  ]
+}

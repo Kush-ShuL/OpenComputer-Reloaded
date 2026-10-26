@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:componentbus3",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.144'
+}
+
+version = project.mod_version
+group = project.mod_group
+base { archivesName = 'OpenComputer-Reloaded' }
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+repositories {
+    mavenCentral()
+    ivy {
+        name = 'OriginalOpenComputersLuaLibraries'
+        url = 'https://asie.pl/javadeps'
+        patternLayout { artifact '[module]-[revision](-[classifier]).[ext]' }
+        metadataSources { artifact() }
+        content { includeModule 'li.cil', 'OC-LuaJ'; includeModule 'li.cil', 'OC-JNLua'; includeModule 'li.cil', 'OC-JNLua-Natives' }
+    }
+}
+
+sourceSets {
+    api {
+        java { srcDirs = ['src/main/java']; include 'li/cil/oc/api/**' }
+        resources.srcDirs = []
+    }
+    main {
+        java { srcDirs = ['src/main/java']; exclude 'li/cil/oc/api/**' }
+    }
+}
+
+neoForge {
+    version = project.neo_version
+    addModdingDependenciesTo sourceSets.api
+    runs {
+        client { client() }
+        server { server(); programArgument '--nogui' }
+        configureEach { logLevel = org.slf4j.event.Level.INFO }
+    }
+    mods {
+        opencomputers {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.api
+        }
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+    jnluaLibrary { canBeConsumed = false; canBeResolved = true }
+}
+
+// JNI must share the mod's game class loader. Preserve upstream classes and only
+// add FML's game-library manifest, for both development runs and the shipped JAR.
+var jnluaGameLibrary = tasks.register('jnluaGameLibrary', Jar) {
+    archiveFileName = 'OC-JNLua-20230530.0-game.jar'
+    destinationDirectory = layout.buildDirectory.dir('libraries')
+    from({ zipTree(configurations.jnluaLibrary.singleFile) }) {
+        exclude 'META-INF/MANIFEST.MF', 'META-INF/*.SF', 'META-INF/*.RSA', 'META-INF/*.DSA'
+    }
+    manifest { attributes 'FMLModType': 'GAMELIBRARY', 'Automatic-Module-Name': 'li.cil.oc.jnlua' }
+}
+
+dependencies {
+    apiImplementation 'com.typesafe:config:1.4.1'
+    apiCompileOnly 'org.jetbrains:annotations:26.0.2'
+    implementation sourceSets.api.output
+    jarJar(implementation('com.typesafe:config:1.4.1'))
+    // OpenComputers uses its own persistent Lua VM forks, not unmodified LuaJ/JNLua.
+    jarJar(implementation('li.cil:OC-LuaJ:20220907.1'))
+    compileOnly 'li.cil:OC-JNLua:20230530.0'
+    jnluaLibrary 'li.cil:OC-JNLua:20230530.0'
+    runtimeOnly files(jnluaGameLibrary)
+    jarJar files(jnluaGameLibrary)
+    jarJar(implementation('li.cil:OC-JNLua-Natives:20220928.1'))
+    additionalRuntimeClasspath 'com.typesafe:config:1.4.1'
+    additionalRuntimeClasspath 'li.cil:OC-LuaJ:20220907.1'
+    additionalRuntimeClasspath 'li.cil:OC-JNLua-Natives:20220928.1'
+}
+
+// Java 21 throughout; the integration API is an independent source set.
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8'; options.release = 21 }
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    inputs.property 'mod_version', project.version
+    inputs.property 'neo_version', project.neo_version
+    expand mod_version: project.version, neo_version: project.neo_version
+    from 'src/main/templates'
+    into layout.buildDirectory.dir('generated/modMetadata')
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.named('processResources') {
+    exclude 'mcmod.info', 'oc_at.cfg'
+    filesMatching('application.conf') { filter { it.replace('@VERSION@', project.version.toString()) } }
+}
+
+def legalFiles = files('LICENSE', 'LICENSE-jnlua', 'LICENSE-luaj', 'LICENSE-mods', 'NOTICE')
+def resourceLegalFiles = fileTree('src/main/resources') { include 'LICENSE*' }
+tasks.named('jar') {
+    from sourceSets.api.output
+    // Keep both upstream resource notices and the complete project notices.
+    from(legalFiles) { into 'META-INF/licenses/project' }
+    manifest { attributes 'Implementation-Title': 'OpenComputer-Reloaded', 'Implementation-Version': project.version }
+}
+tasks.named('sourcesJar') {
+    from sourceSets.api.allSource
+    from legalFiles
+    from resourceLegalFiles
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+var apiJar = tasks.register('apiJar', Jar) {
+    archiveClassifier = 'api'
+    from sourceSets.api.output
+    from legalFiles
+    manifest { attributes 'Automatic-Module-Name': 'li.cil.oc.api' }
+}
+var apiSourcesJar = tasks.register('apiSourcesJar', Jar) {
+    archiveClassifier = 'api-sources'
+    from sourceSets.api.allSource
+    from legalFiles
+}
+var apiJavadoc = tasks.register('apiJavadoc', Javadoc) {
+    source = sourceSets.api.allJava
+    classpath = sourceSets.api.compileClasspath + sourceSets.api.output
+    options.encoding = 'UTF-8'
+    options.addStringOption('Xdoclint:none', '-quiet')
+    destinationDir = layout.buildDirectory.dir('docs/api').get().asFile
+}
+var apiJavadocJar = tasks.register('apiJavadocJar', Jar) {
+    archiveClassifier = 'api-javadoc'
+    from apiJavadoc
+    from legalFiles
+}
+tasks.named('assemble') { dependsOn apiJar, apiSourcesJar }
+
+publishing {
+    publications {
+        mod(MavenPublication) {
+            from components.java
+            artifactId = 'opencomputer-reloaded'
+            artifact apiJar
+            artifact apiJavadocJar
+            pom {
+                name = 'OpenComputer-Reloaded'
+                description = 'OpenComputers for Minecraft 1.21.1 NeoForge'
+                url = 'https://github.com/Kush-ShuL/OpenComputer-Reloaded'
+                licenses { license { name = 'MIT'; url = 'https://github.com/Kush-ShuL/OpenComputer-Reloaded/blob/main/LICENSE' } }
+                scm { url = 'https://github.com/Kush-ShuL/OpenComputer-Reloaded'; connection = 'scm:git:https://github.com/Kush-ShuL/OpenComputer-Reloaded.git' }
+            }
+        }
+        api(MavenPublication) {
+            artifactId = 'opencomputer-reloaded-api'
+            artifact(apiJar) { classifier = null }
+            artifact(apiSourcesJar) { classifier = 'sources' }
+            artifact(apiJavadocJar) { classifier = 'javadoc' }
+            pom {
+                name = 'OpenComputer-Reloaded API'
+                description = 'OpenComputers integration API for Minecraft 1.21.1 NeoForge; compileOnly dependency'
+                url = 'https://github.com/Kush-ShuL/OpenComputer-Reloaded'
+                licenses { license { name = 'MIT'; url = 'https://github.com/Kush-ShuL/OpenComputer-Reloaded/blob/main/LICENSE' } }
+                withXml {
+                    def dep = asNode().appendNode('dependencies').appendNode('dependency')
+                    dep.appendNode('groupId', 'com.typesafe')
+                    dep.appendNode('artifactId', 'config')
+                    dep.appendNode('version', '1.4.1')
+                    dep.appendNode('scope', 'compile')
+                }
+            }
+        }
+    }
+    repositories {
+        maven { name = 'localDistribution'; url = layout.buildDirectory.dir('maven') }
+        if (System.getenv('GITHUB_TOKEN')) {
+            maven {
+                name = 'GitHubPackages'
+                url = 'https://maven.pkg.github.com/Kush-ShuL/OpenComputer-Reloaded'
+                credentials {
+                    username = System.getenv('GITHUB_ACTOR') ?: 'Kush-ShuL'
+                    password = System.getenv('GITHUB_TOKEN')
+                }
+            }
+        }
+    }
+}

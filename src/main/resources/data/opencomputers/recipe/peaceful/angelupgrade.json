@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/iron"
+    },
+    "B": {
+      "tag": "c:gems/diamond"
+    },
+    "C": {
+      "tag": "opencomputers:chip1"
+    },
+    "D": {
+      "item": "minecraft:sticky_piston"
+    }
+  },
+  "result": {
+    "id": "opencomputers:angelupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:angelupgrade"
+    }
+  ]
+}

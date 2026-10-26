@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " A ",
+    "BCD",
+    "BED"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:redstone_torch"
+    },
+    "B": {
+      "tag": "opencomputers:transistor"
+    },
+    "C": {
+      "tag": "opencomputers:chip1"
+    },
+    "D": {
+      "tag": "c:nuggets/gold"
+    },
+    "E": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:analyzer",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:analyzer"
+    }
+  ]
+}

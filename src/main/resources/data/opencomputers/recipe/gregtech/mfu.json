@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:chamelium"
+    },
+    "B": {
+      "tag": "c:gems/lapis"
+    },
+    "C": {
+      "tag": "opencomputers:linkedcard"
+    },
+    "D": {
+      "tag": "opencomputers:adapter"
+    }
+  },
+  "result": {
+    "id": "opencomputers:mfu",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:mfu"
+    }
+  ]
+}

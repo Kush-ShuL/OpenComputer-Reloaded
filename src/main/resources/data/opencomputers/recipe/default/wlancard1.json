@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    " C "
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:redstone_torch"
+    },
+    "B": {
+      "tag": "opencomputers:chip1"
+    },
+    "C": {
+      "tag": "opencomputers:card"
+    }
+  },
+  "result": {
+    "id": "opencomputers:wlancard1",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:wlancard1"
+    }
+  ]
+}

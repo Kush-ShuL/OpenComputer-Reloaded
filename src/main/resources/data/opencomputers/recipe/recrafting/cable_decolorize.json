@@ -1,0 +1,11 @@
+{
+  "type": "opencomputers:decolorize",
+  "category": "misc",
+  "target": "opencomputers:cable",
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:cable"
+    }
+  ]
+}

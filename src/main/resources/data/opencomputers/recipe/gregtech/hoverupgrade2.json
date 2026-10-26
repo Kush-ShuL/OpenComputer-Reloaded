@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:endstone"
+    },
+    "B": {
+      "tag": "opencomputers:chip2"
+    },
+    "C": {
+      "tag": "c:nuggets/gold"
+    },
+    "D": {
+      "tag": "c:ingots/iron"
+    },
+    "E": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:hoverupgrade2",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:hoverupgrade2"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDE",
+    "AFA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/iron"
+    },
+    "B": {
+      "item": "minecraft:hopper"
+    },
+    "C": {
+      "item": "minecraft:dispenser"
+    },
+    "D": {
+      "item": "minecraft:chest"
+    },
+    "E": {
+      "item": "minecraft:piston"
+    },
+    "F": {
+      "tag": "opencomputers:chip1"
+    }
+  },
+  "result": {
+    "id": "opencomputers:inventoryupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:inventoryupgrade"
+    }
+  ]
+}

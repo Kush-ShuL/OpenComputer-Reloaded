@@ -1,0 +1,11 @@
+{
+  "parent": "opencomputers:item/tablet_off",
+  "overrides": [
+    {
+      "predicate": {
+        "opencomputers:running": 1
+      },
+      "model": "opencomputers:item/tablet_on"
+    }
+  ]
+}

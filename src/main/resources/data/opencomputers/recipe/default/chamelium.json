@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "BCB",
+    "ADA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:gravel"
+    },
+    "B": {
+      "item": "minecraft:redstone"
+    },
+    "C": {
+      "item": "minecraft:charcoal"
+    },
+    "D": {
+      "item": "minecraft:water_bucket"
+    }
+  },
+  "result": {
+    "id": "opencomputers:chamelium",
+    "count": 16
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:chamelium"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+OpenComputer-Reloaded
+
+Derived exclusively from MightyPirates/OpenComputers, master-MC1.12,
+commit 258943363ea8fc4ef14948e6bc6f67375061580c.
+Original project: https://github.com/MightyPirates/OpenComputers
+Original copyright and MIT license are preserved in LICENSE.
+NeoForge migration copyright (c) 2026 Kush-ShuL and contributors, under MIT.
+This is an independent community port, not an official MightyPirates release.
+
+Third-party licenses remain in their original files:
+- LICENSE-luaj: OpenComputers' LuaJ fork (MIT-style terms).
+- LICENSE-jnlua: JNLua (MIT-style terms).
+- LICENSE-mods: compile-time third-party mod API distribution notice.
+- src/main/resources/LICENSE-typesafe: Typesafe Config (Apache License 2.0).
+- src/main/resources/LICENSE-unifont: bundled font (SIL Open Font License 1.1).
+- src/main/resources/LICENSE-wcwidth: Unicode width implementation (MIT-style terms).
+Lua/OpenOS/loot programs, textures, manuals and translations retain their
+original authorship and any individual file notices. Asset exceptions retain
+their original terms. The project-wide MIT license does not replace these terms.
+Third-party mod API implementations are not bundled into the runtime or API JAR.

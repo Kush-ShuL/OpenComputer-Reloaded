@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:graphicscard2",
+      "required": false
+    }
+  ]
+}

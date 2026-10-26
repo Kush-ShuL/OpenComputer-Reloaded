@@ -1,0 +1,24 @@
+{
+  "type": "opencomputers:crafting_shapeless",
+  "category": "misc",
+  "operation": "color_floppy",
+  "ingredients": [
+    {
+      "item": "opencomputers:floppy"
+    },
+    {
+      "tag": "c:dyes/blue"
+    }
+  ],
+  "result": {
+    "id": "opencomputers:floppy",
+    "count": 1
+  },
+  "color": 4,
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:floppy"
+    }
+  ]
+}

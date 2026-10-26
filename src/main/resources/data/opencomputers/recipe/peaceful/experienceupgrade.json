@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "A A",
+    "BCB",
+    "ADA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/gold"
+    },
+    "B": {
+      "tag": "opencomputers:chip2"
+    },
+    "C": {
+      "item": "minecraft:emerald"
+    },
+    "D": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:experienceupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:experienceupgrade"
+    }
+  ]
+}

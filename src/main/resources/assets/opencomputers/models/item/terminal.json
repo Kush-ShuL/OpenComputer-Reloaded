@@ -1,0 +1,11 @@
+{
+  "parent": "opencomputers:item/terminal_off",
+  "overrides": [
+    {
+      "predicate": {
+        "opencomputers:running": 1
+      },
+      "model": "opencomputers:item/terminal_on"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "A A",
+    "BCB",
+    "ADA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/iron"
+    },
+    "B": {
+      "tag": "opencomputers:chip1"
+    },
+    "C": {
+      "item": "minecraft:piston"
+    },
+    "D": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:generatorupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:generatorupgrade"
+    }
+  ]
+}

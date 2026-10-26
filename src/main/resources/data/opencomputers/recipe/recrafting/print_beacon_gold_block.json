@@ -1,0 +1,23 @@
+{
+  "type": "opencomputers:crafting_shapeless",
+  "category": "misc",
+  "operation": "print_beacon",
+  "ingredients": [
+    {
+      "item": "opencomputers:print"
+    },
+    {
+      "item": "minecraft:gold_block"
+    }
+  ],
+  "result": {
+    "id": "opencomputers:print",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:print"
+    }
+  ]
+}

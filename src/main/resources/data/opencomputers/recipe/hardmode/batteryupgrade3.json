@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CBC",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:gems/diamond"
+    },
+    "B": {
+      "tag": "opencomputers:capacitor"
+    },
+    "C": {
+      "tag": "opencomputers:transistor"
+    }
+  },
+  "result": {
+    "id": "opencomputers:batteryupgrade3",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:batteryupgrade3"
+    }
+  ]
+}

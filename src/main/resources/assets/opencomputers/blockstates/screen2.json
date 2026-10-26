@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "pitch=north,yaw=south": {
+      "model": "opencomputers:block/screen_north_south"
+    },
+    "pitch=north,yaw=west": {
+      "model": "opencomputers:block/screen_north_west"
+    },
+    "pitch=north,yaw=north": {
+      "model": "opencomputers:block/screen_north_north"
+    },
+    "pitch=north,yaw=east": {
+      "model": "opencomputers:block/screen_north_east"
+    },
+    "pitch=up,yaw=south": {
+      "model": "opencomputers:block/screen_up_south"
+    },
+    "pitch=up,yaw=west": {
+      "model": "opencomputers:block/screen_up_west"
+    },
+    "pitch=up,yaw=north": {
+      "model": "opencomputers:block/screen_up_north"
+    },
+    "pitch=up,yaw=east": {
+      "model": "opencomputers:block/screen_up_east"
+    },
+    "pitch=down,yaw=south": {
+      "model": "opencomputers:block/screen_down_south"
+    },
+    "pitch=down,yaw=west": {
+      "model": "opencomputers:block/screen_down_west"
+    },
+    "pitch=down,yaw=north": {
+      "model": "opencomputers:block/screen_down_north"
+    },
+    "pitch=down,yaw=east": {
+      "model": "opencomputers:block/screen_down_east"
+    }
+  }
+}

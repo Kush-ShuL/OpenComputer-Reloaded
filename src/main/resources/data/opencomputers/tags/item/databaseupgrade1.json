@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:databaseupgrade1",
+      "required": false
+    }
+  ]
+}

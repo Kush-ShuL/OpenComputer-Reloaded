@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    " D "
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:iron_nugget"
+    },
+    "B": {
+      "tag": "opencomputers:alu"
+    },
+    "C": {
+      "tag": "opencomputers:chip2"
+    },
+    "D": {
+      "tag": "opencomputers:card"
+    }
+  },
+  "result": {
+    "id": "opencomputers:datacard1",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:datacard1"
+    }
+  ]
+}

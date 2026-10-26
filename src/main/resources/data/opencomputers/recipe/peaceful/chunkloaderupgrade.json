@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "EFE"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/gold"
+    },
+    "B": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "C": {
+      "tag": "opencomputers:chip3"
+    },
+    "D": {
+      "tag": "c:gems/diamond"
+    },
+    "E": {
+      "item": "minecraft:obsidian"
+    },
+    "F": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:chunkloaderupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:chunkloaderupgrade"
+    }
+  ]
+}

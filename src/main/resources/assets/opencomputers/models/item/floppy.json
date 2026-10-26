@@ -1,0 +1,101 @@
+{
+  "parent": "opencomputers:item/floppy_dyegray",
+  "overrides": [
+    {
+      "predicate": {
+        "opencomputers:color": 0.0
+      },
+      "model": "opencomputers:item/floppy_dyeblack"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.06666666666666667
+      },
+      "model": "opencomputers:item/floppy_dyered"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.13333333333333333
+      },
+      "model": "opencomputers:item/floppy_dyegreen"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.2
+      },
+      "model": "opencomputers:item/floppy_dyebrown"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.26666666666666666
+      },
+      "model": "opencomputers:item/floppy_dyeblue"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.3333333333333333
+      },
+      "model": "opencomputers:item/floppy_dyepurple"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.4
+      },
+      "model": "opencomputers:item/floppy_dyecyan"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.4666666666666667
+      },
+      "model": "opencomputers:item/floppy_dyelightgray"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.5333333333333333
+      },
+      "model": "opencomputers:item/floppy_dyegray"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.6
+      },
+      "model": "opencomputers:item/floppy_dyepink"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.6666666666666666
+      },
+      "model": "opencomputers:item/floppy_dyelime"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.7333333333333333
+      },
+      "model": "opencomputers:item/floppy_dyeyellow"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.8
+      },
+      "model": "opencomputers:item/floppy_dyelightblue"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.8666666666666667
+      },
+      "model": "opencomputers:item/floppy_dyemagenta"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 0.9333333333333333
+      },
+      "model": "opencomputers:item/floppy_dyeorange"
+    },
+    {
+      "predicate": {
+        "opencomputers:color": 1.0
+      },
+      "model": "opencomputers:item/floppy_dyewhite"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "EFE"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:gems/diamond"
+    },
+    "B": {
+      "tag": "opencomputers:ram6"
+    },
+    "C": {
+      "tag": "opencomputers:chip3"
+    },
+    "D": {
+      "tag": "opencomputers:componentbus3"
+    },
+    "E": {
+      "item": "minecraft:obsidian"
+    },
+    "F": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:server3",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:server3"
+    }
+  ]
+}

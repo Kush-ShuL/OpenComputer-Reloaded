@@ -1,0 +1,45 @@
+{
+  "type": "opencomputers:crafting_shaped",
+  "category": "misc",
+  "operation": "default_architecture",
+  "pattern": [
+    "ABA",
+    "CDE",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "item": "opencomputers:chipdiamond"
+    },
+    "B": {
+      "tag": "opencomputers:chip2"
+    },
+    "C": {
+      "tag": "opencomputers:cpu3"
+    },
+    "D": {
+      "tag": "opencomputers:componentbus2"
+    },
+    "E": {
+      "tag": "opencomputers:graphicscard2"
+    }
+  },
+  "result": {
+    "id": "opencomputers:apu2",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:apu2"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:chipdiamond"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CD ",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:gems/diamond"
+    },
+    "B": {
+      "tag": "opencomputers:ram5"
+    },
+    "C": {
+      "tag": "opencomputers:chip3"
+    },
+    "D": {
+      "tag": "opencomputers:componentbus2"
+    },
+    "E": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:componentbus3",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:componentbus3"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDE",
+    "AFA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/gold"
+    },
+    "B": {
+      "tag": "c:dyes/red"
+    },
+    "C": {
+      "tag": "c:dyes/green"
+    },
+    "D": {
+      "tag": "opencomputers:chip2"
+    },
+    "E": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "F": {
+      "tag": "c:dyes/blue"
+    }
+  },
+  "result": {
+    "id": "opencomputers:screen2",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:screen2"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:screen2",
+      "required": false
+    }
+  ]
+}

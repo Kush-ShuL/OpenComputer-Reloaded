@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:feather"
+    },
+    "B": {
+      "tag": "opencomputers:chip1"
+    },
+    "C": {
+      "item": "minecraft:iron_nugget"
+    },
+    "D": {
+      "item": "minecraft:leather"
+    },
+    "E": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:hoverupgrade1",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:hoverupgrade1"
+    }
+  ]
+}

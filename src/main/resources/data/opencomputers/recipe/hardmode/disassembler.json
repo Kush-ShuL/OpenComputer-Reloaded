@@ -1,0 +1,46 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    "D E",
+    "FGF"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:cu"
+    },
+    "B": {
+      "tag": "c:glass_panes/colorless"
+    },
+    "C": {
+      "tag": "opencomputers:analyzer"
+    },
+    "D": {
+      "item": "minecraft:piston"
+    },
+    "E": {
+      "item": "minecraft:obsidian"
+    },
+    "F": {
+      "tag": "c:ingots/iron"
+    },
+    "G": {
+      "item": "minecraft:lava_bucket"
+    }
+  },
+  "result": {
+    "id": "opencomputers:disassembler",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:disassembler"
+    }
+  ]
+}

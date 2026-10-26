@@ -1,0 +1,46 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    "DEF",
+    "AGC"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:chip2"
+    },
+    "B": {
+      "item": "minecraft:stone_button"
+    },
+    "C": {
+      "tag": "c:ingots/gold"
+    },
+    "D": {
+      "tag": "opencomputers:componentbus3"
+    },
+    "E": {
+      "tag": "opencomputers:screen2"
+    },
+    "F": {
+      "tag": "opencomputers:chip3"
+    },
+    "G": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:tabletcase2",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:tabletcase2"
+    }
+  ]
+}

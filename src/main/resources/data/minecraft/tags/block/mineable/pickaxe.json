@@ -1,0 +1,141 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:adapter",
+      "required": false
+    },
+    {
+      "id": "opencomputers:assembler",
+      "required": false
+    },
+    {
+      "id": "opencomputers:cable",
+      "required": false
+    },
+    {
+      "id": "opencomputers:capacitor",
+      "required": false
+    },
+    {
+      "id": "opencomputers:carpetedcapacitor",
+      "required": false
+    },
+    {
+      "id": "opencomputers:casecreative",
+      "required": false
+    },
+    {
+      "id": "opencomputers:case1",
+      "required": false
+    },
+    {
+      "id": "opencomputers:case2",
+      "required": false
+    },
+    {
+      "id": "opencomputers:case3",
+      "required": false
+    },
+    {
+      "id": "opencomputers:chameliumblock",
+      "required": false
+    },
+    {
+      "id": "opencomputers:charger",
+      "required": false
+    },
+    {
+      "id": "opencomputers:disassembler",
+      "required": false
+    },
+    {
+      "id": "opencomputers:diskdrive",
+      "required": false
+    },
+    {
+      "id": "opencomputers:endstone",
+      "required": false
+    },
+    {
+      "id": "opencomputers:geolyzer",
+      "required": false
+    },
+    {
+      "id": "opencomputers:hologram1",
+      "required": false
+    },
+    {
+      "id": "opencomputers:hologram2",
+      "required": false
+    },
+    {
+      "id": "opencomputers:keyboard",
+      "required": false
+    },
+    {
+      "id": "opencomputers:microcontroller",
+      "required": false
+    },
+    {
+      "id": "opencomputers:motionsensor",
+      "required": false
+    },
+    {
+      "id": "opencomputers:netsplitter",
+      "required": false
+    },
+    {
+      "id": "opencomputers:powerconverter",
+      "required": false
+    },
+    {
+      "id": "opencomputers:powerdistributor",
+      "required": false
+    },
+    {
+      "id": "opencomputers:printer",
+      "required": false
+    },
+    {
+      "id": "opencomputers:raid",
+      "required": false
+    },
+    {
+      "id": "opencomputers:redstone",
+      "required": false
+    },
+    {
+      "id": "opencomputers:relay",
+      "required": false
+    },
+    {
+      "id": "opencomputers:robot",
+      "required": false
+    },
+    {
+      "id": "opencomputers:screen1",
+      "required": false
+    },
+    {
+      "id": "opencomputers:screen2",
+      "required": false
+    },
+    {
+      "id": "opencomputers:screen3",
+      "required": false
+    },
+    {
+      "id": "opencomputers:rack",
+      "required": false
+    },
+    {
+      "id": "opencomputers:transposer",
+      "required": false
+    },
+    {
+      "id": "opencomputers:waypoint",
+      "required": false
+    }
+  ]
+}

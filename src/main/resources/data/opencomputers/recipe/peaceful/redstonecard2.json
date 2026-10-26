@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    " D "
+  ],
+  "key": {
+    "A": {
+      "tag": "c:storage_blocks/redstone"
+    },
+    "B": {
+      "tag": "opencomputers:chip2"
+    },
+    "C": {
+      "tag": "c:gems/diamond"
+    },
+    "D": {
+      "tag": "opencomputers:card"
+    }
+  },
+  "result": {
+    "id": "opencomputers:redstonecard2",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:redstonecard2"
+    }
+  ]
+}

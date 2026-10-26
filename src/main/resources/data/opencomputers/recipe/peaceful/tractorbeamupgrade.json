@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/gold"
+    },
+    "B": {
+      "item": "minecraft:piston"
+    },
+    "C": {
+      "tag": "c:ingots/iron"
+    },
+    "D": {
+      "tag": "opencomputers:capacitor"
+    },
+    "E": {
+      "tag": "opencomputers:chip3"
+    }
+  },
+  "result": {
+    "id": "opencomputers:tractorbeamupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:tractorbeamupgrade"
+    }
+  ]
+}

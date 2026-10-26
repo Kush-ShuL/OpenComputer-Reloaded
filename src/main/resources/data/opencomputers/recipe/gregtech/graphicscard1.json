@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    " D "
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:chip1"
+    },
+    "B": {
+      "tag": "opencomputers:alu"
+    },
+    "C": {
+      "tag": "opencomputers:ram1"
+    },
+    "D": {
+      "tag": "opencomputers:card"
+    }
+  },
+  "result": {
+    "id": "opencomputers:graphicscard1",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:graphicscard1"
+    }
+  ]
+}

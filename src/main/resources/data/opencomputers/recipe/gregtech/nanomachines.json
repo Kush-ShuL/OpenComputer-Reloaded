@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDE",
+    "AFA"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:chamelium"
+    },
+    "B": {
+      "tag": "opencomputers:wlancard2"
+    },
+    "C": {
+      "tag": "opencomputers:cpu2"
+    },
+    "D": {
+      "tag": "opencomputers:acid"
+    },
+    "E": {
+      "tag": "opencomputers:ram1"
+    },
+    "F": {
+      "tag": "opencomputers:capacitor"
+    }
+  },
+  "result": {
+    "id": "opencomputers:nanomachines",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:nanomachines"
+    }
+  ]
+}

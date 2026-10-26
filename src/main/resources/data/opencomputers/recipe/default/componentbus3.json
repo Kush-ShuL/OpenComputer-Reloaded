@@ -1,0 +1,44 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CD ",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "item": "opencomputers:chipdiamond"
+    },
+    "B": {
+      "item": "minecraft:redstone"
+    },
+    "C": {
+      "tag": "opencomputers:chip3"
+    },
+    "D": {
+      "tag": "opencomputers:cu"
+    },
+    "E": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:componentbus3",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:chipdiamond"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:componentbus3"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:iron_nugget"
+    },
+    "B": {
+      "item": "minecraft:lever"
+    },
+    "C": {
+      "tag": "opencomputers:circuitboard"
+    },
+    "D": {
+      "tag": "opencomputers:disk"
+    },
+    "E": {
+      "item": "minecraft:paper"
+    }
+  },
+  "result": {
+    "id": "opencomputers:floppy",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:floppy"
+    }
+  ]
+}

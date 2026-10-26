@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    "DBE",
+    "ABC"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:chip1"
+    },
+    "B": {
+      "tag": "opencomputers:disk"
+    },
+    "C": {
+      "tag": "c:ingots/iron"
+    },
+    "D": {
+      "tag": "opencomputers:printedcircuitboard"
+    },
+    "E": {
+      "item": "minecraft:piston"
+    }
+  },
+  "result": {
+    "id": "opencomputers:hdd1",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:hdd1"
+    }
+  ]
+}

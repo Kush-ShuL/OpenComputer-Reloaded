@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDE",
+    "AFA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:iron_nugget"
+    },
+    "B": {
+      "tag": "opencomputers:solargeneratorupgrade"
+    },
+    "C": {
+      "tag": "opencomputers:chip3"
+    },
+    "D": {
+      "tag": "opencomputers:screen2"
+    },
+    "E": {
+      "tag": "opencomputers:wlancard2"
+    },
+    "F": {
+      "tag": "opencomputers:keyboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:terminal",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:terminal"
+    }
+  ]
+}

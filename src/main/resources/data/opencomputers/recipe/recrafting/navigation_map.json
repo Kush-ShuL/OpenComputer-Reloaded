@@ -1,0 +1,23 @@
+{
+  "type": "opencomputers:crafting_shapeless",
+  "category": "misc",
+  "operation": "navigation_map",
+  "ingredients": [
+    {
+      "item": "opencomputers:navigationupgrade"
+    },
+    {
+      "item": "minecraft:filled_map"
+    }
+  ],
+  "result": {
+    "id": "opencomputers:navigationupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:navigationupgrade"
+    }
+  ]
+}

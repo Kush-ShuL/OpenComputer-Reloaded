@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDE",
+    "AFA"
+  ],
+  "key": {
+    "A": {
+      "tag": "minecraft:planks"
+    },
+    "B": {
+      "item": "minecraft:iron_bars"
+    },
+    "C": {
+      "item": "minecraft:dispenser"
+    },
+    "D": {
+      "item": "minecraft:cauldron"
+    },
+    "E": {
+      "item": "minecraft:piston"
+    },
+    "F": {
+      "tag": "opencomputers:chip1"
+    }
+  },
+  "result": {
+    "id": "opencomputers:tankupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:tankupgrade"
+    }
+  ]
+}

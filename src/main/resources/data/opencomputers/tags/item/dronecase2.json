@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:dronecase2",
+      "required": false
+    }
+  ]
+}

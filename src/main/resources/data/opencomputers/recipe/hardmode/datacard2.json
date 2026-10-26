@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    " D "
+  ],
+  "key": {
+    "A": {
+      "tag": "c:nuggets/gold"
+    },
+    "B": {
+      "tag": "opencomputers:cpu1"
+    },
+    "C": {
+      "tag": "opencomputers:chip3"
+    },
+    "D": {
+      "tag": "opencomputers:datacard1"
+    }
+  },
+  "result": {
+    "id": "opencomputers:datacard2",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:datacard2"
+    }
+  ]
+}

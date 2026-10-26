@@ -1,0 +1,38 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "BCB",
+    "ABA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:iron_nugget"
+    },
+    "B": {
+      "tag": "opencomputers:capacitor"
+    },
+    "C": {
+      "item": "opencomputers:chipdiamond"
+    }
+  },
+  "result": {
+    "id": "opencomputers:batteryupgrade3",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:batteryupgrade3"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:chipdiamond"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:upgradecontainer1",
+      "required": false
+    }
+  ]
+}

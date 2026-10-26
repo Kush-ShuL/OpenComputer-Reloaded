@@ -1,0 +1,38 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AAA",
+    "BCB",
+    "AAA"
+  ],
+  "key": {
+    "A": {
+      "item": "opencomputers:chipdiamond"
+    },
+    "B": {
+      "item": "minecraft:redstone"
+    },
+    "C": {
+      "tag": "opencomputers:transistor"
+    }
+  },
+  "result": {
+    "id": "opencomputers:chip3",
+    "count": 2
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:chip3"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:chipdiamond"
+    }
+  ]
+}

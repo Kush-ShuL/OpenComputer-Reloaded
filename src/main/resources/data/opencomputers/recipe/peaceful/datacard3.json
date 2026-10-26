@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    " D "
+  ],
+  "key": {
+    "A": {
+      "item": "opencomputers:chipdiamond"
+    },
+    "B": {
+      "tag": "opencomputers:cpu2"
+    },
+    "C": {
+      "tag": "opencomputers:ram5"
+    },
+    "D": {
+      "tag": "opencomputers:card"
+    }
+  },
+  "result": {
+    "id": "opencomputers:datacard3",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:chipdiamond"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:datacard3"
+    }
+  ]
+}

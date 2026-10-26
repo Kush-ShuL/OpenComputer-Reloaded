@@ -1,0 +1,29 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT; bundled third-party assets retain their own licenses"
+issueTrackerURL="https://github.com/Kush-ShuL/OpenComputer-Reloaded/issues"
+
+[[mods]]
+modId="opencomputers"
+version="${mod_version}"
+displayName="OpenComputer-Reloaded"
+displayURL="https://github.com/Kush-ShuL/OpenComputer-Reloaded"
+authors="MightyPirates, OpenComputers contributors; NeoForge port: Kush-ShuL"
+description='''
+Build Lua computers, programmable robots, and component networks in Minecraft.
+Community migration of MightyPirates/OpenComputers to Minecraft 1.21.1 NeoForge.
+'''
+
+[[dependencies.opencomputers]]
+modId="neoforge"
+type="required"
+versionRange="[${neo_version},21.2)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.opencomputers]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+ordering="NONE"
+side="BOTH"

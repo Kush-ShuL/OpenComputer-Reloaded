@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    "DEF",
+    "ABC"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:obsidian"
+    },
+    "B": {
+      "tag": "opencomputers:printedcircuitboard"
+    },
+    "C": {
+      "tag": "opencomputers:chip3"
+    },
+    "D": {
+      "item": "minecraft:blaze_rod"
+    },
+    "E": {
+      "tag": "c:gems/quartz"
+    },
+    "F": {
+      "tag": "opencomputers:screen2"
+    }
+  },
+  "result": {
+    "id": "opencomputers:screen3",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:screen3"
+    }
+  ]
+}

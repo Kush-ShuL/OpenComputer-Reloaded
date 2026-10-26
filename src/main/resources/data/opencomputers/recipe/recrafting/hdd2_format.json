@@ -1,0 +1,20 @@
+{
+  "type": "opencomputers:crafting_shapeless",
+  "category": "misc",
+  "operation": "format_disk",
+  "ingredients": [
+    {
+      "item": "opencomputers:hdd2"
+    }
+  ],
+  "result": {
+    "id": "opencomputers:hdd2",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:hdd2"
+    }
+  ]
+}

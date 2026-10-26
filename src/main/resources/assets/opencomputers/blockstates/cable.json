@@ -1,0 +1,189 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "opencomputers:block/cable_core"
+      }
+    },
+    {
+      "when": {
+        "down": "true",
+        "down_cable": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_down_wire"
+      }
+    },
+    {
+      "when": {
+        "down": "true",
+        "down_cable": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_down_plug"
+      }
+    },
+    {
+      "when": {
+        "down": "false",
+        "north": "false",
+        "south": "false",
+        "west": "false",
+        "east": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_down_cap"
+      }
+    },
+    {
+      "when": {
+        "up": "true",
+        "up_cable": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_up_wire"
+      }
+    },
+    {
+      "when": {
+        "up": "true",
+        "up_cable": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_up_plug"
+      }
+    },
+    {
+      "when": {
+        "up": "false",
+        "north": "false",
+        "south": "false",
+        "west": "false",
+        "east": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_up_cap"
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "north_cable": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_north_wire"
+      }
+    },
+    {
+      "when": {
+        "north": "true",
+        "north_cable": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_north_plug"
+      }
+    },
+    {
+      "when": {
+        "down": "false",
+        "up": "false",
+        "north": "false",
+        "west": "false",
+        "east": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_north_cap"
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "south_cable": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_south_wire"
+      }
+    },
+    {
+      "when": {
+        "south": "true",
+        "south_cable": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_south_plug"
+      }
+    },
+    {
+      "when": {
+        "down": "false",
+        "up": "false",
+        "south": "false",
+        "west": "false",
+        "east": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_south_cap"
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "west_cable": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_west_wire"
+      }
+    },
+    {
+      "when": {
+        "west": "true",
+        "west_cable": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_west_plug"
+      }
+    },
+    {
+      "when": {
+        "down": "false",
+        "up": "false",
+        "north": "false",
+        "south": "false",
+        "west": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_west_cap"
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "east_cable": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_east_wire"
+      }
+    },
+    {
+      "when": {
+        "east": "true",
+        "east_cable": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_east_plug"
+      }
+    },
+    {
+      "when": {
+        "down": "false",
+        "up": "false",
+        "north": "false",
+        "south": "false",
+        "east": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/cable_east_cap"
+      }
+    }
+  ]
+}

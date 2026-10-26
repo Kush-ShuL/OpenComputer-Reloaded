@@ -1,0 +1,41 @@
+{
+  "type": "opencomputers:crafting_shaped",
+  "category": "misc",
+  "operation": "navigation_map",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/gold"
+    },
+    "B": {
+      "item": "minecraft:compass"
+    },
+    "C": {
+      "tag": "opencomputers:chip2"
+    },
+    "D": {
+      "item": "minecraft:filled_map"
+    },
+    "E": {
+      "item": "minecraft:potion"
+    }
+  },
+  "result": {
+    "id": "opencomputers:navigationupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:navigationupgrade"
+    }
+  ]
+}

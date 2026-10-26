@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "opencomputers:chameliumblock",
+          "functions": [
+            {
+              "function": "minecraft:copy_state",
+              "block": "opencomputers:chameliumblock",
+              "properties": [
+                "color"
+              ]
+            }
+          ]
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:chameliumblock"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "EFE"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:chip2"
+    },
+    "B": {
+      "tag": "c:glass_panes/colorless"
+    },
+    "C": {
+      "tag": "opencomputers:printedcircuitboard"
+    },
+    "D": {
+      "item": "opencomputers:chipdiamond"
+    },
+    "E": {
+      "item": "minecraft:obsidian"
+    },
+    "F": {
+      "item": "minecraft:glowstone_dust"
+    }
+  },
+  "result": {
+    "id": "opencomputers:hologram1",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:chipdiamond"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:hologram1"
+    }
+  ]
+}

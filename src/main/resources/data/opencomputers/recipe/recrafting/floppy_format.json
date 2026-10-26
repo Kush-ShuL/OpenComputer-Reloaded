@@ -1,0 +1,20 @@
+{
+  "type": "opencomputers:crafting_shapeless",
+  "category": "misc",
+  "operation": "format_disk",
+  "ingredients": [
+    {
+      "item": "opencomputers:floppy"
+    }
+  ],
+  "result": {
+    "id": "opencomputers:floppy",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:floppy"
+    }
+  ]
+}

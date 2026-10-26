@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:endstone"
+    },
+    "B": {
+      "item": "minecraft:compass"
+    },
+    "C": {
+      "tag": "opencomputers:chip1"
+    },
+    "D": {
+      "tag": "opencomputers:microcontrollercase1"
+    },
+    "E": {
+      "tag": "opencomputers:componentbus2"
+    }
+  },
+  "result": {
+    "id": "opencomputers:dronecase1",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:dronecase1"
+    }
+  ]
+}

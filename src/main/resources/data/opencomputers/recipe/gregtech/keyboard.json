@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AAA",
+    "ABC"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:buttongroup"
+    },
+    "B": {
+      "tag": "opencomputers:arrowkeys"
+    },
+    "C": {
+      "tag": "opencomputers:numpad"
+    }
+  },
+  "result": {
+    "id": "opencomputers:keyboard",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:keyboard"
+    }
+  ]
+}

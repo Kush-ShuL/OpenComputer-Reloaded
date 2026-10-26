@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDE",
+    "AFA"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/gold"
+    },
+    "B": {
+      "item": "minecraft:stone_button"
+    },
+    "C": {
+      "tag": "opencomputers:componentbus1"
+    },
+    "D": {
+      "tag": "opencomputers:screen2"
+    },
+    "E": {
+      "tag": "opencomputers:chip3"
+    },
+    "F": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:tabletcase1",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:tabletcase1"
+    }
+  ]
+}

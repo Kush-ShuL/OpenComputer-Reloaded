@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "EFE"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:chip3"
+    },
+    "B": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "C": {
+      "tag": "opencomputers:printedcircuitboard"
+    },
+    "D": {
+      "tag": "c:storage_blocks/diamond"
+    },
+    "E": {
+      "item": "minecraft:obsidian"
+    },
+    "F": {
+      "item": "minecraft:blaze_powder"
+    }
+  },
+  "result": {
+    "id": "opencomputers:hologram2",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:hologram2"
+    }
+  ]
+}

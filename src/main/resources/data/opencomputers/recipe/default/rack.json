@@ -1,0 +1,46 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "EFG"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:gems/diamond"
+    },
+    "B": {
+      "tag": "opencomputers:wlancard2"
+    },
+    "C": {
+      "item": "minecraft:iron_bars"
+    },
+    "D": {
+      "item": "minecraft:chest"
+    },
+    "E": {
+      "tag": "opencomputers:relay"
+    },
+    "F": {
+      "tag": "opencomputers:printedcircuitboard"
+    },
+    "G": {
+      "tag": "opencomputers:powerdistributor"
+    }
+  },
+  "result": {
+    "id": "opencomputers:rack",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:rack"
+    }
+  ]
+}

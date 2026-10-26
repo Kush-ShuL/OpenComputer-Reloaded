@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " A ",
+    "AAA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:stone_button"
+    }
+  },
+  "result": {
+    "id": "opencomputers:arrowkeys",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "hardmode"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:arrowkeys"
+    }
+  ]
+}

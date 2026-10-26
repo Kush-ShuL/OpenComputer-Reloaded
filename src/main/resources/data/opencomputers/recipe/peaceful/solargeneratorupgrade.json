@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "AAA",
+    "BCB",
+    "DED"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "B": {
+      "tag": "opencomputers:chip3"
+    },
+    "C": {
+      "tag": "c:storage_blocks/lapis"
+    },
+    "D": {
+      "tag": "c:ingots/iron"
+    },
+    "E": {
+      "tag": "opencomputers:printedcircuitboard"
+    }
+  },
+  "result": {
+    "id": "opencomputers:solargeneratorupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:solargeneratorupgrade"
+    }
+  ]
+}

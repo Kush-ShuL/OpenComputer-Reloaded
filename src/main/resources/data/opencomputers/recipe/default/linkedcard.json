@@ -1,0 +1,38 @@
+{
+  "type": "opencomputers:crafting_shaped",
+  "category": "misc",
+  "operation": "linked_cards",
+  "pattern": [
+    "A A",
+    "BCB",
+    "D D"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:ender_eye"
+    },
+    "B": {
+      "tag": "opencomputers:lancard"
+    },
+    "C": {
+      "tag": "opencomputers:interweb"
+    },
+    "D": {
+      "tag": "opencomputers:chip3"
+    }
+  },
+  "result": {
+    "id": "opencomputers:linkedcard",
+    "count": 2
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:linkedcard"
+    }
+  ]
+}

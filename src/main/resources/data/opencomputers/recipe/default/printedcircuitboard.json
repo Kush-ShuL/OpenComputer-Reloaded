@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "tag": "opencomputers:rawcircuitboard"
+  },
+  "result": {
+    "id": "opencomputers:printedcircuitboard",
+    "count": 1
+  },
+  "experience": 0.0,
+  "cookingtime": 200,
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:printedcircuitboard"
+    }
+  ]
+}

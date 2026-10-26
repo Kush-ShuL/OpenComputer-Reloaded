@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:ram2",
+      "required": false
+    }
+  ]
+}

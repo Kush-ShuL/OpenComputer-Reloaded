@@ -1,0 +1,27 @@
+{
+  "type": "opencomputers:crafting_shapeless",
+  "category": "misc",
+  "operation": "swap_eeprom",
+  "ingredients": [
+    {
+      "item": "opencomputers:drone"
+    },
+    {
+      "item": "opencomputers:eeprom"
+    }
+  ],
+  "result": {
+    "id": "opencomputers:drone",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:drone"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:eeprom"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+name: Java 21 NeoForge build
+
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build Java modules and API distribution
+        run: ./gradlew build apiJavadocJar publishApiPublicationToLocalDistributionRepository --console=plain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OpenComputer-Reloaded-development
+          path: |
+            build/libs/*.jar
+            build/maven/

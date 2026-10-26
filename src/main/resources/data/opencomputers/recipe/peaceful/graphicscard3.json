@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    " D "
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:chip3"
+    },
+    "B": {
+      "tag": "opencomputers:alu"
+    },
+    "C": {
+      "tag": "opencomputers:ram5"
+    },
+    "D": {
+      "tag": "opencomputers:card"
+    }
+  },
+  "result": {
+    "id": "opencomputers:graphicscard3",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:graphicscard3"
+    }
+  ]
+}

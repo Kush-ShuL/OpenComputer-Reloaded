@@ -1,0 +1,28 @@
+{
+  "type": "opencomputers:crafting_shapeless",
+  "category": "misc",
+  "operation": "loot_disk",
+  "disk": "opencomputers:openos",
+  "ingredients": [
+    {
+      "tag": "opencomputers:floppy"
+    },
+    {
+      "tag": "opencomputers:manual"
+    }
+  ],
+  "result": {
+    "id": "opencomputers:floppy",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:floppy"
+    }
+  ]
+}

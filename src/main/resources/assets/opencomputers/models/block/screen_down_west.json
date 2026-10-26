@@ -1,0 +1,57 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "front": "opencomputers:blocks/screen/f2",
+    "b": "opencomputers:blocks/screen/b",
+    "b2": "opencomputers:blocks/screen/b2",
+    "particle": "opencomputers:blocks/screen/b2"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#front",
+          "cullface": "down",
+          "tintindex": 0,
+          "rotation": 270
+        },
+        "up": {
+          "texture": "#b",
+          "cullface": "up",
+          "tintindex": 0,
+          "rotation": 90
+        },
+        "north": {
+          "texture": "#b2",
+          "cullface": "north",
+          "tintindex": 0
+        },
+        "south": {
+          "texture": "#b2",
+          "cullface": "south",
+          "tintindex": 0
+        },
+        "west": {
+          "texture": "#b2",
+          "cullface": "west",
+          "tintindex": 0
+        },
+        "east": {
+          "texture": "#b2",
+          "cullface": "east",
+          "tintindex": 0
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "type": "opencomputers:crafting_shapeless",
+  "category": "misc",
+  "operation": "linked_cards",
+  "ingredients": [
+    {
+      "item": "opencomputers:linkedcard"
+    },
+    {
+      "item": "opencomputers:linkedcard"
+    }
+  ],
+  "result": {
+    "id": "opencomputers:linkedcard",
+    "count": 2
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:linkedcard"
+    }
+  ]
+}

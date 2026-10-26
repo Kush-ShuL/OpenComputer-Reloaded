@@ -1,0 +1,46 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "EFG"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:ingots/gold"
+    },
+    "B": {
+      "item": "minecraft:chest"
+    },
+    "C": {
+      "item": "minecraft:emerald"
+    },
+    "D": {
+      "tag": "opencomputers:chip2"
+    },
+    "E": {
+      "item": "minecraft:dropper"
+    },
+    "F": {
+      "tag": "opencomputers:printedcircuitboard"
+    },
+    "G": {
+      "item": "minecraft:piston"
+    }
+  },
+  "result": {
+    "id": "opencomputers:tradingupgrade",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "peaceful"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:tradingupgrade"
+    }
+  ]
+}

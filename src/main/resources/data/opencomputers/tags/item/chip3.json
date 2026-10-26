@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "id": "opencomputers:chip3",
+      "required": false
+    }
+  ]
+}

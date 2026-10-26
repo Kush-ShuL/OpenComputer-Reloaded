@@ -1,0 +1,41 @@
+{
+  "type": "opencomputers:crafting_shaped",
+  "category": "misc",
+  "operation": "default_architecture",
+  "pattern": [
+    "ABA",
+    "CDC",
+    "AEA"
+  ],
+  "key": {
+    "A": {
+      "item": "minecraft:iron_nugget"
+    },
+    "B": {
+      "item": "minecraft:redstone"
+    },
+    "C": {
+      "tag": "opencomputers:chip1"
+    },
+    "D": {
+      "tag": "opencomputers:cu"
+    },
+    "E": {
+      "tag": "opencomputers:alu"
+    }
+  },
+  "result": {
+    "id": "opencomputers:cpu1",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "default"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:cpu1"
+    }
+  ]
+}

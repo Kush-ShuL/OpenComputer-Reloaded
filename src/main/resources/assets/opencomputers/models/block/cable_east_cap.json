@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:block/block",
+  "ambientocclusion": false,
+  "textures": {
+    "wire": "opencomputers:blocks/cable",
+    "cap": "opencomputers:blocks/cablecap",
+    "particle": "opencomputers:blocks/cable"
+  },
+  "elements": [
+    {
+      "from": [
+        10,
+        6,
+        6
+      ],
+      "to": [
+        11,
+        10,
+        10
+      ],
+      "faces": {
+        "down": {
+          "texture": "#cap"
+        },
+        "up": {
+          "texture": "#cap"
+        },
+        "north": {
+          "texture": "#cap"
+        },
+        "south": {
+          "texture": "#cap"
+        },
+        "west": {
+          "texture": "#cap"
+        },
+        "east": {
+          "texture": "#cap"
+        }
+      }
+    }
+  ]
+}

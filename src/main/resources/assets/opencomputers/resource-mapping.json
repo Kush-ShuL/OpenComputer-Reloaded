@@ -1,0 +1,532 @@
+{
+  "source": "MightyPirates/OpenComputers@258943363ea8fc4ef14948e6bc6f67375061580c",
+  "minecraft": "1.21.1",
+  "namespace": "opencomputers",
+  "blocks": [
+    "adapter",
+    "assembler",
+    "cable",
+    "capacitor",
+    "carpetedcapacitor",
+    "casecreative",
+    "case1",
+    "case2",
+    "case3",
+    "chameliumblock",
+    "charger",
+    "disassembler",
+    "diskdrive",
+    "endstone",
+    "geolyzer",
+    "hologram1",
+    "hologram2",
+    "keyboard",
+    "microcontroller",
+    "motionsensor",
+    "netsplitter",
+    "powerconverter",
+    "powerdistributor",
+    "print",
+    "printer",
+    "raid",
+    "redstone",
+    "relay",
+    "robot",
+    "robotafterimage",
+    "screen1",
+    "screen2",
+    "screen3",
+    "rack",
+    "transposer",
+    "waypoint"
+  ],
+  "item_translations": {
+    "cuttingwire": "item.oc.cuttingwire.name",
+    "acid": "item.oc.acid.name",
+    "rawcircuitboard": "item.oc.rawcircuitboard.name",
+    "circuitboard": "item.oc.circuitboard.name",
+    "printedcircuitboard": "item.oc.printedcircuitboard.name",
+    "card": "item.oc.cardbase.name",
+    "transistor": "item.oc.transistor.name",
+    "chip1": "item.oc.microchip0.name",
+    "chip2": "item.oc.microchip1.name",
+    "chip3": "item.oc.microchip2.name",
+    "alu": "item.oc.alu.name",
+    "cu": "item.oc.controlunit.name",
+    "disk": "item.oc.disk.name",
+    "interweb": "item.oc.interweb.name",
+    "buttongroup": "item.oc.buttongroup.name",
+    "arrowkeys": "item.oc.arrowkeys.name",
+    "numpad": "item.oc.numpad.name",
+    "tabletcase1": "item.oc.tabletcase0.name",
+    "tabletcase2": "item.oc.tabletcase1.name",
+    "tabletcasecreative": "item.oc.tabletcase3.name",
+    "microcontrollercase1": "item.oc.microcontrollercase0.name",
+    "microcontrollercase2": "item.oc.microcontrollercase1.name",
+    "microcontrollercasecreative": "item.oc.microcontrollercase3.name",
+    "dronecase1": "item.oc.dronecase0.name",
+    "dronecase2": "item.oc.dronecase1.name",
+    "dronecasecreative": "item.oc.dronecase3.name",
+    "inkcartridgeempty": "item.oc.inkcartridgeempty.name",
+    "inkcartridge": "item.oc.inkcartridge.name",
+    "chamelium": "item.oc.chamelium.name",
+    "chipdiamond": "item.oc.diamondchip.name",
+    "analyzer": "item.oc.analyzer.name",
+    "debugger": "item.oc.debugger.name",
+    "terminal": "item.oc.terminal.name",
+    "texturepicker": "item.oc.texturepicker.name",
+    "manual": "item.oc.manual.name",
+    "wrench": "item.oc.wrench.name",
+    "hoverboots": "item.oc.hoverboots.name",
+    "nanomachines": "item.oc.nanomachines.name",
+    "cpu1": "item.oc.cpu0.name",
+    "cpu2": "item.oc.cpu1.name",
+    "cpu3": "item.oc.cpu2.name",
+    "componentbus1": "item.oc.componentbus0.name",
+    "componentbus2": "item.oc.componentbus1.name",
+    "componentbus3": "item.oc.componentbus2.name",
+    "ram1": "item.oc.memory0.name",
+    "ram2": "item.oc.memory1.name",
+    "ram3": "item.oc.memory2.name",
+    "ram4": "item.oc.memory3.name",
+    "ram5": "item.oc.memory4.name",
+    "ram6": "item.oc.memory5.name",
+    "servercreative": "item.oc.server3.name",
+    "server1": "item.oc.server0.name",
+    "server2": "item.oc.server1.name",
+    "server3": "item.oc.server2.name",
+    "apu1": "item.oc.apu0.name",
+    "apu2": "item.oc.apu1.name",
+    "apucreative": "item.oc.apu2.name",
+    "terminalserver": "item.oc.terminalserver.name",
+    "diskdrivemountable": "item.oc.diskdrivemountable.name",
+    "debugcard": "item.oc.debugcard.name",
+    "graphicscard1": "item.oc.graphicscard0.name",
+    "graphicscard2": "item.oc.graphicscard1.name",
+    "graphicscard3": "item.oc.graphicscard2.name",
+    "redstonecard1": "item.oc.redstonecard0.name",
+    "redstonecard2": "item.oc.redstonecard1.name",
+    "lancard": "item.oc.networkcard.name",
+    "wlancard2": "item.oc.wirelessnetworkcard1.name",
+    "internetcard": "item.oc.internetcard.name",
+    "linkedcard": "item.oc.linkedcard.name",
+    "datacard1": "item.oc.datacard0.name",
+    "datacard2": "item.oc.datacard1.name",
+    "datacard3": "item.oc.datacard2.name",
+    "angelupgrade": "item.oc.upgradeangel.name",
+    "batteryupgrade1": "item.oc.upgradebattery0.name",
+    "batteryupgrade2": "item.oc.upgradebattery1.name",
+    "batteryupgrade3": "item.oc.upgradebattery2.name",
+    "chunkloaderupgrade": "item.oc.upgradechunkloader.name",
+    "cardcontainer1": "item.oc.upgradecontainercard0.name",
+    "cardcontainer2": "item.oc.upgradecontainercard1.name",
+    "cardcontainer3": "item.oc.upgradecontainercard2.name",
+    "upgradecontainer1": "item.oc.upgradecontainerupgrade0.name",
+    "upgradecontainer2": "item.oc.upgradecontainerupgrade1.name",
+    "upgradecontainer3": "item.oc.upgradecontainerupgrade2.name",
+    "craftingupgrade": "item.oc.upgradecrafting.name",
+    "databaseupgrade1": "item.oc.upgradedatabase0.name",
+    "databaseupgrade2": "item.oc.upgradedatabase1.name",
+    "databaseupgrade3": "item.oc.upgradedatabase2.name",
+    "experienceupgrade": "item.oc.upgradeexperience.name",
+    "generatorupgrade": "item.oc.upgradegenerator.name",
+    "inventoryupgrade": "item.oc.upgradeinventory.name",
+    "inventorycontrollerupgrade": "item.oc.upgradeinventorycontroller.name",
+    "navigationupgrade": "item.oc.upgradenavigation.name",
+    "pistonupgrade": "item.oc.upgradepiston.name",
+    "signupgrade": "item.oc.upgradesign.name",
+    "solargeneratorupgrade": "item.oc.upgradesolargenerator.name",
+    "tankupgrade": "item.oc.upgradetank.name",
+    "tankcontrollerupgrade": "item.oc.upgradetankcontroller.name",
+    "tractorbeamupgrade": "item.oc.upgradetractorbeam.name",
+    "leashupgrade": "item.oc.upgradeleash.name",
+    "hoverupgrade1": "item.oc.upgradehover0.name",
+    "hoverupgrade2": "item.oc.upgradehover1.name",
+    "tradingupgrade": "item.oc.upgradetrading.name",
+    "mfu": "item.oc.upgrademf.name",
+    "wlancard1": "item.oc.wirelessnetworkcard0.name",
+    "componentbuscreative": "item.oc.componentbus3.name",
+    "stickypistonupgrade": "item.oc.upgradestickypiston.name",
+    "eeprom": "item.oc.eeprom.name",
+    "floppy": "item.oc.floppydisk.name",
+    "hdd1": "item.oc.harddiskdrive0.name",
+    "hdd2": "item.oc.harddiskdrive1.name",
+    "hdd3": "item.oc.harddiskdrive2.name",
+    "tablet": "item.oc.tablet.name",
+    "drone": "item.oc.drone.name",
+    "present": "item.oc.present.name"
+  },
+  "legacy_ore_aliases": {
+    "oc:materialCuttingWire": "cuttingwire",
+    "oc:materialAcid": "acid",
+    "oc:materialCircuitBoardRaw": "rawcircuitboard",
+    "oc:materialCircuitBoard": "circuitboard",
+    "oc:materialCircuitBoardPrinted": "printedcircuitboard",
+    "oc:materialCard": "card",
+    "oc:materialTransistor": "transistor",
+    "oc:circuitChip1": "chip1",
+    "oc:circuitChip2": "chip2",
+    "oc:circuitChip3": "chip3",
+    "oc:materialALU": "alu",
+    "oc:materialCU": "cu",
+    "oc:materialDisk": "disk",
+    "oc:materialInterweb": "interweb",
+    "oc:materialButtonGroup": "buttongroup",
+    "oc:materialArrowKey": "arrowkeys",
+    "oc:materialNumPad": "numpad",
+    "oc:tabletCase1": "tabletcase1",
+    "oc:tabletCase2": "tabletcase2",
+    "oc:microcontrollerCase1": "microcontrollercase1",
+    "oc:microcontrollerCase2": "microcontrollercase2",
+    "oc:droneCase1": "dronecase1",
+    "oc:droneCase2": "dronecase2",
+    "oc:inkCartridgeEmpty": "inkcartridgeempty",
+    "oc:inkCartridge": "inkcartridge",
+    "oc:chamelium": "chamelium",
+    "oc:analyzer": "analyzer",
+    "oc:terminal": "terminal",
+    "oc:texturePicker": "texturepicker",
+    "oc:manual": "manual",
+    "oc:wrench": "wrench",
+    "oc:hoverBoots": "hoverboots",
+    "oc:nanomachines": "nanomachines",
+    "oc:cpu1": "cpu1",
+    "oc:cpu2": "cpu2",
+    "oc:cpu3": "cpu3",
+    "oc:componentBus1": "componentbus1",
+    "oc:componentBus2": "componentbus2",
+    "oc:componentBus3": "componentbus3",
+    "oc:ram1": "ram1",
+    "oc:ram2": "ram2",
+    "oc:ram3": "ram3",
+    "oc:ram4": "ram4",
+    "oc:ram5": "ram5",
+    "oc:ram6": "ram6",
+    "oc:server1": "server1",
+    "oc:server2": "server2",
+    "oc:server3": "server3",
+    "oc:apu1": "apu1",
+    "oc:apu2": "apu2",
+    "oc:terminalServer": "terminalserver",
+    "oc:diskDriveMountable": "diskdrivemountable",
+    "oc:graphicsCard1": "graphicscard1",
+    "oc:graphicsCard2": "graphicscard2",
+    "oc:graphicsCard3": "graphicscard3",
+    "oc:redstoneCard1": "redstonecard1",
+    "oc:redstoneCard2": "redstonecard2",
+    "oc:lanCard": "lancard",
+    "oc:wlanCard2": "wlancard2",
+    "oc:internetCard": "internetcard",
+    "oc:linkedCard": "linkedcard",
+    "oc:dataCard1": "datacard1",
+    "oc:dataCard2": "datacard2",
+    "oc:dataCard3": "datacard3",
+    "oc:angelUpgrade": "angelupgrade",
+    "oc:batteryUpgrade1": "batteryupgrade1",
+    "oc:batteryUpgrade2": "batteryupgrade2",
+    "oc:batteryUpgrade3": "batteryupgrade3",
+    "oc:chunkloaderUpgrade": "chunkloaderupgrade",
+    "oc:cardContainer1": "cardcontainer1",
+    "oc:cardContainer2": "cardcontainer2",
+    "oc:cardContainer3": "cardcontainer3",
+    "oc:upgradeContainer1": "upgradecontainer1",
+    "oc:upgradeContainer2": "upgradecontainer2",
+    "oc:upgradeContainer3": "upgradecontainer3",
+    "oc:craftingUpgrade": "craftingupgrade",
+    "oc:databaseUpgrade1": "databaseupgrade1",
+    "oc:databaseUpgrade2": "databaseupgrade2",
+    "oc:databaseUpgrade3": "databaseupgrade3",
+    "oc:experienceUpgrade": "experienceupgrade",
+    "oc:generatorUpgrade": "generatorupgrade",
+    "oc:inventoryUpgrade": "inventoryupgrade",
+    "oc:inventoryControllerUpgrade": "inventorycontrollerupgrade",
+    "oc:navigationUpgrade": "navigationupgrade",
+    "oc:pistonUpgrade": "pistonupgrade",
+    "oc:signUpgrade": "signupgrade",
+    "oc:solarGeneratorUpgrade": "solargeneratorupgrade",
+    "oc:tankUpgrade": "tankupgrade",
+    "oc:tankControllerUpgrade": "tankcontrollerupgrade",
+    "oc:tractorBeamUpgrade": "tractorbeamupgrade",
+    "oc:leashUpgrade": "leashupgrade",
+    "oc:hoverUpgrade1": "hoverupgrade1",
+    "oc:hoverUpgrade2": "hoverupgrade2",
+    "oc:tradingUpgrade": "tradingupgrade",
+    "oc:mfu": "mfu",
+    "oc:wlanCard1": "wlancard1",
+    "oc:stickyPistonUpgrade": "stickypistonupgrade",
+    "oc:eeprom": "eeprom",
+    "oc:floppy": "floppy",
+    "oc:hdd1": "hdd1",
+    "oc:hdd2": "hdd2",
+    "oc:hdd3": "hdd3",
+    "oc:adapter": "adapter",
+    "oc:assembler": "assembler",
+    "oc:cable": "cable",
+    "oc:capacitor": "capacitor",
+    "oc:case1": "case1",
+    "oc:case3": "case3",
+    "oc:case2": "case2",
+    "oc:chameliumBlock": "chameliumblock",
+    "oc:charger": "charger",
+    "oc:disassembler": "disassembler",
+    "oc:diskDrive": "diskdrive",
+    "oc:geolyzer": "geolyzer",
+    "oc:hologram1": "hologram1",
+    "oc:hologram2": "hologram2",
+    "oc:keyboard": "keyboard",
+    "oc:motionSensor": "motionsensor",
+    "oc:powerConverter": "powerconverter",
+    "oc:powerDistributor": "powerdistributor",
+    "oc:printer": "printer",
+    "oc:raid": "raid",
+    "oc:redstone": "redstone",
+    "oc:relay": "relay",
+    "oc:screen1": "screen1",
+    "oc:screen3": "screen3",
+    "oc:screen2": "screen2",
+    "oc:rack": "rack",
+    "oc:waypoint": "waypoint",
+    "oc:stoneEndstone": "endstone",
+    "oc:netSplitter": "netsplitter",
+    "oc:transposer": "transposer",
+    "oc:carpetedCapacitor": "carpetedcapacitor",
+    "oc:wlanCard": "wlancard2"
+  },
+  "blockstate_properties": {
+    "case1": {
+      "facing": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ],
+      "running": [
+        "false",
+        "true"
+      ]
+    },
+    "case2": {
+      "facing": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ],
+      "running": [
+        "false",
+        "true"
+      ]
+    },
+    "case3": {
+      "facing": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ],
+      "running": [
+        "false",
+        "true"
+      ]
+    },
+    "casecreative": {
+      "facing": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ],
+      "running": [
+        "false",
+        "true"
+      ]
+    },
+    "chameliumblock": {
+      "color": [
+        "black",
+        "blue",
+        "brown",
+        "cyan",
+        "gray",
+        "green",
+        "light_blue",
+        "light_gray",
+        "lime",
+        "magenta",
+        "orange",
+        "pink",
+        "purple",
+        "red",
+        "white",
+        "yellow"
+      ]
+    },
+    "charger": {
+      "facing": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ]
+    },
+    "diskdrive": {
+      "facing": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ]
+    },
+    "keyboard": {
+      "pitch": [
+        "down",
+        "north",
+        "up"
+      ],
+      "yaw": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ]
+    },
+    "microcontroller": {
+      "facing": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ]
+    },
+    "rack": {
+      "facing": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ]
+    },
+    "raid": {
+      "facing": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ]
+    },
+    "screen1": {
+      "pitch": [
+        "down",
+        "north",
+        "up"
+      ],
+      "yaw": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ]
+    },
+    "screen2": {
+      "pitch": [
+        "down",
+        "north",
+        "up"
+      ],
+      "yaw": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ]
+    },
+    "screen3": {
+      "pitch": [
+        "down",
+        "north",
+        "up"
+      ],
+      "yaw": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ]
+    },
+    "waypoint": {
+      "pitch": [
+        "down",
+        "north",
+        "up"
+      ],
+      "yaw": [
+        "east",
+        "north",
+        "south",
+        "west"
+      ]
+    }
+  },
+  "client_item_properties": {
+    "opencomputers:running": {
+      "items": [
+        "tablet",
+        "terminal"
+      ],
+      "values": [
+        0,
+        1
+      ]
+    },
+    "opencomputers:color": {
+      "items": [
+        "floppy"
+      ],
+      "values": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "default": 8,
+      "order": [
+        "black",
+        "red",
+        "green",
+        "brown",
+        "blue",
+        "purple",
+        "cyan",
+        "light_gray",
+        "gray",
+        "pink",
+        "lime",
+        "yellow",
+        "light_blue",
+        "magenta",
+        "orange",
+        "white"
+      ]
+    }
+  },
+  "custom_drop_blocks": [
+    "cable",
+    "microcontroller",
+    "print",
+    "raid",
+    "robot",
+    "robotafterimage"
+  ]
+}

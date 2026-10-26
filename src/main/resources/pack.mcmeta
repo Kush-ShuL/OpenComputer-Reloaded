@@ -1,0 +1,68 @@
+{
+  "pack": {
+    "pack_format": 34,
+    "description": "OpenComputer-Reloaded resources by MightyPirates and contributors"
+  },
+  "language": {
+    "de_de": {
+      "name": "Deutsch",
+      "region": "Deutschland",
+      "bidirectional": false
+    },
+    "en_us": {
+      "name": "English",
+      "region": "United States",
+      "bidirectional": false
+    },
+    "es_mx": {
+      "name": "Español",
+      "region": "México",
+      "bidirectional": false
+    },
+    "fr_fr": {
+      "name": "Français",
+      "region": "France",
+      "bidirectional": false
+    },
+    "it_it": {
+      "name": "Italiano",
+      "region": "Italia",
+      "bidirectional": false
+    },
+    "pl_pl": {
+      "name": "Polski",
+      "region": "Polska",
+      "bidirectional": false
+    },
+    "pt_br": {
+      "name": "Português",
+      "region": "Brasil",
+      "bidirectional": false
+    },
+    "pt_pt": {
+      "name": "Português",
+      "region": "Portugal",
+      "bidirectional": false
+    },
+    "ru_ru": {
+      "name": "Русский",
+      "region": "Россия",
+      "bidirectional": false
+    },
+    "tr_tr": {
+      "name": "Türkçe",
+      "region": "Türkiye",
+      "bidirectional": false
+    },
+    "zh_cn": {
+      "name": "简体中文",
+      "region": "中国",
+      "bidirectional": false
+    },
+    "zh_tw": {
+      "name": "繁體中文",
+      "region": "台灣",
+      "bidirectional": false
+    }
+  }
+}

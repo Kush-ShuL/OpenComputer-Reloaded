@@ -1,0 +1,39 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    " DE"
+  ],
+  "key": {
+    "A": {
+      "tag": "opencomputers:interweb"
+    },
+    "B": {
+      "tag": "opencomputers:chip3"
+    },
+    "C": {
+      "item": "minecraft:redstone_torch"
+    },
+    "D": {
+      "tag": "opencomputers:wlancard2"
+    },
+    "E": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "result": {
+    "id": "opencomputers:internetcard",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:internetcard"
+    }
+  ]
+}

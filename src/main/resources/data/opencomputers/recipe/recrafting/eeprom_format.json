@@ -1,0 +1,20 @@
+{
+  "type": "opencomputers:crafting_shapeless",
+  "category": "misc",
+  "operation": "format_eeprom",
+  "ingredients": [
+    {
+      "item": "opencomputers:eeprom"
+    }
+  ],
+  "result": {
+    "id": "opencomputers:eeprom",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:eeprom"
+    }
+  ]
+}

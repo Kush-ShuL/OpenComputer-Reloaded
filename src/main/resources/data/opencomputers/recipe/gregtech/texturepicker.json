@@ -1,0 +1,52 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ABC",
+    "DEF",
+    "GHI"
+  ],
+  "key": {
+    "A": {
+      "tag": "c:dyes/black"
+    },
+    "B": {
+      "tag": "c:dyes/red"
+    },
+    "C": {
+      "tag": "c:dyes/green"
+    },
+    "D": {
+      "tag": "c:dyes/blue"
+    },
+    "E": {
+      "tag": "opencomputers:analyzer"
+    },
+    "F": {
+      "tag": "c:dyes/purple"
+    },
+    "G": {
+      "tag": "c:dyes/yellow"
+    },
+    "H": {
+      "tag": "c:dyes/magenta"
+    },
+    "I": {
+      "tag": "c:dyes/white"
+    }
+  },
+  "result": {
+    "id": "opencomputers:texturepicker",
+    "count": 1
+  },
+  "neoforge:conditions": [
+    {
+      "type": "opencomputers:recipe_set",
+      "set": "gregtech"
+    },
+    {
+      "type": "neoforge:item_exists",
+      "item": "opencomputers:texturepicker"
+    }
+  ]
+}
