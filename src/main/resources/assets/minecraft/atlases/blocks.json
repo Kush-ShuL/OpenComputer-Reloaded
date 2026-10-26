@@ -9,6 +9,10 @@
       "type": "minecraft:directory",
       "source": "items",
       "prefix": "items/"
+    },
+    {
+      "type": "minecraft:single",
+      "resource": "opencomputers:model/robot"
     }
   ]
 }

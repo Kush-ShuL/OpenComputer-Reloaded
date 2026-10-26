@@ -30,6 +30,7 @@ public final class BuiltinUpgradeRenderer implements UpgradeRenderer {
         face(out,pose,new float[][]{{a,a,b,.5f,.5f},{a,a,a,.5f,1},{b,a,a,1,1},{b,a,b,1,.5f}},0,-1,0,light,overlay);
         face(out,pose,new float[][]{{b,b,b,0,.5f},{b,a,b,0,1},{b,a,a,.5f,1},{b,b,a,.5f,.5f}},1,0,0,light,overlay);
         face(out,pose,new float[][]{{a,a,b,0,1},{a,b,b,0,.5f},{a,b,a,.5f,.5f},{a,a,a,.5f,1}},-1,0,0,light,overlay);
+        face(out,pose,new float[][]{{a,a,a,.5f,1},{a,b,a,.5f,.5f},{b,b,a,1,.5f},{b,a,a,1,1}},0,0,-1,light,overlay);
     }
     private static void face(VertexConsumer out,PoseStack pose,float[][] vertices,float nx,float ny,float nz,int light,int overlay){for(float[] vertex:vertices)out.addVertex(pose.last(),vertex[0],vertex[1],vertex[2]).setColor(-1).setUv(vertex[3],vertex[4]).setOverlay(overlay).setLight(light).setNormal(pose.last(),nx,ny,nz);}
 }
