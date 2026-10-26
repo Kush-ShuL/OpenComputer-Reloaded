@@ -92,8 +92,8 @@ The API is distributed through JitPack as
 and a GitHub Release with **no attached assets**. JARs and Maven archives are not
 uploaded to that Release; GitHub Packages is not used. Local SDK publishing uses
 the separate `io.github.kush-shul:opencomputer-reloaded-api:<api_version>`
-coordinate. `api-8.0.0-alpha.1` is an example validation tag, not a claim that a
-release exists or that JitPack has successfully built it.
+coordinate. The `api-8.0.0-alpha.1` preview release has been created without
+attached assets; its remote JitPack tag build remains to be verified.
 
 Integrations use `compileOnly`, must not shade the API, and must install the
 corresponding full mod separately for development and gameplay. Old Forge addons

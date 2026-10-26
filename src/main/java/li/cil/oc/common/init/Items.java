@@ -66,6 +66,8 @@ public final class Items implements ItemAPI {
         hardware("lancard", ComponentItem.Kind.NETWORK, 0);
         var nanomachines = GAME_ITEMS.register("nanomachines", () -> new li.cil.oc.common.nanomachines.NanomachinesItem(new Item.Properties()));
         INSTANCE.registerItem("nanomachines", nanomachines::get);
+        var manual = GAME_ITEMS.register("manual", () -> new li.cil.oc.common.item.ManualItem(new Item.Properties()));
+        INSTANCE.registerItem("manual", manual::get);
         for (int tier = 0; tier < 2; tier++) hardware("wlancard" + (tier + 1), ComponentItem.Kind.WIRELESS, tier);
     }
     private final Map<String, ItemInfo> descriptors = new LinkedHashMap<>();
