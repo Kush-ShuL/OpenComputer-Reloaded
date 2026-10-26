@@ -26,6 +26,9 @@ public final class ExtendedCraftingRecipe implements CraftingRecipe {
         this.shaped = shaped;
     }
 
+    /** Wrapped vanilla layout for recipe viewers; result and data transfer remain on this recipe. */
+    public CraftingRecipe baseRecipe() { return base; }
+
     @Override
     public boolean matches(CraftingInput input, Level level) {
         return base.matches(input, level) && operation.canApply(input);

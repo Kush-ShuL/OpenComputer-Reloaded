@@ -43,6 +43,8 @@ public final class Recipes {
             "loot_cycle", () -> new SimpleCraftingRecipeSerializer<>(LootDiskCyclingRecipe::new));
 
     private static final CopyOnWriteArrayList<ItemStack> CYCLING_DISKS = new CopyOnWriteArrayList<>();
+    private static final java.util.Map<net.minecraft.core.HolderLookup.Provider, List<ItemStack>> WORLD_LOOT_DISKS = new java.util.WeakHashMap<>();
+    private static volatile List<ItemStack> clientWorldLootDisks = List.of();
     private static volatile Supplier<String> recipeSet = () -> "default";
     private static volatile BooleanSupplier lootRecrafting = () -> true;
     private static volatile Supplier<Class<? extends Architecture>> defaultArchitecture = () -> li.cil.oc.api.Machine.LuaArchitecture;
@@ -108,10 +110,34 @@ public final class Recipes {
         CYCLING_DISKS.clear();
     }
 
+    /** Server templates are scoped to its explicit registry provider, separate from the local client. */
+    public static void setWorldLootDisks(net.minecraft.core.HolderLookup.Provider registries, List<ItemStack> disks) {
+        synchronized (WORLD_LOOT_DISKS) {
+            if (disks.isEmpty()) WORLD_LOOT_DISKS.remove(registries);
+            else WORLD_LOOT_DISKS.put(registries, disks.stream().map(disk -> disk.copyWithCount(1)).toList());
+        }
+    }
+
+    public static void setClientWorldLootDisks(List<ItemStack> disks) {
+        clientWorldLootDisks = disks.stream().map(disk -> disk.copyWithCount(1)).toList();
+    }
+
+    public static List<ItemStack> clientWorldLootDisks() {
+        return clientWorldLootDisks.stream().map(ItemStack::copy).toList();
+    }
+
     static List<ItemStack> cyclingDisks() {
-        List<ItemStack> result = new ArrayList<>(CYCLING_DISKS.size());
-        for (ItemStack disk : CYCLING_DISKS) result.add(disk.copy());
-        return result;
+        return cyclingDisks(null);
+    }
+
+    public static List<ItemStack> cyclingDisks(net.minecraft.core.HolderLookup.Provider registries) {
+        List<ItemStack> worldDisks;
+        synchronized (WORLD_LOOT_DISKS) { worldDisks = WORLD_LOOT_DISKS.get(registries); }
+        if (worldDisks == null) worldDisks = li.cil.oc.util.SideTracker.isClient() ? clientWorldLootDisks : List.of();
+        java.util.LinkedHashMap<String, ItemStack> result = new java.util.LinkedHashMap<>();
+        for (ItemStack disk : CYCLING_DISKS) result.put(customData(disk).getString("oc:lootFactory"), disk.copy());
+        for (ItemStack disk : worldDisks) result.put(customData(disk).getString("oc:lootFactory"), disk.copy());
+        return new ArrayList<>(result.values());
     }
 
     static ItemStack lootDisk(String factory) {

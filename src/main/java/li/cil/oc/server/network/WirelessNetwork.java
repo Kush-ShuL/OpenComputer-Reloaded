@@ -16,23 +16,39 @@ import java.util.*;
 public final class WirelessNetwork {
     private static final Map<ResourceKey<Level>, Index> DIMENSIONS = new HashMap<>();
     private WirelessNetwork() {}
-    public static void add(WirelessEndpoint endpoint) { if (endpoint.world() != null && !endpoint.world().isClientSide) DIMENSIONS.computeIfAbsent(endpoint.world().dimension(), ignored -> new Index()).add(endpoint); }
-    public static void remove(WirelessEndpoint endpoint) { if (endpoint.world() != null) remove(endpoint, endpoint.world().dimension()); }
-    public static void remove(WirelessEndpoint endpoint, ResourceKey<Level> dimension) { Index index = DIMENSIONS.get(dimension); if (index != null) index.remove(endpoint); }
+    public static void add(WirelessEndpoint endpoint) {
+        Level world = endpoint.world();
+        if (world == null || world.isClientSide) return;
+        Point point = new Point(endpoint, endpoint.x() + .5, endpoint.y() + .5, endpoint.z() + .5);
+        synchronized (WirelessNetwork.class) { DIMENSIONS.computeIfAbsent(world.dimension(), ignored -> new Index()).add(point); }
+    }
+    public static void remove(WirelessEndpoint endpoint) { Level world = endpoint.world(); if (world != null) remove(endpoint, world.dimension()); }
+    public static synchronized void remove(WirelessEndpoint endpoint, ResourceKey<Level> dimension) { Index index = DIMENSIONS.get(dimension); if (index != null) index.remove(endpoint); }
     public static void update(WirelessEndpoint endpoint) {
-        if (endpoint.world() == null) return;
-        Index index = DIMENSIONS.get(endpoint.world().dimension());
-        if (index != null) { Point previous = index.points.get(endpoint); if (previous != null && (Math.abs(previous.x - endpoint.x() - .5) > .5 || Math.abs(previous.y - endpoint.y() - .5) > .5 || Math.abs(previous.z - endpoint.z() - .5) > .5)) { index.remove(endpoint); index.add(endpoint); } }
+        Level world = endpoint.world();
+        if (world == null) return;
+        Point point = new Point(endpoint, endpoint.x() + .5, endpoint.y() + .5, endpoint.z() + .5);
+        synchronized (WirelessNetwork.class) {
+            Index index = DIMENSIONS.get(world.dimension());
+            if (index != null) { Point previous = index.points.get(endpoint); if (previous != null && (Math.abs(previous.x - point.x) > .5 || Math.abs(previous.y - point.y) > .5 || Math.abs(previous.z - point.z) > .5)) index.add(point); }
+        }
     }
     public static Collection<WirelessEndpoint> computeReachableFrom(WirelessEndpoint source, double strength) {
-        if (strength <= 0 || source.world() == null) return List.of();
-        Index index = DIMENSIONS.get(source.world().dimension());
-        if (index == null) return List.of();
+        Level world = source.world();
+        if (strength <= 0 || world == null) return List.of();
         double radius = strength + 1;
+        double x = source.x(), y = source.y(), z = source.z();
+        Collection<WirelessEndpoint> candidates;
+        synchronized (WirelessNetwork.class) {
+            Index index = DIMENSIONS.get(world.dimension());
+            if (index == null) return List.of();
+            candidates = index.query(x + .5 - radius, y + .5 - radius, z + .5 - radius, x + .5 + radius, y + .5 + radius, z + .5 + radius);
+        }
+        // Endpoint callbacks and chunk lookups must never run while holding the spatial-index lock.
         List<WirelessEndpoint> result = new ArrayList<>();
-        for (WirelessEndpoint endpoint : index.query(source.x() + .5 - radius, source.y() + .5 - radius, source.z() + .5 - radius, source.x() + .5 + radius, source.y() + .5 + radius, source.z() + .5 + radius)) {
-            if (endpoint == source) continue;
-            double dx = endpoint.x() - source.x(), dy = endpoint.y() - source.y(), dz = endpoint.z() - source.z();
+        for (WirelessEndpoint endpoint : candidates) {
+            if (endpoint == source || endpoint.world() != world) continue;
+            double dx = endpoint.x() - x, dy = endpoint.y() - y, dz = endpoint.z() - z;
             double squared = dx * dx + dy * dy + dz * dz;
             if (squared <= radius * radius && unobstructed(source, endpoint, Math.sqrt(squared), strength)) result.add(endpoint);
         }
@@ -55,15 +71,22 @@ public final class WirelessNetwork {
         }
         return strength - gap > hardness * gap / samples;
     }
-    @SubscribeEvent public static void onLevelLoad(LevelEvent.Load event) { if (event.getLevel() instanceof Level level && !level.isClientSide) DIMENSIONS.remove(level.dimension()); }
-    @SubscribeEvent public static void onLevelUnload(LevelEvent.Unload event) { if (event.getLevel() instanceof Level level && !level.isClientSide) DIMENSIONS.remove(level.dimension()); }
+    @SubscribeEvent public static synchronized void onLevelLoad(LevelEvent.Load event) { if (event.getLevel() instanceof Level level && !level.isClientSide) DIMENSIONS.remove(level.dimension()); }
+    @SubscribeEvent public static synchronized void onLevelUnload(LevelEvent.Unload event) { if (event.getLevel() instanceof Level level && !level.isClientSide) DIMENSIONS.remove(level.dimension()); }
     @SubscribeEvent public static void onChunkUnload(ChunkEvent.Unload event) { if (event.getChunk() instanceof LevelChunk chunk) for (var entity : chunk.getBlockEntities().values()) if (entity instanceof WirelessEndpoint endpoint) remove(endpoint); }
+    /** Cloned numeric bounds only; no endpoint, mutable branch, or world reference escapes. */
+    public record DebugBound(double minX,double minY,double minZ,double maxX,double maxY,double maxZ,int depth){}
+    public static synchronized Map<ResourceKey<Level>,List<DebugBound>> debugBounds(){
+        Map<ResourceKey<Level>,List<DebugBound>> result=new HashMap<>();
+        DIMENSIONS.forEach((dimension,index)->{List<DebugBound> bounds=new ArrayList<>();index.root.bounds(0,bounds);if(!bounds.isEmpty())result.put(dimension,List.copyOf(bounds));});
+        return Map.copyOf(result);
+    }
     private record Point(WirelessEndpoint endpoint, double x, double y, double z) {}
     /** Bounding-volume tree; median splits keep broad-phase queries spatially bounded. */
     private static final class Index {
         final Map<WirelessEndpoint, Point> points = new IdentityHashMap<>();
         Branch root = new Branch();
-        void add(WirelessEndpoint endpoint) { remove(endpoint); Point point = new Point(endpoint, endpoint.x() + .5, endpoint.y() + .5, endpoint.z() + .5); points.put(endpoint, point); root.insert(point); }
+        void add(Point point) { remove(point.endpoint); points.put(point.endpoint, point); root.insert(point); }
         void remove(WirelessEndpoint endpoint) { Point point = points.remove(endpoint); if (point != null) root.remove(point); }
         Collection<WirelessEndpoint> query(double ax, double ay, double az, double bx, double by, double bz) { List<WirelessEndpoint> result = new ArrayList<>(); root.query(ax, ay, az, bx, by, bz, result); return result; }
         static final class Branch {
@@ -93,6 +116,12 @@ public final class WirelessNetwork {
                 if (maxX<ax||maxY<ay||maxZ<az||minX>bx||minY>by||minZ>bz) return;
                 if(left!=null){left.query(ax,ay,az,bx,by,bz,result);right.query(ax,ay,az,bx,by,bz,result);}
                 else for(Point p:leaves)if(p.x>=ax&&p.y>=ay&&p.z>=az&&p.x<=bx&&p.y<=by&&p.z<=bz)result.add(p.endpoint);
+            }
+            void bounds(int depth,List<DebugBound> result){
+                if(!Double.isFinite(minX)||!Double.isFinite(minY)||!Double.isFinite(minZ)||!Double.isFinite(maxX)||!Double.isFinite(maxY)||!Double.isFinite(maxZ))return;
+                result.add(new DebugBound(minX,minY,minZ,maxX,maxY,maxZ,depth));
+                if(left!=null){left.bounds(depth+1,result);right.bounds(depth+1,result);}
+                else for(Point point:leaves)result.add(new DebugBound(point.x,point.y,point.z,point.x,point.y,point.z,depth+1));
             }
         }
     }

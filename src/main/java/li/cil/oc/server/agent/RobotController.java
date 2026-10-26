@@ -30,13 +30,14 @@ public final class RobotController implements li.cil.oc.api.internal.Robot,Agent
     public li.cil.oc.common.component.TextBuffer clientScreen;
     public boolean clientHasKeyboard;
     private final AtomicBoolean dirty=new AtomicBoolean();
-    public final AgentStorage equipment=new AgentStorage(4,()->4,this::equipmentChanged);
+    public final AgentStorage equipment=new AgentStorage(4,()->4,this::equipmentChanged,this::beforeEquipmentChange);
     public final AgentStorage inventory=new AgentStorage(96,this::inventoryCapacity,this::inventoryChanged);
     private final RedstoneState redstone=new RedstoneState(this,change->{if(machine()!=null&&machine().node().network()!=null)machine().node().sendToNeighbors("redstone.changed",change);});
     private String owner=Settings.get().fakePlayerName;
     private UUID ownerId=UUID.fromString(Settings.get().fakePlayerUuid);
     private int selected,tank;
     private boolean loading;
+    private boolean equipmentMutation;
     private final ItemStack[] installedEquipment={ItemStack.EMPTY,ItemStack.EMPTY,ItemStack.EMPTY};
     public int animationTicks,animationTotal,animationKind;
     public BlockPos moveFrom;
@@ -85,7 +86,8 @@ public final class RobotController implements li.cil.oc.api.internal.Robot,Agent
     @Override public Iterable<ItemStack> internalComponents(){return componentStacks().stream().map(ComponentSlot::stack).toList();}
     @Override public int componentSlot(String address){return runtime.componentSlot(address);}
     @Override public void inventoryChanged(){markChanged();if(machine()!=null)machine().signal("inventory_changed",selected+1);}
-    private void equipmentChanged(){boolean componentsChanged=false;for(int slot=1;slot<4;slot++){ItemStack current=equipment.items.get(slot);if(installedEquipment[slot-1]!=current){componentsChanged=true;installedEquipment[slot-1]=current;}}if(componentsChanged&&!loading&&runtime.initialized())runtime.rebuild();inventoryChanged();synchronize();}
+    private void beforeEquipmentChange(int slot){if(slot>0&&!loading&&runtime.initialized()){equipmentMutation=true;runtime.removeComponent(slot);}}
+    private void equipmentChanged(){boolean componentsChanged=equipmentMutation;equipmentMutation=false;for(int slot=1;slot<4;slot++){ItemStack current=equipment.items.get(slot);if(installedEquipment[slot-1]!=current){componentsChanged=true;installedEquipment[slot-1]=current;}}if(componentsChanged&&!loading&&runtime.initialized())runtime.rebuild();inventoryChanged();synchronize();}
     @Override public void synchronize(){markChanged();if(world()!=null&&!world().isClientSide)proxy.synchronize();}
     @Override public void animate(double seconds,int kind){animationTotal=animationTicks=Math.max(1,(int)Math.ceil(seconds*20));animationKind=kind;synchronize();}
     public void tick(){

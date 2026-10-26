@@ -34,8 +34,11 @@ public final class OpenComputers {
         API.machine = li.cil.oc.server.machine.MachineFactory.INSTANCE;
         API.items = li.cil.oc.common.init.Items.INSTANCE;
         API.nanomachines = li.cil.oc.common.nanomachines.Nanomachines.INSTANCE;
-        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT)
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
             li.cil.oc.client.ClientBootstrap.initialize();
+            li.cil.oc.client.ClientBehaviors.register(modBus);
+            li.cil.oc.client.CommandHandler.register();
+        }
         li.cil.oc.common.nanomachines.Nanomachines.registerBuiltins();
         NeoForge.EVENT_BUS.register(li.cil.oc.common.nanomachines.Nanomachines.class);
         modBus.addListener(li.cil.oc.common.network.ScreenNetworking::register);
@@ -58,8 +61,13 @@ public final class OpenComputers {
         li.cil.oc.common.init.NetworkBlocks.register(modBus);
         li.cil.oc.common.init.MiscDevices.register(modBus);
         li.cil.oc.common.init.RaidDevices.register(modBus);
+        li.cil.oc.common.init.RackDisks.register(modBus);
         li.cil.oc.common.init.DebugDevices.register(modBus);
         li.cil.oc.common.integration.computercraft.ComputerCraftIntegration.register(modBus);
+        li.cil.oc.common.integration.LootIntegration.register(modBus);
+        li.cil.oc.common.network.PetNetworking.register(modBus);
+        li.cil.oc.common.LightUpdateEvents.register();
+        li.cil.oc.common.command.OriginalCommands.register(modBus);
         li.cil.oc.common.capabilities.SimpleComponentBridge.register(modBus);
         li.cil.oc.common.IMC.register(modBus);
         NeoForge.EVENT_BUS.register(li.cil.oc.common.capabilities.SimpleComponentBridge.class);
@@ -87,15 +95,19 @@ public final class OpenComputers {
             li.cil.oc.common.init.RedstoneDevices.initializeDrivers();
             li.cil.oc.common.init.Agents.initializeDrivers();
             li.cil.oc.common.init.Racks.initializeDrivers();
+            li.cil.oc.common.init.RackDisks.initializeDrivers();
+            li.cil.oc.common.init.MiscDevices.initializeDrivers();
             li.cil.oc.common.init.PortableDevices.initializeDrivers();
             li.cil.oc.common.init.AgentUpgrades.initializeDrivers();
             li.cil.oc.common.init.NetworkCards.initializeDrivers();
             li.cil.oc.common.init.DebugDevices.initializeDrivers();
             li.cil.oc.common.integration.computercraft.ComputerCraftIntegration.initializeDrivers();
+            li.cil.oc.common.integration.mekanism.MekanismIntegration.initializeDrivers();
             li.cil.oc.common.template.BuiltinAssemblyTemplates.initialize();
             li.cil.oc.common.init.Converters.initialize();
             li.cil.oc.common.init.Items.INSTANCE.initializeLuaBios();
             li.cil.oc.common.init.Items.INSTANCE.initializeBundledLootDisks();
+            li.cil.oc.common.integration.UpdateChecker.initialize();
             Recipes.setLootRecraftingSupplier(() -> Settings.get().lootRecrafting);
             Recipes.setRecipeSetSupplier(() -> Settings.get().config.hasPath("recipes.profile") ? Settings.get().config.getString("recipes.profile") : "default");
         });

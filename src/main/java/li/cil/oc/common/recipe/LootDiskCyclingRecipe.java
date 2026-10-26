@@ -11,7 +11,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 
 /** Cycle registered loot filesystems using a wrench, preserving the wrench. */
-final class LootDiskCyclingRecipe extends CustomRecipe {
+public final class LootDiskCyclingRecipe extends CustomRecipe {
     LootDiskCyclingRecipe(CraftingBookCategory category) {
         super(category);
     }
@@ -30,13 +30,13 @@ final class LootDiskCyclingRecipe extends CustomRecipe {
             else if (Recipes.isWrench(stack)) wrenches++;
             else return false;
         }
-        return disks == 1 && wrenches == 1 && !Recipes.cyclingDisks().isEmpty();
+        return disks == 1 && wrenches == 1 && !Recipes.cyclingDisks(level.registryAccess()).isEmpty();
     }
 
     @Override
     public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
         if (!Recipes.lootRecrafting()) return ItemStack.EMPTY;
-        List<ItemStack> disks = Recipes.cyclingDisks();
+        List<ItemStack> disks = Recipes.cyclingDisks(registries);
         if (disks.isEmpty()) throw new IllegalStateException("Loot disk cycling requires the filesystem factories to be initialized");
         ItemStack source = input.items().stream().filter(LootDiskCyclingRecipe::isLootDisk).findFirst().orElse(ItemStack.EMPTY);
         if (source.isEmpty()) return ItemStack.EMPTY;

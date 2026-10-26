@@ -82,6 +82,32 @@ three-disk concatenation and destructive member-removal behavior. Missing vanill
 Adapter drivers now include beacons, brewing stands, command blocks, comparators,
 spawners, note blocks and jukeboxes. The command-block driver remains opt-in.
 
+Rack disk-drive mountables now expose their real floppy filesystem on the selected
+primary bus, including insertion/ejection, labels, media addresses, whole-drive
+removal and world serialization. The original configured creative robot, drone,
+microcontroller and tablet presets are available; robots and tablets use the
+ordinary disk-drive item as their floppy container. A Windows real-device run
+passed robot/tablet floppy hot-swap, latest robot disk label and address retention,
+rack bus isolation and energy-charged filesystem I/O, media/whole-drive swaps,
+same-process rack save/remove/load with its wiring, and the configured robot's
+native Lua 5.3 BIOS execution. This run does not establish cold-process rack
+restoration, remote multiplayer or rendering acceptance.
+
+Original client behavior now includes robot labels, supporter robot pets and the
+own-pet visibility setting, optional GL/font diagnostics and periodic light
+updates. The remaining original diagnostic commands and integrated-server wireless
+tree visualization are connected. These client additions compile; their visual
+and multiplayer acceptance remains outstanding.
+
+Program-disk chest generation preserves the original vanilla pool objects and
+enchantment holder ownership. A Windows real-world run generated all four target
+chests with fixed seeds (256 rolls each), retained vanilla loot, produced complete
+program disks without the internal marker or zero-weight programs, and mounted
+one generated disk in the real rack to read its bundled bytes. This covers the
+generation/mount path, not a statistical probability proof or every external-world
+program-pack lifecycle. Update checks are connected but still need login and
+network acceptance. See [loot and updates](loot-and-updates.md).
+
 Configuration loading now includes the original version patches, array and value
 validation, one-time NeoForge schema marking, legacy filtering/effect/class/energy
 mapping, migration backups and atomic writes. Existing port configurations retain
@@ -106,6 +132,15 @@ updates and an FML game-library manifest around unchanged upstream JNLua classes
 These findings should not be presented as acceptance of all rendering, boot,
 persistence or multiplayer behavior in the current tree.
 
+A later live client freeze exposed a concrete external-drive lock cycle: a Lua
+read held its filesystem lock while `BlockEntity.setChanged` waited for a server
+chunk task, and a server-side keyboard message waited for that same filesystem.
+External drive save notifications now use an atomic flag drained by the server
+tick; irrelevant filesystem messages return before locking. Activity packet and
+sound recipient lookups are also dispatched to the server thread without waiting
+inside the callback. The captured stacks remain development evidence, not a claim
+that every host/thread combination has passed acceptance.
+
 Still required: functional acceptance of advanced robot/drone upgrades, tablets,
 microcontrollers, network devices, robot/drone and rack/server/terminal
 platforms, holograms, printers and prints; remaining automation/power devices,
@@ -128,9 +163,18 @@ behavior. This exposed and fixed a LuaJ direct-callback pause/start monitor
 deadlock. A separate Windows world fixture then passed a real case's native Lua
 5.3 cold-server restart and chunk unload/reload, retaining the coroutine, open
 tmpfs position, userdata/iterator state, signal and component identities. A
-separate LuaJ world passed its expected reboot and disk-data restoration. Native
-5.2 cold-world restoration and other physical host types still need acceptance.
+separate LuaJ world passed its expected reboot and disk-data restoration. A
+separate native Lua 5.2 world then passed prepare and resume in different JVMs,
+including real chunk unload/reload, one BIOS boot and two userdata restorations.
+Cold-world restoration on other physical host types still needs acceptance.
 No public SDK signatures changed for these runtime fixes.
+
+A real configured robot also passed native Lua 5.3 cold-process restoration after
+its Lua program moved the physical proxy upward. The second JVM retained the same
+machine/component identities, native locals and nested coroutine, userdata item
+data and iterator cursor, open tmpfs/HDD offsets, EEPROM and queued signal, plus
+the robot's name, owner, selected slot and inventory. The BIOS boot count remained
+one. Other host types and the robot's LuaJ reboot path need their own acceptance.
 
 The external-addon fixture also passed an end-to-end IMC production contract:
 the real assembler validates and consumes addon inputs, applies energy over

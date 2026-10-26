@@ -6,6 +6,7 @@ import li.cil.oc.Settings;
 import li.cil.oc.common.item.data.DebugCardData.AccessContext;
 import net.minecraft.commands.*;
 import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +27,42 @@ public final class DebugAccess {
     public static synchronized Optional<String> nonce(String player){load();return Optional.ofNullable(NONCES.get(player.toLowerCase(Locale.ROOT)));}
     public static boolean whitelisted(){return mode().equals("whitelist");}
     public static void check(Optional<AccessContext> access){switch(mode()){case "allow"->{}case "deny"->throw new IllegalStateException("debug card is disabled");default->{AccessContext context=access.orElseThrow(()->new IllegalStateException("debug card is whitelisted, Shift+Click with it to bind card to yourself"));String current=nonce(context.player()).orElseThrow(()->new IllegalStateException("you are not whitelisted to use debug card"));if(!current.equals(context.nonce()))throw new IllegalStateException("debug card is invalidated, please re-bind it to yourself");}}}
-    private static int command(CommandSourceStack source,String action,String player){if(!whitelisted()){source.sendFailure(Component.literal("Debug card whitelisting is not enabled."));return 0;}load();String name=player.toLowerCase(Locale.ROOT);switch(action){case "list"->source.sendSuccess(()->Component.literal(NONCES.isEmpty()?"There are no currently whitelisted players.":"Currently whitelisted players: "+String.join(", ",NONCES.keySet())),false);case "add"->{if(!NONCES.containsKey(name)){NONCES.put(name,fresh());save();}source.sendSuccess(()->Component.literal("Player was added to whitelist."),false);}case "remove"->{if(NONCES.remove(name)!=null)save();source.sendSuccess(()->Component.literal("Player was removed from whitelist."),false);}case "revoke"->{if(!NONCES.containsKey(name)){source.sendFailure(Component.literal("You are not whitelisted to use debug card."));return 0;}NONCES.put(name,fresh());save();source.sendSuccess(()->Component.literal("All your debug cards were invalidated."),false);}default->throw new IllegalArgumentException("invalid whitelist operation");}return 1;}
-    public static void commands(RegisterCommandsEvent event){var root=Commands.literal("oc_debugWhitelist").then(Commands.literal("revoke").executes(context->command(context.getSource(),"revoke",context.getSource().getTextName())).then(Commands.argument("player",StringArgumentType.word()).requires(source->source.hasPermission(2)).executes(context->command(context.getSource(),"revoke",StringArgumentType.getString(context,"player"))))).then(Commands.literal("list").requires(source->source.hasPermission(2)).executes(context->command(context.getSource(),"list","")));for(String action:new String[]{"add","remove"})root.then(Commands.literal(action).requires(source->source.hasPermission(2)).then(Commands.argument("player",StringArgumentType.word()).executes(context->command(context.getSource(),action,StringArgumentType.getString(context,"player")))));event.getDispatcher().register(root);}
+    private static boolean operator(CommandSourceStack source){
+        if(source.source instanceof net.minecraft.server.MinecraftServer)return true;
+        if(source.source instanceof net.minecraft.server.level.ServerPlayer player){
+            var server=source.getServer();
+            if(server.isSingleplayer()&&server.getWorldData().isAllowCommands()&&server.isSingleplayerOwner(player.getGameProfile()))return true;
+            var entry=server.getPlayerList().getOps().get(player.getGameProfile());
+            return entry!=null&&entry.getLevel()>=2;
+        }
+        return false;
+    }
+    private static String usage(CommandSourceStack source){return operator(source)?"oc_debugWhitelist [revoke|add|remove] <player> OR oc_debugWhitelist [revoke|list]":"oc_debugWhitelist revoke";}
+    private static int command(CommandSourceStack source,String action,String player){
+        if(!whitelisted()){source.sendFailure(Component.literal("Debug card whitelisting is not enabled.").withStyle(ChatFormatting.RED));return 0;}
+        load();String name=player.toLowerCase(Locale.ROOT);
+        switch(action){
+            case "usage"->source.sendSuccess(()->Component.literal(usage(source)).withStyle(ChatFormatting.YELLOW),false);
+            case "list"->source.sendSuccess(()->NONCES.isEmpty()?Component.literal("There is no currently whitelisted players.").withStyle(ChatFormatting.RED):Component.literal("Currently whitelisted players: ").withStyle(ChatFormatting.GREEN).append(Component.literal(String.join(", ",NONCES.keySet())).withStyle(ChatFormatting.YELLOW)),false);
+            case "add"->{if(!NONCES.containsKey(name)){NONCES.put(name,fresh());save();}source.sendSuccess(()->Component.literal("Player was added to whitelist.").withStyle(ChatFormatting.GREEN),false);}
+            case "remove"->{if(NONCES.remove(name)!=null)save();source.sendSuccess(()->Component.literal("Player was removed from whitelist").withStyle(ChatFormatting.GREEN),false);}
+            case "revoke"->{if(!NONCES.containsKey(name)){source.sendFailure(Component.literal("You are not whitelisted to use debug card.").withStyle(ChatFormatting.RED));return 0;}NONCES.put(name,fresh());save();source.sendSuccess(()->Component.literal("All your debug cards were invalidated.").withStyle(ChatFormatting.GREEN),false);}
+            default->throw new IllegalArgumentException("invalid whitelist operation");
+        }
+        return 1;
+    }
+    private static java.util.concurrent.CompletableFuture<com.mojang.brigadier.suggestion.Suggestions> players(CommandSourceStack source,com.mojang.brigadier.suggestion.SuggestionsBuilder builder,boolean includeWhitelist){load();Set<String> names=new TreeSet<>(Arrays.asList(source.getServer().getPlayerNames()));if(includeWhitelist)names.addAll(NONCES.keySet());return SharedSuggestionProvider.suggest(names,builder);}
+    public static void commands(RegisterCommandsEvent event){
+        var root=Commands.literal("oc_debugWhitelist").executes(context->command(context.getSource(),"usage",""))
+                .then(Commands.literal("revoke").executes(context->command(context.getSource(),"revoke",context.getSource().getTextName()))
+                        .then(Commands.argument("player",StringArgumentType.word()).requires(DebugAccess::operator)
+                                .suggests((context,builder)->players(context.getSource(),builder,true))
+                                .executes(context->command(context.getSource(),"revoke",StringArgumentType.getString(context,"player")))))
+                .then(Commands.literal("list").requires(DebugAccess::operator).executes(context->command(context.getSource(),"list","")));
+        for(String action:new String[]{"add","remove"})root.then(Commands.literal(action).requires(DebugAccess::operator)
+                .executes(context->command(context.getSource(),"usage",""))
+                .then(Commands.argument("player",StringArgumentType.word()).suggests((context,builder)->players(context.getSource(),builder,action.equals("remove")))
+                        .executes(context->command(context.getSource(),action,StringArgumentType.getString(context,"player")))));
+        event.getDispatcher().register(root);
+    }
 }

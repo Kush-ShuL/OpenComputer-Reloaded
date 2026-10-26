@@ -1,1 +1,3 @@
-{"parent":"opencomputers:item/diskdrive"}
+{
+  "parent": "opencomputers:item/diskdrive"
+}

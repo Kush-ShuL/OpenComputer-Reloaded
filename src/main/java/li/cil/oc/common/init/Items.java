@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import li.cil.oc.Settings;
@@ -44,6 +45,7 @@ public final class Items implements ItemAPI {
     private static final DeferredRegister<Item> GAME_ITEMS = DeferredRegister.create(Registries.ITEM, "opencomputers");
     private static final DeferredRegister<Block> GAME_BLOCKS = DeferredRegister.create(Registries.BLOCK, "opencomputers");
     private static boolean driversInitialized;
+    private static final Set<String> HIDDEN_BASE_ITEMS = Set.of("present", "robot", "drone", "tablet", "microcontroller", "print", "floppycontainer");
     static {
         for(String name : List.of("alu","arrowkeys","buttongroup","card","chip1","chip2","chip3","chipdiamond","circuitboard","cu","cuttingwire","disk","interweb","numpad","printedcircuitboard","rawcircuitboard","transistor"))
             material(name, li.cil.oc.common.item.CraftingMaterialItem.Kind.PLAIN,64);
@@ -202,16 +204,41 @@ public final class Items implements ItemAPI {
 
     public synchronized List<ItemInfo> definitions() { return List.copyOf(descriptors.values()); }
 
-    public synchronized List<ItemStack> registeredItems() {
+    public List<ItemStack> registeredItems() {
+        return registeredItems(null);
+    }
+
+    public List<ItemStack> registeredItems(net.minecraft.core.HolderLookup.Provider registries) {
+        final List<BaseDescriptor> catalog;
+        final List<ItemStack> extras;
+        synchronized (this) {
+            catalog = List.copyOf(baseDescriptors);
+            extras = new ArrayList<>(extraCreativeItems.stream().map(ItemStack::copy).toList());
+        }
+        // Configured devices also query the driver registry. Never hold the item
+        // catalog lock while doing so: item drivers themselves can query this catalog.
         List<ItemStack> hardware = new ArrayList<>();
         List<ItemStack> other = new ArrayList<>();
-        for (BaseDescriptor descriptor : baseDescriptors) {
-            if (descriptor.name.equals("present")) continue;
+        for (BaseDescriptor descriptor : catalog) {
+            if (HIDDEN_BASE_ITEMS.contains(descriptor.name)) continue;
             ItemStack stack = descriptor.createItemStack(1);
             (stack.getItem() instanceof ComponentItem ? hardware : other).add(stack);
         }
         hardware.addAll(other);
-        extraCreativeItems.forEach(stack -> hardware.add(stack.copy()));
+        Map<String, Integer> diskIndices = new LinkedHashMap<>();
+        for (int index = 0; index < extras.size(); index++) {
+            String factory = extras.get(index).getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getString("oc:lootFactory");
+            if (!factory.isEmpty()) diskIndices.put(factory, index);
+        }
+        for (ItemStack stack : li.cil.oc.common.integration.LootIntegration.clientDisks()) {
+            String factory = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getString("oc:lootFactory");
+            if (factory.isEmpty()) continue;
+            Integer index = diskIndices.get(factory);
+            if (index == null) { diskIndices.put(factory, extras.size()); extras.add(stack.copy()); }
+            else extras.set(index, stack.copy());
+        }
+        hardware.addAll(extras);
+        if (registries != null) hardware.addAll(CreativeDevices.all(registries));
         return List.copyOf(hardware);
     }
 

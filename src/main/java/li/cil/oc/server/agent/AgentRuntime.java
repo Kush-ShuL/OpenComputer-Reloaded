@@ -25,6 +25,7 @@ public final class AgentRuntime implements MultiTank {
     private Machine machine;
     private li.cil.oc.server.component.AgentComponent control;
     private final Map<Integer, ManagedEnvironment> environments = new LinkedHashMap<>();
+    private final Map<ManagedEnvironment, ItemStack> environmentItems = new java.util.IdentityHashMap<>();
     private CompoundTag pendingMachine, pendingControl;
     private boolean initialized, closing;
     private AgentPlayer player;
@@ -46,6 +47,7 @@ public final class AgentRuntime implements MultiTank {
     public void initialize() {
         if (initialized || host.world() == null || host.world().isClientSide) return;
         initialized = true; closing = false;
+        environments.clear();environmentItems.clear();
         machine();
         control = host.robot() ? new li.cil.oc.server.component.Robot(host) : new li.cil.oc.server.component.Drone(host);
         if (pendingControl != null) { control.load(pendingControl, host.world().registryAccess()); pendingControl = null; }
@@ -60,7 +62,7 @@ public final class AgentRuntime implements MultiTank {
         var environment = driver.createEnvironment(stack, host); if (environment == null) return;
         CompoundTag data = driver.dataTag(stack);
         if (data == null) data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("oc:data");
-        environment.load(data, host.world().registryAccess()); environments.put(index, environment);
+        environment.load(data, host.world().registryAccess()); environments.put(index, environment);environmentItems.put(environment,stack);
     }
     public void connect() {
         if (machine == null || control == null || closing) return;
@@ -75,9 +77,27 @@ public final class AgentRuntime implements MultiTank {
     }
     public void rebuild() {
         if (!initialized || closing) return;
-        saveComponents(); for (var environment : environments.values()) if (environment.node() != null) environment.node().remove();
-        environments.clear(); for (var slot : host.componentStacks()) create(slot.index(), slot.stack());
+        // Hot swaps must preserve unrelated live environments, including open disk handles.
+        // Built-in slot indices can move when an inventory upgrade changes visible capacity.
+        var desired=host.componentStacks();
+        Map<ItemStack,ManagedEnvironment> byStack=new java.util.IdentityHashMap<>();
+        for(var environment:environments.values())byStack.put(environmentItems.get(environment),environment);
+        Map<Integer,ManagedEnvironment> retained=new LinkedHashMap<>();
+        var keep=java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<ManagedEnvironment,Boolean>());
+        for(var slot:desired){var existing=byStack.remove(slot.stack());if(existing!=null&&!slot.stack().isEmpty()){retained.put(slot.index(),existing);keep.add(existing);}}
+        for(int index:new ArrayList<>(environments.keySet()))if(!keep.contains(environments.get(index)))removeComponent(index);
+        environments.clear();environments.putAll(retained);
+        for(var slot:desired)if(!environments.containsKey(slot.index()))create(slot.index(),slot.stack());
         connect(); machine.onHostChanged();
+    }
+    /** Inventory calls this before mutating the stack, so the returned item owns the closed state. */
+    public void removeComponent(int index){
+        var environment=environments.remove(index);if(environment==null)return;
+        ItemStack stack=environmentItems.remove(environment);
+        if(environment.node()!=null)environment.node().remove();
+        saveComponent(environment,stack);
+        // Like upstream ComponentInventory, remove again only if save actually rejoined a network.
+        if(environment.node()!=null&&environment.node().network()!=null)environment.node().remove();
     }
     public void tick() {
         initialize(); if (!initialized || closing) return;
@@ -85,13 +105,13 @@ public final class AgentRuntime implements MultiTank {
     }
     public void saveComponents() {
         if (host.world() == null || host.world().isClientSide) return;
-        for (var slot : host.componentStacks()) {
-            var environment = environments.get(slot.index()); var driver = Driver.driverFor(slot.stack(), host.getClass());
-            if (environment == null || driver == null) continue;
-            CompoundTag data = driver.dataTag(slot.stack());
-            if (data == null) data = slot.stack().getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getCompound("oc:data");
-            environment.save(data, host.world().registryAccess()); driver.saveDataTag(slot.stack(), data);
-        }
+        for(var environment:new ArrayList<>(environments.values()))saveComponent(environment,environmentItems.get(environment));
+    }
+    private void saveComponent(ManagedEnvironment environment,ItemStack stack){
+        if(stack==null||stack.isEmpty()||host.world()==null||host.world().isClientSide)return;
+        var driver=Driver.driverFor(stack,host.getClass());if(driver==null)return;CompoundTag data=driver.dataTag(stack);
+        if(data==null)data=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getCompound("oc:data");
+        environment.save(data,host.world().registryAccess());driver.saveDataTag(stack,data);
     }
     public void load(CompoundTag tag) { pendingMachine = tag.getCompound("oc:computer").copy(); pendingControl = tag.getCompound("oc:robot").copy(); }
     public void save(CompoundTag tag, HolderLookup.Provider registries) {

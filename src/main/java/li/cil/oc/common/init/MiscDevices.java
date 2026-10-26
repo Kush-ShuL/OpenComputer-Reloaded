@@ -29,6 +29,9 @@ public final class MiscDevices {
         Items.INSTANCE.registerItem("present", PRESENT);
     }
     private MiscDevices() {}
+    public static void initializeDrivers() {
+        li.cil.oc.api.Driver.add((li.cil.oc.api.driver.DriverItem) new li.cil.oc.server.driver.item.ContainerFloppy());
+    }
     public static void register(IEventBus bus) {
         BLOCKS.register(bus); ITEMS.register(bus);
         bus.addListener(MiscDevices::capabilities);

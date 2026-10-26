@@ -18,8 +18,10 @@ public final class RobotBlockEntityRenderer implements BlockEntityRenderer<Robot
     private static final ResourceLocation TEXTURE=ResourceLocation.fromNamespaceAndPath("opencomputers","textures/model/robot.png");
     public RobotBlockEntityRenderer(BlockEntityRendererProvider.Context context){}
     @Override public void render(RobotBlockEntity proxy,float partial,PoseStack pose,MultiBufferSource buffers,int light,int overlay){
+        li.cil.oc.client.RenderDiagnostics.checkError("RobotBlockEntityRenderer.render.enter");
         var robot=proxy.controller();pose.pushPose();
         if(robot.moveFrom!=null&&robot.animationTicks>0){float left=(robot.animationTicks-partial)/Math.max(1,robot.animationTotal);var delta=robot.moveFrom.subtract(proxy.getBlockPos());pose.translate(delta.getX()*left,delta.getY()*left,delta.getZ()*left);}
+        li.cil.oc.client.ClientBehaviors.robotLabel(proxy,pose,buffers,light);
         pose.translate(.5,.5+(proxy.clientRunning?Math.sin((proxy.getLevel().getGameTime()+partial)/20+proxy.hashCode())*.03:-.03),.5);
         float turn=robot.animationTicks>0&&(robot.animationKind==3||robot.animationKind==4)?90f*(robot.animationTicks-partial)/Math.max(1,robot.animationTotal)*(robot.animationKind==3?1:-1):0;
         pose.mulPose(Axis.YP.rotationDegrees(-robot.facing().toYRot()+turn));pose.translate(-.5,-.5,-.5);
@@ -27,6 +29,7 @@ public final class RobotBlockEntityRenderer implements BlockEntityRenderer<Robot
         var tool=robot.equipment.getItem(0);
         if(!tool.isEmpty()){pose.pushPose();pose.translate(.5,.35,.95);pose.scale(.5f,.5f,.5f);if(robot.animationKind==1&&robot.animationTicks>0)pose.mulPose(Axis.XP.rotationDegrees((float)Math.sin((robot.animationTicks-partial)/10*Math.PI)*45));Minecraft.getInstance().getItemRenderer().renderStatic(tool,ItemDisplayContext.FIXED,light,overlay,pose,buffers,proxy.getLevel(),0);pose.popPose();}
         pose.popPose();
+        li.cil.oc.client.RenderDiagnostics.checkError("RobotBlockEntityRenderer.render");
     }
     public static void drawChassis(PoseStack pose,MultiBufferSource buffers,int light,int overlay,boolean running,int color,double time,RobotBlockEntity robot){
         String[] names={"top_left","top_right","top_back","bottom_left","bottom_right","bottom_back","bottom_front"};
@@ -35,7 +38,7 @@ public final class RobotBlockEntityRenderer implements BlockEntityRenderer<Robot
         var event=new RobotRenderEvent(robot,mounts,pose,buffers,light,overlay);NeoForge.EVENT_BUS.post(event);
         if(!event.isCanceled()){
             var out=buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
-            int chassisColor=BuiltinUpgradeRenderer.chassisColor(robot);
+            Integer petColor=PetRenderer.chassisTint();int chassisColor=petColor==null?BuiltinUpgradeRenderer.chassisColor(robot):petColor;
             float l=.1f,h=.9f,g=1f/28,top=.5f+g-(running?0:4*g),bottom=.5f-g-(running?0:2*g);
             float[][] upper={{l,top,h,0,.5f},{h,top,h,.5f,.5f},{h,top,l,.5f,0},{l,top,l,0,0}};
             float[][] lower={{l,bottom,l,.5f,0},{h,bottom,l,1,0},{h,bottom,h,1,.5f},{l,bottom,h,.5f,.5f}};

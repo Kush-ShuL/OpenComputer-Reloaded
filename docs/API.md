@@ -71,6 +71,10 @@ lambda 和转换器实现仍可编译。新增的三参数 `convert(value, outpu
 `Context` 与 `Arguments`、直接调用预算、主线程同步和可见性规则沿用上游。
 操作世界或非线程安全对象的方法使用默认的同步调用，不要随意设置 `direct = true`。
 
+组件可能从 Lua 工作线程调用 `EnvironmentHost.markChanged()`。宿主应设置待保存标记，
+在自己的服务器 tick 中处理区块更新；不要持有组件锁等待服务器线程，否则会与输入、
+网络或保存流程形成循环等待。现有的原子标记模式可参考机箱与外置软盘驱动器。
+
 ```java
 public final class ExampleEnvironment extends li.cil.oc.api.prefab.AbstractManagedEnvironment {
     public ExampleEnvironment() {

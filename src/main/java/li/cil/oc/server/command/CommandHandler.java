@@ -34,14 +34,14 @@ public final class CommandHandler {
     @SubscribeEvent
     public static void register(RegisterCommandsEvent event) {
         for(String name:new String[]{"oc_spawnComputer","oc_sc"})
-            event.getDispatcher().register(Commands.literal(name).requires(source->source.hasPermission(2))
+            event.getDispatcher().register(Commands.literal(name).requires(li.cil.oc.common.command.OriginalCommands::operator)
                     .executes(context->spawnComputer(context.getSource())));
         for(String name:new String[]{"oc_preventDisassembling","oc_nodis","oc_prevdis"})
             event.getDispatcher().register(disassemblyCommand(name));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> disassemblyCommand(String name) {
-        return Commands.literal(name).requires(source->source.hasPermission(2))
+        return Commands.literal(name).requires(li.cil.oc.common.command.OriginalCommands::operator)
                 .executes(context->preventDisassembly(context.getSource(),null))
                 .then(Commands.argument("prevent",BoolArgumentType.bool())
                         .executes(context->preventDisassembly(context.getSource(),BoolArgumentType.getBool(context,"prevent"))));

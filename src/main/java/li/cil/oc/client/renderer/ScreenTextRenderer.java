@@ -60,13 +60,27 @@ public final class ScreenTextRenderer implements ResourceManagerReloadListener {
         atlases.clear(); glyphs.clear(); glyphBits.clear();
         for (var resource : resources.getResourceStack(HEX)) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource.open(), StandardCharsets.UTF_8))) {
+                int lineNumber = 0;
                 for (String line; (line = reader.readLine()) != null;) {
-                    int colon = line.indexOf(':'); if (colon < 1) continue;
+                    lineNumber++;
+                    int colon = line.indexOf(':');
+                    if (colon < 1) {
+                        if (Settings.get().logHexFontErrors && !line.isBlank()) OpenComputers.LOGGER.warn("Malformed HEX font entry in pack {} at line {}: missing code point separator", resource.sourcePackId(), lineNumber);
+                        continue;
+                    }
                     try {
                         int codePoint = Integer.parseInt(line.substring(0, colon), 16);
                         byte[] bits = HexFormat.of().parseHex(line.substring(colon + 1));
-                        if (Character.isValidCodePoint(codePoint) && bits.length == 16 * FontUtils.wcwidth(codePoint)) glyphBits.put(codePoint, bits);
-                    } catch (IllegalArgumentException ignored) { }
+                        if (!Character.isValidCodePoint(codePoint)) {
+                            if (Settings.get().logHexFontErrors) OpenComputers.LOGGER.warn("Unexpected Unicode glyph U+{} in pack {} at line {}, ignoring", Integer.toHexString(codePoint), resource.sourcePackId(), lineNumber);
+                            continue;
+                        }
+                        int width = FontUtils.wcwidth(codePoint);
+                        if (bits.length == 16 * width) glyphBits.put(codePoint, bits);
+                        else if (Settings.get().logHexFontErrors) OpenComputers.LOGGER.warn("Glyph U+{} in pack {} at line {} has {} bitmap bytes; expected {} bytes (wcwidth {}), ignoring", Integer.toHexString(codePoint), resource.sourcePackId(), lineNumber, bits.length, 16 * width, width);
+                    } catch (IllegalArgumentException error) {
+                        if (Settings.get().logHexFontErrors) OpenComputers.LOGGER.warn("Malformed HEX font entry in pack {} at line {}: {}", resource.sourcePackId(), lineNumber, error.getMessage());
+                    }
                 }
             } catch (Exception error) { OpenComputers.LOGGER.warn("Failed reading OpenComputers Unicode font", error); }
         }
@@ -76,6 +90,7 @@ public final class ScreenTextRenderer implements ResourceManagerReloadListener {
             if (size != null) { String[] values = size.trim().split("\\s+"); staticWidth = Integer.parseInt(values[0]); staticHeight = Integer.parseInt(values[1]); }
         } catch (Exception error) { OpenComputers.LOGGER.warn("Failed reading texture-font metadata", error); }
         loaded = true;
+        li.cil.oc.client.RenderDiagnostics.checkError("ScreenTextRenderer.reload");
     }
     private Glyph glyph(int codePoint) {
         if (textureFont()) {
@@ -108,6 +123,7 @@ public final class ScreenTextRenderer implements ResourceManagerReloadListener {
         return draw(buffer, pose, buffers, packedLight, 1, true);
     }
     public static boolean draw(TextBuffer buffer, PoseStack pose, MultiBufferSource buffers, int packedLight, float alpha, boolean blackBackdrop) {
+        li.cil.oc.client.RenderDiagnostics.checkError("ScreenTextRenderer.draw.enter");
         INSTANCE.ensureLoaded();
         var data = buffer.data(); int w = Math.min(buffer.getViewportWidth(), data.width), h = Math.min(buffer.getViewportHeight(), data.height);
         for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) if (data.buffer[y][x] != ' ') INSTANCE.glyph(data.buffer[y][x]);
@@ -133,7 +149,9 @@ public final class ScreenTextRenderer implements ResourceManagerReloadListener {
             float x0 = x * cw + glyph.offsetX, y0 = y * ch + glyph.offsetY;
             textured(vertices, pose, x0, y0, x0 + glyph.width, y0 + glyph.height, color, glyph, 0.002F, alpha);
         }
-        boolean changed = buffer.dirty; buffer.dirty = false; return changed;
+        boolean changed = buffer.dirty; buffer.dirty = false;
+        li.cil.oc.client.RenderDiagnostics.checkError("ScreenTextRenderer.draw");
+        return changed;
     }
     private static void background(VertexConsumer out, PoseStack pose, float x0, float y0, float x1, float y1, int color, float z, float alpha) {
         int rgba = (Math.clamp((int)(alpha * 255), 0, 255) << 24) | color;

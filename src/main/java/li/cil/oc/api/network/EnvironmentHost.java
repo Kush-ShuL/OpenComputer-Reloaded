@@ -47,6 +47,11 @@ public interface EnvironmentHost {
     /**
      * Marks the container as "changed" so that it knows it has to be saved
      * again in the next world save.
+     * <p>
+     * Direct component callbacks may call this from a computer worker thread
+     * while holding a component lock. Implementations must return without
+     * waiting for the server thread. Record a pending save flag and process
+     * world or chunk updates from the host's server tick.
      */
     void markChanged();
 }

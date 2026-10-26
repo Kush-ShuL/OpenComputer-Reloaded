@@ -76,7 +76,12 @@ public final class LuaStateFactory {
     }
     private void init(){
         String os=System.getProperty("os.name","").toLowerCase(Locale.ROOT),arch=System.getProperty("os.arch","").toLowerCase(Locale.ROOT);
-        String system=os.contains("win")?"windows":os.contains("mac")||os.contains("darwin")?"darwin":os.contains("freebsd")?"freebsd":os.contains("netbsd")?"netbsd":os.contains("openbsd")?"openbsd":os.contains("sunos")||os.contains("solaris")?"solaris":os.contains("linux")?"linux":"unknown";
+        String system=os.contains("mac")||os.contains("darwin")?"darwin":os.contains("win")?"windows":os.contains("freebsd")?"freebsd":os.contains("netbsd")?"netbsd":os.contains("openbsd")?"openbsd":os.contains("sunos")||os.contains("solaris")?"solaris":os.contains("linux")?"linux":"unknown";
+        if (system.equals("windows") && !Settings.get().alwaysTryNative &&
+                (os.contains("windows xp") || os.contains("windows 2003") || os.contains("windows server 2003"))) {
+            OpenComputers.LOGGER.warn("Native Lua is unavailable on {}; debug.alwaysTryNative can override the legacy Windows platform guard", os);
+            return;
+        }
         String architecture=arch.startsWith("aarch64")||arch.startsWith("arm64")?"aarch64":arch.startsWith("arm")?"arm":arch.startsWith("x86_64")||arch.startsWith("amd64")?"x86_64":arch.startsWith("x86")||arch.startsWith("i386")?"x86":"unknown";
         String platform=Settings.get().forceNativeLibPlatform.isEmpty()?system+"-"+architecture:Settings.get().forceNativeLibPlatform;
         String name="libjnlua"+version+"-"+platform+(system.equals("windows")?".dll":system.equals("darwin")?".dylib":".so");

@@ -1,6 +1,7 @@
 package li.cil.oc.common.block.entity;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import li.cil.oc.Settings;
 import li.cil.oc.api.Driver;
 import li.cil.oc.api.driver.DeviceInfo;
@@ -29,6 +30,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -51,14 +53,19 @@ public final class DiskDriveBlockEntity extends BlockEntity implements Environme
     private ManagedEnvironment medium;
     private CompoundTag pendingNode;
     private boolean initialized;
-    public long lastAccess;
+    private final AtomicBoolean pendingSave = new AtomicBoolean();
+    public volatile long lastAccess;
 
     public DiskDriveBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state); }
     @Override public Level world() { return level; }
     @Override public double xPosition() { return worldPosition.getX() + .5; }
     @Override public double yPosition() { return worldPosition.getY() + .5; }
     @Override public double zPosition() { return worldPosition.getZ() + .5; }
-    @Override public void markChanged() { setChanged(); }
+    @Override public void markChanged() { pendingSave.set(true); }
+    @Override public void setChanged() {
+        if (level instanceof ServerLevel server && !server.getServer().isSameThread()) { markChanged(); return; }
+        super.setChanged();
+    }
     public Direction facing() { return getBlockState().getValue(DiskDriveBlock.FACING); }
     @Override public li.cil.oc.api.network.Component node() {
         if (node == null && level != null && !level.isClientSide) {
@@ -135,6 +142,7 @@ public final class DiskDriveBlockEntity extends BlockEntity implements Environme
         return true;
     }
     public static void tick(DiskDriveBlockEntity drive) {
+        if (drive.level != null && !drive.level.isClientSide && drive.pendingSave.getAndSet(false)) drive.setChanged();
         drive.initialize();
         if (drive.node() != null && drive.node.network() == null) drive.joinNetwork();
         if (drive.medium != null && drive.medium.canUpdate()) drive.medium.update();
@@ -190,6 +198,11 @@ public final class DiskDriveBlockEntity extends BlockEntity implements Environme
         if (node() != null) node.save(data); else if (pendingNode != null) data = pendingNode.copy();
         tag.put("oc:node", data);
     }
-    @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) { CompoundTag tag = new CompoundTag(); if (!isEmpty()) tag.put("oc:disk", items.getFirst().save(registries)); return tag; }
+    @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        // NeoForge skips empty update tags. Send the empty slot explicitly so the client clears its disk model.
+        tag.put("oc:disk", items.getFirst().saveOptional(registries));
+        return tag;
+    }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
 }

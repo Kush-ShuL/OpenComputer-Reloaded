@@ -30,8 +30,8 @@ public final class PacketSender {
     /** Original nearby-update range; a zero global cap leaves the view/explicit range intact. */
     private static double packetRange(ServerLevel level,double requested){double range=requested<0?(level.getServer().getPlayerList().getViewDistance()+1)*16d:requested;double maximum=Settings.get().maxNetworkClientPacketDistance;return maximum>0?Math.min(range,maximum):range;}
     public static void sendToPlayersTrackingBlock(BlockEntity entity,CustomPacketPayload payload){sendToPlayersTrackingBlock(entity,-1,payload);}
-    public static void sendToPlayersTrackingBlock(BlockEntity entity,double requested,CustomPacketPayload payload){if(!(entity.getLevel() instanceof ServerLevel level))return;double range=packetRange(level,requested),squared=range*range;var pos=entity.getBlockPos();for(ServerPlayer player:level.getChunkSource().chunkMap.getPlayers(new net.minecraft.world.level.ChunkPos(pos),false))if(player.distanceToSqr(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5)<=squared)PacketDistributor.sendToPlayer(player,payload);}
-    public static void sendToPlayersNear(ServerLevel level,double x,double y,double z,double requested,CustomPacketPayload payload){PacketDistributor.sendToPlayersNear(level,null,x,y,z,packetRange(level,requested),payload);}
+    public static void sendToPlayersTrackingBlock(BlockEntity entity,double requested,CustomPacketPayload payload){if(!(entity.getLevel() instanceof ServerLevel level))return;if(!level.getServer().isSameThread()){level.getServer().execute(()->sendToPlayersTrackingBlock(entity,requested,payload));return;}if(entity.isRemoved())return;double range=packetRange(level,requested),squared=range*range;var pos=entity.getBlockPos();for(ServerPlayer player:level.getChunkSource().chunkMap.getPlayers(new net.minecraft.world.level.ChunkPos(pos),false))if(player.distanceToSqr(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5)<=squared)PacketDistributor.sendToPlayer(player,payload);}
+    public static void sendToPlayersNear(ServerLevel level,double x,double y,double z,double requested,CustomPacketPayload payload){if(!level.getServer().isSameThread()){level.getServer().execute(()->sendToPlayersNear(level,x,y,z,requested,payload));return;}PacketDistributor.sendToPlayersNear(level,null,x,y,z,packetRange(level,requested),payload);}
     public interface ActivityListener { void onComponentActivity(String address, boolean network); }
     public static void sendNetworkActivity(Node node,EnvironmentHost host){ activity(node,host,true); }
     private static void activity(Node node,EnvironmentHost host,boolean network){
@@ -44,6 +44,8 @@ public final class PacketSender {
     }
     private static final Map<Node,Long> LAST_ACTIVITY=Collections.synchronizedMap(new WeakHashMap<>());
     public static void sendFileSystemActivity(Node node,EnvironmentHost host,String sound){
+        // A direct filesystem callback holds its volume lock; never inspect chunk/player state there.
+        if(host.world() instanceof ServerLevel server&&!server.getServer().isSameThread()){server.getServer().execute(()->sendFileSystemActivity(node,host,sound));return;}
         activity(node,host,false);
         if(!(host.world() instanceof ServerLevel level)||Settings.get().soundVolume<=0)return;
         long now=System.currentTimeMillis();Long previous=LAST_ACTIVITY.get(node);

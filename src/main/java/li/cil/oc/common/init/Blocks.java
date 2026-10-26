@@ -57,7 +57,7 @@ public final class Blocks {
             .displayItems((parameters,output)->{
                 Set<Item> shownBlocks=Collections.newSetFromMap(new IdentityHashMap<>());
                 for(var item:DISPLAY_ITEMS){output.accept(item.get());shownBlocks.add(item.get());}
-                for(var stack:Items.INSTANCE.registeredItems())if(!stack.isEmpty()&&(!(stack.getItem() instanceof BlockItem)||shownBlocks.add(stack.getItem())))output.accept(stack);
+                for(var stack:Items.INSTANCE.registeredItems(parameters.holders()))if(!stack.isEmpty()&&(!(stack.getItem() instanceof BlockItem)||shownBlocks.add(stack.getItem())))output.accept(stack);
             }).build());
     }
     public static void register(IEventBus bus){BLOCKS.register(bus);BLOCK_ITEMS.register(bus);TYPES.register(bus);TABS.register(bus);}

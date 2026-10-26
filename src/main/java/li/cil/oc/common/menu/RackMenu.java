@@ -30,5 +30,7 @@ public final class RackMenu extends AbstractContainerMenu {
     public boolean present(int slot,int connection){return ((status.get(1)&0xffff)&1<<(slot*4+connection))!=0;}
     public int mapping(int slot,int connection){return status.get(2+slot*4+connection);}
     @Override public boolean stillValid(Player player){return inventory.stillValid(player);}
-    @Override public ItemStack quickMoveStack(Player player,int index){Slot source=slots.get(index);if(!source.hasItem())return ItemStack.EMPTY;ItemStack stack=source.getItem(),copy=stack.copy();boolean moved=index<4?moveItemStackTo(stack,4,slots.size(),true):moveItemStackTo(stack,0,4,false);if(!moved)return ItemStack.EMPTY;if(stack.isEmpty())source.setByPlayer(ItemStack.EMPTY);else source.setChanged();return copy;}
+    @Override public ItemStack quickMoveStack(Player player,int index){Slot source=slots.get(index);if(!source.hasItem())return ItemStack.EMPTY;
+        if(index<4&&source.getItem().getItem() instanceof li.cil.oc.common.item.RackDiskDriveItem){ItemStack removed=source.remove(1),copy=removed.copy();if(!moveItemStackTo(removed,4,slots.size(),true)){inventory.setItem(index,removed);return ItemStack.EMPTY;}source.onTake(player,removed);return copy;}
+        ItemStack stack=source.getItem(),copy=stack.copy();boolean moved=index<4?moveItemStackTo(stack,4,slots.size(),true):moveItemStackTo(stack,0,4,false);if(!moved)return ItemStack.EMPTY;if(stack.isEmpty())source.setByPlayer(ItemStack.EMPTY);else source.setChanged();return copy;}
 }

@@ -24,7 +24,7 @@ public final class FileSystem extends ItemDriver {
         CompoundTag state = dataTag(stack);
         String loot = root.getString("oc:lootFactory");
         if (!loot.isEmpty()) {
-            var factory = li.cil.oc.common.init.Items.INSTANCE.fileSystemFactory(loot);
+            var factory = li.cil.oc.common.integration.LootIntegration.fileSystemFactory(loot, host.world());
             if (factory == null) throw new IllegalStateException("Missing loot filesystem factory: " + loot);
             try {
                 var fs = factory.call();
