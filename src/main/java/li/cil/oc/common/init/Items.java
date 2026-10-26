@@ -68,6 +68,10 @@ public final class Items implements ItemAPI {
         INSTANCE.registerItem("nanomachines", nanomachines::get);
         var manual = GAME_ITEMS.register("manual", () -> new li.cil.oc.common.item.ManualItem(new Item.Properties()));
         INSTANCE.registerItem("manual", manual::get);
+        var analyzer = GAME_ITEMS.register("analyzer", () -> new li.cil.oc.common.item.AnalyzerItem(new Item.Properties()));
+        INSTANCE.registerItem("analyzer", analyzer::get);
+        var wrench = GAME_ITEMS.register("wrench", () -> new li.cil.oc.common.item.WrenchItem(new Item.Properties()));
+        INSTANCE.registerItem("wrench", wrench::get);
         for (int tier = 0; tier < 2; tier++) hardware("wlancard" + (tier + 1), ComponentItem.Kind.WIRELESS, tier);
     }
     private final Map<String, ItemInfo> descriptors = new LinkedHashMap<>();
@@ -104,6 +108,7 @@ public final class Items implements ItemAPI {
         GAME_BLOCKS.register(modBus);
         GAME_ITEMS.register(modBus);
         ComponentItem.registerNetworking(modBus);
+        modBus.addListener(li.cil.oc.common.network.ToolNetworking::register);
     }
 
     public static synchronized void initializeDrivers() {

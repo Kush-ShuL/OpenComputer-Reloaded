@@ -34,6 +34,7 @@ With the addon installed in another test instance, `/oc_api_compat verify` start
 - Actual native/LuaJ kernels drive component callbacks and custom `Value.apply`, `Value.call`, and `Value` callbacks; custom converters receive the invoking machine's exact registry provider and run only once per boundary. A non-machine context receives null.
 - The addon's inter-mod enqueue lifecycle sends `IMC.registerProgramDiskLabel`; native/LuaJ BIOS code checks the received mapping through `computer.getProgramLocations()` after server startup.
 - Registry-aware persistence reaches an addon's nested filesystem and label through the public managed/read-only wrappers. The addon's old single-argument methods deliberately throw.
+- Replacement-host checkpoints retain native Lua 5.2/5.3 coroutine locals, live addon Values, the synchronized return stack, open tmpfs handles and queued signals. LuaJ follows its upstream reboot-on-load behavior. A direct callback calls Context.start/pause to exercise the separate coroutine-thread lock boundary.
 
 ## Old binary versus new source
 

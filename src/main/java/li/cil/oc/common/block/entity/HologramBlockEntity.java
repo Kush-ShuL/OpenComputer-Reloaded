@@ -9,7 +9,6 @@ import li.cil.oc.api.network.Environment;
 import li.cil.oc.api.network.Message;
 import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.SidedEnvironment;
-import li.cil.oc.client.HologramClient;
 import li.cil.oc.common.network.HologramNetworking;
 import li.cil.oc.server.component.Hologram;
 import li.cil.oc.util.RotationHelper;
@@ -34,6 +33,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** A real bottom-connected projector, with source-compatible pitch/yaw and projector NBT. */
 public final class HologramBlockEntity extends BlockEntity implements Environment, SidedEnvironment, Hologram.Host, Analyzable, Rotatable, RotatableBlockEntity, DeviceInfo {
+    /** Installed on the physical client, without a common-to-GUI class linkage. */
+    public interface ClientAccess { void request(HologramBlockEntity entity); void forget(HologramBlockEntity entity); }
+    private static volatile ClientAccess clientAccess;
+    public static void setClientAccess(ClientAccess access) { clientAccess = java.util.Objects.requireNonNull(access); }
+    private void requestSnapshot() { ClientAccess access = clientAccess; if (access != null) access.request(this); }
+    private void forgetClient() { ClientAccess access = clientAccess; if (access != null) access.forget(this); }
     public final int tier;
     private Hologram projector;
     private CompoundTag pendingData;
@@ -99,6 +104,8 @@ public final class HologramBlockEntity extends BlockEntity implements Environmen
         level.updateNeighborsAt(worldPosition, getBlockState().getBlock());
     }
     @Override public boolean rotate(Direction axis) {
+        // SimpleBlock in the original mod permits rotations around the Y axis.
+        if (axis == null || !axis.getAxis().isVertical() || !(level instanceof ServerLevel)) return false;
         var rotated = RotationHelper.rotate(pitch, yaw, axis);
         if (rotated.pitch() == pitch && rotated.yaw() == yaw) return false;
         setOrientation(rotated.pitch(), rotated.yaw()); return true;
@@ -118,20 +125,20 @@ public final class HologramBlockEntity extends BlockEntity implements Environmen
     public void flushPendingUpdates() { hologram().flushUpdates(); }
     public void tick() {
         if (level == null) return;
-        if (level.isClientSide) { if (!initialized) HologramClient.request(this); return; }
+        if (level.isClientSide) { if (!initialized) requestSnapshot(); return; }
         if (changeScheduled.getAndSet(false)) super.setChanged();
         if (node() != null && node().network() == null) Network.joinOrCreateNetwork(this);
         CompoundTag update; while ((update = pendingUpdates.poll()) != null) synchronizeHologram(update);
         hologram().update();
     }
     @OnlyIn(Dist.CLIENT) public void applySync(CompoundTag data, long sequence, boolean full) {
-        if (initialized && sequence <= revision) return;
-        if (!full && (!initialized || sequence != revision + 1)) { HologramClient.request(this); return; }
+        if (initialized && sequence < revision || initialized && !full && sequence == revision) return;
+        if (!full && (!initialized || sequence != revision + 1)) { requestSnapshot(); return; }
         readOrientation(data); hologram().applyUpdate(data); revision = sequence; initialized = true;
     }
-    @Override public void onLoad() { super.onLoad(); if (level == null) return; if (level.isClientSide) HologramClient.request(this); else Network.joinOrCreateNetwork(this); }
-    @Override public void onChunkUnloaded() { if (projector != null && projector.node() != null) projector.node().remove(); if (level != null && level.isClientSide) HologramClient.forget(this); super.onChunkUnloaded(); }
-    @Override public void setRemoved() { if (projector != null && projector.node() != null) projector.node().remove(); if (level != null && level.isClientSide) HologramClient.forget(this); super.setRemoved(); }
+    @Override public void onLoad() { super.onLoad(); if (level == null) return; if (level.isClientSide) requestSnapshot(); else Network.joinOrCreateNetwork(this); }
+    @Override public void onChunkUnloaded() { if (projector != null && projector.node() != null) projector.node().remove(); if (level != null && level.isClientSide) forgetClient(); super.onChunkUnloaded(); }
+    @Override public void setRemoved() { if (projector != null && projector.node() != null) projector.node().remove(); if (level != null && level.isClientSide) forgetClient(); super.setRemoved(); }
     @Override protected void loadAdditional(CompoundTag data, HolderLookup.Provider registries) {
         super.loadAdditional(data, registries); readOrientation(data);
         CompoundTag state = data.copy();
@@ -154,5 +161,10 @@ public final class HologramBlockEntity extends BlockEntity implements Environmen
         double x = Math.abs(offset.x * 3) + 1.5, y = Math.max(Math.abs(offset.y * 2), Math.abs(offset.y * 2 + 2)), z = Math.abs(offset.z * 3) + 1.5;
         double radius = Math.sqrt(x * x + y * y + z * z) * hologram.scale * 1.02;
         return new AABB(xPosition() - radius, yPosition() - radius, zPosition() - radius, xPosition() + radius, yPosition() + radius, zPosition() + radius);
+    }
+    public double renderDistanceSquared(boolean fade) {
+        double maximum = java.util.Arrays.stream(li.cil.oc.Settings.get().hologramMaxScaleByTier).max().orElse(1);
+        double distance = fade ? li.cil.oc.Settings.get().hologramFadeStartDistance : li.cil.oc.Settings.get().hologramRenderDistance;
+        return hologram().scale / Math.max(maximum, 0.333333) * distance * distance;
     }
 }

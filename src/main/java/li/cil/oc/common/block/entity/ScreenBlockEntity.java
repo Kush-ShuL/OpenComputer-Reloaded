@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /** Persistent screen environment and the original deterministic rectangular grouping. */
-public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Environment, SidedEnvironment, li.cil.oc.api.internal.Colored {
+public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Environment, SidedEnvironment, li.cil.oc.api.network.Analyzable, li.cil.oc.api.internal.Colored {
     public final int tier;
     private Screen buffer;
     private BlockPos origin;
@@ -90,6 +90,7 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
     }
     private boolean onServerThread() { return level instanceof ServerLevel server && server.getServer().isSameThread(); }
     @Override public Node node() { return buffer().node(); }
+    @Override public Node[] onAnalyze(Player player, Direction side, float hitX, float hitY, float hitZ) { return new Node[]{origin().node()}; }
     @Override public void onConnect(Node node) { buffer().onConnect(node); }
     @Override public void onDisconnect(Node node) { buffer().onDisconnect(node); }
     @Override public void onMessage(Message message) { buffer().onMessage(message); }

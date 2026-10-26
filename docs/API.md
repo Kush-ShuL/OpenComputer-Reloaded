@@ -167,3 +167,9 @@ setup 阶段注册 `PathProvider`、`ContentProvider`、图片提供者与标签
 当前版本已由独立编译的扩展在 Windows 专服运行验证：旧两参数 Converter 二进制、
 注册表上下文、网络与 prefab 生命周期、外部 SimpleComponent、原生 Lua 5.3 / LuaJ 的
 组件和 Value 回调，以及 IMC 程序磁盘映射。测试源见 `tools/api-compat-addon`。
+
+后续的运行时回归也已验证：替换整台宿主后，原生 Lua 5.2、5.3 恢复协程局部变量、
+同步回调返回栈、含完整 ItemStack 的 Value、临时文件句柄和待处理信号。
+LuaJ 按上游约定在恢复时重启，不保存协程。LuaJ 直接回调中的 `Context.pause()` 和
+`Context.start()` 已修正线程锁边界；宿主也保留第三方 driver 返回 `null` 数据标签时
+回退到默认 `oc:data` 的行为。这些运行时修复不改变已发布 SDK 的公共签名。

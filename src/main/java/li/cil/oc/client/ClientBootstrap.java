@@ -10,5 +10,6 @@ public final class ClientBootstrap {
     public static void initialize() {
         API.manual = ManualRegistry.INSTANCE;
         ManualItemClient.initialize();
+        AnalyzerClient.initialize();
     }
 }

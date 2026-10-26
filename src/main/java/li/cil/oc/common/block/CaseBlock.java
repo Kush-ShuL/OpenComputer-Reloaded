@@ -6,6 +6,7 @@ import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.*;
 import net.minecraft.world.level.block.state.*;
@@ -30,4 +31,9 @@ public final class CaseBlock extends Block implements EntityBlock {
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
     @Override protected void onRemove(BlockState state,Level level,BlockPos pos,BlockState next,boolean moving){if(state.getBlock()!=next.getBlock()&&level.getBlockEntity(pos) instanceof CaseBlockEntity entity){entity.flushComponents();Containers.dropContents(level,pos,entity);}super.onRemove(state,level,pos,next,moving);}
+    @Override protected boolean isSignalSource(BlockState state){return true;}
+    @Override protected int getSignal(BlockState state,BlockGetter level,BlockPos pos,Direction side){return level.getBlockEntity(pos) instanceof CaseBlockEntity host?Math.max(0,host.redstoneState().output(side.getOpposite())):0;}
+    @Override protected int getDirectSignal(BlockState state,BlockGetter level,BlockPos pos,Direction side){return getSignal(state,level,pos,side);}
+    @Override public boolean canConnectRedstone(BlockState state,BlockGetter level,BlockPos pos,Direction side){return level.getBlockEntity(pos) instanceof CaseBlockEntity host&&host.redstoneState().enabled();}
+    @Override protected void neighborChanged(BlockState state,Level level,BlockPos pos,Block block,BlockPos from,boolean moving){if(level.getBlockEntity(pos) instanceof CaseBlockEntity host)host.redstoneState().rescan();super.neighborChanged(state,level,pos,block,from,moving);}
 }

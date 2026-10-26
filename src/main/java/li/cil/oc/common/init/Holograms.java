@@ -37,7 +37,12 @@ public final class Holograms {
             Items.INSTANCE.registerBlock(id, block, item);
         }
     }
-    public static void register(IEventBus modBus) { BLOCKS.register(modBus); ITEMS.register(modBus); TYPES.register(modBus); }
+    public static void register(IEventBus modBus) {
+        BLOCKS.register(modBus); ITEMS.register(modBus); TYPES.register(modBus);
+        modBus.addListener(li.cil.oc.common.network.HologramNetworking::register);
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT)
+            li.cil.oc.client.HologramClient.initialize(modBus);
+    }
     private static final class HologramItem extends BlockItem {
         private final int tier;
         private HologramItem(Block block, int tier) { super(block, new Item.Properties().rarity(tier == 0 ? Rarity.COMMON : Rarity.UNCOMMON)); this.tier = tier; }

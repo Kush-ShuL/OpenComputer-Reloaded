@@ -35,6 +35,7 @@ public final class Hologram extends AbstractManagedEnvironment implements Device
     public long renderRevision;
     private final BitSet dirty = new BitSet(PLANE);
     private boolean settingsDirty;
+    private boolean cleared;
 
     public Hologram(Host host, int tier) {
         this.host = host; this.tier = Math.clamp(tier, 0, 1);
@@ -73,7 +74,7 @@ public final class Hologram extends AbstractManagedEnvironment implements Device
     private static double finite(double value) { if (!Double.isFinite(value)) throw new IllegalArgumentException("value must be finite"); return value; }
     @Callback(doc = "function() -- Clears the hologram.")
     public synchronized Object[] clear(Context context, Arguments args) {
-        Arrays.fill(volume, 0); dirty.set(0, PLANE); litRatio = 0; settingsChanged(); return null;
+        Arrays.fill(volume, 0); dirty.clear(); cleared = true; litRatio = 0; settingsChanged(); return null;
     }
     @Callback(direct = true, doc = "function(x:number,y:number,z:number):number -- Returns the value of a voxel.")
     public synchronized Object[] get(Context context, Arguments args) { return new Object[]{getColor(coordinate(args, 0, WIDTH, "x"), coordinate(args, 1, HEIGHT, "y"), coordinate(args, 2, WIDTH, "z"))}; }
@@ -170,8 +171,9 @@ public final class Hologram extends AbstractManagedEnvironment implements Device
     }
     /** A snapshot request drains updates without consuming another tick's worth of energy. */
     public synchronized void flushUpdates() {
-        if (!(host.world() instanceof ServerLevel level) || !level.getServer().isSameThread() || dirty.isEmpty() && !settingsDirty) return;
+        if (!(host.world() instanceof ServerLevel level) || !level.getServer().isSameThread() || dirty.isEmpty() && !settingsDirty && !cleared) return;
         CompoundTag update = new CompoundTag(); writeSettings(update);
+        if (cleared) update.putBoolean("clear", true);
         if (!dirty.isEmpty()) {
             int minX = WIDTH, maxX = -1, minZ = WIDTH, maxZ = -1;
             for (int index = dirty.nextSetBit(0); index >= 0; index = dirty.nextSetBit(index + 1)) { int x = index % WIDTH, z = index / WIDTH; minX = Math.min(minX, x); maxX = Math.max(maxX, x); minZ = Math.min(minZ, z); maxZ = Math.max(maxZ, z); }
@@ -187,7 +189,7 @@ public final class Hologram extends AbstractManagedEnvironment implements Device
                 update.putIntArray("columns", values);
             }
         }
-        host.synchronizeHologram(update); dirty.clear(); settingsDirty = false;
+        host.synchronizeHologram(update); dirty.clear(); settingsDirty = false; cleared = false;
     }
     private void writeSettings(CompoundTag tag) {
         tag.putIntArray("colors", colors.clone()); tag.putDouble("oc:scale", scale); tag.putBoolean("oc:hasPower", hasPower);
@@ -197,6 +199,7 @@ public final class Hologram extends AbstractManagedEnvironment implements Device
     }
     public synchronized CompoundTag fullUpdate() { CompoundTag tag = new CompoundTag(); tag.putIntArray("volume", volume.clone()); writeSettings(tag); return tag; }
     public synchronized void applyUpdate(CompoundTag tag) {
+        if (tag.getBoolean("clear")) Arrays.fill(volume, 0);
         if (tag.contains("volume")) { int[] values = tag.getIntArray("volume"); Arrays.fill(volume, 0); System.arraycopy(values, 0, volume, 0, Math.min(values.length, volume.length)); }
         if (tag.contains("columns")) {
             int[] values = tag.getIntArray("columns");
@@ -217,6 +220,6 @@ public final class Hologram extends AbstractManagedEnvironment implements Device
         rotationSpeed = tag.getFloat("oc:rotationSpeed"); rotationSpeedX = tag.getFloat("oc:rotationSpeedX"); rotationSpeedY = tag.getFloat("oc:rotationSpeedY"); rotationSpeedZ = tag.getFloat("oc:rotationSpeedZ");
         litRatio = -1; renderRevision++;
     }
-    @Override public synchronized void load(CompoundTag tag) { super.load(tag); applyUpdate(tag); dirty.clear(); settingsDirty = false; }
+    @Override public synchronized void load(CompoundTag tag) { super.load(tag); applyUpdate(tag); dirty.clear(); settingsDirty = false; cleared = false; }
     @Override public synchronized void save(CompoundTag tag) { super.save(tag); tag.putByte("oc:tier", (byte) tier); tag.putIntArray("volume", volume.clone()); writeSettings(tag); }
 }

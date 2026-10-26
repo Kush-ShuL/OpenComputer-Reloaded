@@ -43,6 +43,15 @@ adapter drivers are also connected to setup initialization. These modules are
 included in the current full build and still require functional validation.
 Module presence is distinct from complete upstream behavior and player acceptance.
 
+Analyzer and wrench items now have their original diagnostic, clipboard and
+rotation paths. Redstone I/O and both internal redstone-card tiers, and the two
+hologram tiers with real voxel VBOs, shaders and revisioned synchronization,
+have been connected to registration. These additions require interactive
+acceptance; compilation does not establish their rendering or world behavior.
+The bundled-redstone core retains all sixteen channels, provider aggregation,
+per-color events and NBT. Concrete optional-mod adapters and wireless redstone
+are still outstanding; registering the core does not claim those integrations.
+
 The manual API now has a Java client backend, resource and addon providers,
 language fallback, tabs and interactive Markdown rendering using the original
 manual textures. It initializes on the physical client before addon setup
@@ -69,6 +78,13 @@ the specific contracts they exercise; they do not establish computer boot, saved
 VM restoration, all host devices, automation, multiplayer synchronization,
 graphics fidelity or a complete migration. The current API validation version is
 `8.0.0-alpha.1`; a stable ABI has not been announced.
+
+Native Lua 5.2 and 5.3 have passed replacement-host checkpoints retaining the
+coroutine, synchronized-return stack, addon Value with registry-aware item data,
+open tmpfs handle and queued signal. LuaJ retains the upstream reboot-on-load
+behavior. This exposed and fixed a LuaJ direct-callback pause/start monitor
+deadlock. Actual chunk unload and cold-server restoration remain separate
+acceptance steps. No public SDK signatures changed for these runtime fixes.
 
 The standalone SDK has successfully compiled and published to Maven Local.
 A separately compiled addon has passed on a Windows dedicated server: legacy

@@ -4,6 +4,7 @@ import li.cil.oc.OpenComputers;
 import li.cil.oc.Settings;
 import li.cil.oc.api.driver.item.Memory;
 import li.cil.oc.api.machine.*;
+import li.cil.oc.server.machine.ArchitectureCallbackContext;
 import li.cil.repack.org.luaj.vm2.*;
 import li.cil.repack.org.luaj.vm2.lib.jse.JsePlatform;
 import net.minecraft.nbt.CompoundTag;
@@ -25,7 +26,7 @@ public final class LuaJLuaArchitecture implements Architecture {
     @FunctionalInterface interface Invocation { Object[] call()throws Exception; }
     @FunctionalInterface interface Documentation { String call()throws Exception; }
     Varargs invoke(Invocation invocation){
-        try{Object[] result=invocation.call();if(result==null)return LuaValue.TRUE;LuaValue[] values=new LuaValue[result.length+1];values[0]=LuaValue.TRUE;for(int index=0;index<result.length;index++)values[index+1]=LuaValueBridge.toLua(result[index]);return LuaValue.varargsOf(values);}
+        try{Object[] result=ArchitectureCallbackContext.call(machine,invocation::call);if(result==null)return LuaValue.TRUE;LuaValue[] values=new LuaValue[result.length+1];values[0]=LuaValue.TRUE;for(int index=0;index<result.length;index++)values[index+1]=LuaValueBridge.toLua(result[index]);return LuaValue.varargsOf(values);}
         catch(Throwable error){
             if(Settings.get().logLuaCallbackErrors&&!(error instanceof LimitReachedException))OpenComputers.LOGGER.warn("Exception in Lua callback",error);
             if(error instanceof LimitReachedException)return LuaValue.NONE;
@@ -39,7 +40,7 @@ public final class LuaJLuaArchitecture implements Architecture {
             return LuaValue.varargsOf(new LuaValue[]{LuaValue.TRUE,LuaValue.NIL,LuaValue.valueOf(message)});
         }
     }
-    Varargs documentation(Documentation query){try{String doc=query.call();return doc==null||doc.isEmpty()?LuaValue.NIL:LuaValue.valueOf(doc);}catch(Throwable error){return LuaValue.varargsOf(LuaValue.NIL,LuaValue.valueOf(error instanceof NoSuchMethodException?"no such method":error.getMessage()==null?error.toString():error.getMessage()));}}
+    Varargs documentation(Documentation query){try{String doc=ArchitectureCallbackContext.call(machine,query::call);return doc==null||doc.isEmpty()?LuaValue.NIL:LuaValue.valueOf(doc);}catch(Throwable error){return LuaValue.varargsOf(LuaValue.NIL,LuaValue.valueOf(error instanceof NoSuchMethodException?"no such method":error.getMessage()==null?error.toString():error.getMessage()));}}
     public boolean isInitialized(){return initialized;}
     public boolean recomputeMemory(Iterable<ItemStack> components){double total=0;for(ItemStack stack:components){var driver=li.cil.oc.api.Driver.driverFor(stack);if(driver instanceof Memory ram)total+=ram.amount(stack)*1024;}memory=Math.max(0,Math.min(Settings.get().maxTotalRam,(int)total));return memory>0;}
     public void runSynchronized(){if(synchronizedCall==null)throw new IllegalStateException("No synchronized Lua call pending");synchronizedResult=synchronizedCall.call();synchronizedCall=null;}

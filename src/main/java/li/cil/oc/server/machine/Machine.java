@@ -99,7 +99,17 @@ public final class Machine extends AbstractManagedEnvironment implements li.cil.
     public boolean isExecuting(){synchronized(stateLock){return states.contains(State.Running);}}
     @Override public boolean isRunning(){State s=state();return s!=State.Stopped&&s!=State.Stopping;}
     @Override public boolean isPaused(){return state()==State.Paused&&remainingPause>0;}
-    @Override public synchronized boolean start(){synchronized(stateLock){
+    @Override public boolean start(){
+        if(ArchitectureCallbackContext.isCallbackFor(this))synchronized(stateLock){
+            // A callback belongs to an already active VM. It may request a
+            // resume/restart, but cannot initialize a new VM inside itself.
+            if(state()==State.Paused&&remainingPause>0){remainingPause=0;host.markChanged();return true;}
+            if(state()==State.Stopping){switchTo(State.Restarting);return true;}
+            return false;
+        }
+        synchronized(this){return startLocked();}
+    }
+    private boolean startLocked(){synchronized(stateLock){
         switch(states.peek()){
             case Stopped->{
                 if(node().network()==null)return false;onHostChanged();processAdded();verifyComponents();
@@ -117,9 +127,15 @@ public final class Machine extends AbstractManagedEnvironment implements li.cil.
     }}
     @Override public boolean pause(double seconds){
         int ticks=Math.max(0,(int)(seconds*20));
+        // LuaJ runs direct callbacks on a separate Java coroutine thread while
+        // the executor owns this monitor and waits for that coroutine. Such a
+        // callback only requests a pause after its current task, as Context
+        // promises; it must not wait for the executor's monitor.
+        if(ArchitectureCallbackContext.isCallbackFor(this))synchronized(stateLock){return pauseForTicks(ticks);}
         synchronized(stateLock){if(state()==State.Stopping||state()==State.Stopped||state()==State.Paused&&ticks<=remainingPause)return false;}
-        synchronized(this){synchronized(stateLock){if(state()==State.Stopping||state()==State.Stopped||state()==State.Paused&&ticks<=remainingPause)return false;if(state()!=State.Paused)states.push(State.Paused);remainingPause=ticks;host.markChanged();return true;}}
+        synchronized(this){synchronized(stateLock){return pauseForTicks(ticks);}}
     }
+    private boolean pauseForTicks(int ticks){if(state()==State.Stopping||state()==State.Stopped||state()==State.Paused&&ticks<=remainingPause)return false;if(state()!=State.Paused)states.push(State.Paused);remainingPause=ticks;host.markChanged();return true;}
     @Override public boolean stop(){synchronized(stateLock){if(state()==State.Stopped||state()==State.Stopping)return false;states.push(State.Stopping);host.markChanged();return true;}}
     @Override public boolean crash(String message){error=message;synchronized(stateLock){boolean result=stop();if(state()==State.Stopping){states.clear();states.push(State.Stopping);}return result;}}
     @Override public void consumeCallBudget(double value){if(architecture!=null&&architecture.isInitialized()&&!inSynchronizedCall){value=Math.max(0,value);if(value>callBudget)Machine.<RuntimeException>throwUnchecked(new LimitReachedException());callBudget-=value;}}
@@ -146,12 +162,29 @@ public final class Machine extends AbstractManagedEnvironment implements li.cil.
         Callback annotation=Callbacks.annotation(component.host(),method);if(annotation==null)throw new NoSuchMethodException(method);if(annotation.direct())consumeCallBudget(1d/annotation.limit());return component.invoke(method,this,args);
     }
     @Override public Object[] invoke(Value value,String method,Object[] args)throws Exception{Callback a=Callbacks.annotation(value,method);if(a==null)throw new NoSuchMethodException(method);if(a.direct())consumeCallBudget(1d/a.limit());return Registry.convert(Callbacks.invoke(value,method,this,args),host.world()==null?null:host.world().registryAccess());}
-    @Callback public Object[] start(Context context,Arguments args){return new Object[]{start()};}
+    @Callback public Object[] start(Context context,Arguments args){return new Object[]{!isPaused()&&start()};}
     @Callback public Object[] stop(Context context,Arguments args){return new Object[]{stop()};}
     @Callback(direct=true) public Object[] isRunning(Context context,Arguments args){return new Object[]{isRunning()};}
-    @Callback(direct=true) public Object[] getProgramLocations(Context context,Arguments args){return new Object[]{ProgramLocations.getMappings(li.cil.oc.api.Machine.getArchitectureName(architecture.getClass()))};}
-    @Callback public Object[] beep(Context context,Arguments args){if(args.isString(0))beep(args.checkString(0));else beep((short)args.optInteger(0,1000),(short)Math.round(args.optDouble(1,.1)*1000));return new Object[]{true};}
-    @Callback(direct=true) public Object[] getDeviceInfo(Context context,Arguments args){Map<String,Object> devices=new LinkedHashMap<>();if(node().network()!=null)for(Node n:node().network().nodes())if(n.host() instanceof DeviceInfo info&&info.getDeviceInfo()!=null)devices.put(n.address(),info.getDeviceInfo());return new Object[]{devices};}
+    @Callback public Object[] getProgramLocations(Context context,Arguments args){return new Object[]{ProgramLocations.getMappings(li.cil.oc.api.Machine.getArchitectureName(architecture.getClass()))};}
+    @Callback public Object[] beep(Context context,Arguments args){
+        if(args.count()==1&&args.isString(0))beep(args.checkString(0));
+        else{
+            int frequency=args.optInteger(0,440);
+            if(frequency<20||frequency>2000)throw new IllegalArgumentException("invalid frequency, must be in [20, 2000]");
+            int milliseconds=Math.max(50,Math.min(5000,(int)(args.optDouble(1,.1)*1000)));
+            context.pause(milliseconds/1000d);beep((short)frequency,(short)milliseconds);
+        }
+        return null;
+    }
+    @Callback public Object[] getDeviceInfo(Context context,Arguments args){
+        context.pause(1);
+        Map<String,Object> devices=new LinkedHashMap<>();
+        if(node().network()!=null)for(Node n:node().network().nodes()){
+            boolean visible=n instanceof Component component?n==node()||component.canBeSeenFrom(node()):n.canBeReachedFrom(node());
+            if(visible&&n.host() instanceof DeviceInfo info){Map<String,String> data=info.getDeviceInfo();if(data!=null)devices.put(n.address(),data);}
+        }
+        return new Object[]{devices};
+    }
     @Override public boolean canUpdate(){return true;}
     @Override public void update(){
         if(state()==State.Stopped)return;processAdded();if(componentCount()>maxComponents){beep("-..");crash("gui.Error.ComponentOverflow");}
