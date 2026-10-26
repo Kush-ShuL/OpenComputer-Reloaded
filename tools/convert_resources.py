@@ -30,6 +30,10 @@ HARDWARE_TOOLTIPS = {
     'gpu_operations': ('Operations/tick: %s', '操作数 / tick：%s'),
     'storage_size': ('Capacity: %s KiB', '存储容量：%s KiB'),
 }
+PORT_ITEM_NAMES = {
+    'en_us': {'item.opencomputers.floppycontainer': 'Floppy Disk Container'},
+    'zh_cn': {'item.opencomputers.floppycontainer': '软盘容器'},
+}
 
 
 def upstream_source(relative: str) -> str:
@@ -104,6 +108,9 @@ def language() -> int:
         translations['gui.opencomputers.turn_off'] = '关闭' if source.stem.lower() == 'zh_cn' else 'Turn off'
         for key, (english, chinese) in HARDWARE_TOOLTIPS.items():
             translations['tooltip.opencomputers.' + key] = chinese if source.stem.lower() == 'zh_cn' else english
+        # Keep previews already running with the previous component bus key usable on resource reload.
+        translations['oc:tooltip.cpu.Components'] = translations['tooltip.opencomputers.cpu_components']
+        translations.update(PORT_ITEM_NAMES.get(source.stem.lower(), {}))
         write_json(source.with_name(source.stem.lower() + '.json'), translations)
         total += len(translations)
     return total

@@ -617,5 +617,7 @@
   "tooltip.opencomputers.gpu_resolution": "Maximum resolution: %s × %s",
   "tooltip.opencomputers.gpu_depth": "Maximum color depth: %s-bit",
   "tooltip.opencomputers.gpu_operations": "Operations/tick: %s",
-  "tooltip.opencomputers.storage_size": "Capacity: %s KiB"
+  "tooltip.opencomputers.storage_size": "Capacity: %s KiB",
+  "item.opencomputers.floppycontainer": "Floppy Disk Container",
+  "oc:tooltip.cpu.Components": "Supported components: %s"
 }

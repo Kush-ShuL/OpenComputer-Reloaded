@@ -46,6 +46,11 @@ public final class Holograms {
     private static final class HologramItem extends BlockItem {
         private final int tier;
         private HologramItem(Block block, int tier) { super(block, new Item.Properties().rarity(tier == 0 ? Rarity.COMMON : Rarity.UNCOMMON)); this.tier = tier; }
-        @Override public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) { super.appendHoverText(stack, context, tooltip, flag); tooltip.add(Component.translatable("oc:tooltip.hologram" + tier)); }
+        @Override public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+            super.appendHoverText(stack, context, tooltip, flag);
+            for (String line : Component.translatable("oc:tooltip.hologram" + tier).getString().split("\\[nl\\]")) {
+                tooltip.add(Component.literal(line));
+            }
+        }
     }
 }
