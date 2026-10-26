@@ -21,6 +21,9 @@ versionRange="[${neo_version},21.2)"
 ordering="NONE"
 side="BOTH"
 
+[[mixins]]
+config="opencomputers.printing.mixins.json"
+
 [[dependencies.opencomputers]]
 modId="minecraft"
 type="required"

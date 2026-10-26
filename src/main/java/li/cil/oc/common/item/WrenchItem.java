@@ -37,6 +37,7 @@ public final class WrenchItem extends Item implements li.cil.oc.api.internal.Wre
         if (player == null || !level.hasChunkAt(pos) || !level.mayInteract(player, pos)
                 || !player.mayUseItemAt(pos, context.getClickedFace(), stack)) return InteractionResult.PASS;
         BlockEntity entity = level.getBlockEntity(pos);
+        if (level.getBlockState(pos).getBlock() instanceof li.cil.oc.common.block.ChargerBlock) return InteractionResult.PASS;
         if (entity instanceof RotatableBlockEntity rotatable) {
             if (level.isClientSide) return InteractionResult.SUCCESS;
             if (!rotatable.rotate(context.getClickedFace())) return InteractionResult.PASS;

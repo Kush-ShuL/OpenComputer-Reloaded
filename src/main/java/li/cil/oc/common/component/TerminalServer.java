@@ -58,8 +58,7 @@ public class TerminalServer implements EnvironmentHost, Analyzable, RackMountabl
     @Override public Node node() { return node; }
     public synchronized li.cil.oc.api.internal.TextBuffer buffer() {
         if (buffer == null) {
-            ItemStack screen = Objects.requireNonNull(Items.get(Constants.BlockName.ScreenTier1)).createItemStack(1);
-            buffer = (li.cil.oc.api.internal.TextBuffer) Objects.requireNonNull(Driver.driverFor(screen, getClass())).createEnvironment(screen, this);
+            buffer = new TextBuffer(this, new TerminalServices(this));
             buffer.setMaximumResolution(Settings.screenResolutionsByTier[2][0], Settings.screenResolutionsByTier[2][1]);
             buffer.setMaximumColorDepth(Settings.screenDepthsByTier[2]);
         }
@@ -67,12 +66,12 @@ public class TerminalServer implements EnvironmentHost, Analyzable, RackMountabl
     }
     public synchronized Keyboard keyboard() {
         if (keyboard == null) {
-            ItemStack item = Objects.requireNonNull(Items.get(Constants.BlockName.Keyboard)).createItemStack(1);
-            keyboard = (Keyboard) Objects.requireNonNull(Driver.driverFor(item, getClass())).createEnvironment(item, this);
+            keyboard = new li.cil.oc.server.component.Keyboard(this);
             keyboard.setUsableOverride((ignored, player) -> {
-                ItemStack held = player.getMainHandItem();
-                return Items.get(held) != null && Items.get(held) == Items.get(Constants.ItemName.Terminal) &&
-                        sidedKeys().contains(held.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getString("oc:key"));
+                for (ItemStack held : List.of(player.getMainHandItem(), player.getOffhandItem()))
+                    if (Items.get(held) != null && Items.get(held) == Items.get(Constants.ItemName.Terminal) &&
+                        sidedKeys().contains(held.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getString("oc:key"))) return true;
+                return false;
             });
         }
         return keyboard;
@@ -108,6 +107,7 @@ public class TerminalServer implements EnvironmentHost, Analyzable, RackMountabl
     @Override public double zPosition() { return rack.zPosition(); }
     @Override public void markChanged() { rack.markChanged(); }
     @Override public CompoundTag getData() {
+        if (world().isClientSide) { CompoundTag data = rack.getMountableData(slot); return data == null ? new CompoundTag() : data.copy(); }
         if (node.address() == null) Network.joinNewNetwork(node);
         CompoundTag tag = new CompoundTag();
         ListTag list = new ListTag(); for (String key : keys) list.add(StringTag.valueOf(key));

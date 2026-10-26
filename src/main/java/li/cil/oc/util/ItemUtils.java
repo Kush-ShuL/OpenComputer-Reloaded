@@ -67,9 +67,9 @@ public final class ItemUtils {
         return result.toArray(ItemStack[]::new);
     }
     private static boolean isBlacklisted(ItemStack stack){
-        var config=Settings.get().config;String path="disassembler.inputBlacklist";
-        if(!config.hasPath(path))return false;
+        var config=Settings.get().config;String path="misc.disassemblerInputBlacklist";
         var id=stack.getItem() instanceof BlockItem block?BuiltInRegistries.BLOCK.getKey(block.getBlock()):BuiltInRegistries.ITEM.getKey(stack.getItem());
-        return config.getStringList(path).contains(id.toString());
+        return config.hasPath(path)&&config.getStringList(path).contains(id.toString())
+            ||config.hasPath("disassembler.inputBlacklist")&&config.getStringList("disassembler.inputBlacklist").contains(id.toString());
     }
 }

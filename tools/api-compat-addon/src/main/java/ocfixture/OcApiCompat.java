@@ -47,10 +47,13 @@ public final class OcApiCompat {
             BaseContract.register();
             RuntimeContract.register();
             CheckpointContract.register();
+            ProductionContract.register();
             LOGGER.info("API_FIXTURE SDK={} owner={} registered", API.VERSION, API.ID_OWNER);
         }));
-        bus.addListener((InterModEnqueueEvent event) ->
-                li.cil.oc.api.IMC.registerProgramDiskLabel("oc_fixture_program", "fixture-disk"));
+        bus.addListener((InterModEnqueueEvent event) -> {
+            li.cil.oc.api.IMC.registerProgramDiskLabel("oc_fixture_program", "fixture-disk");
+            ProductionContract.enqueue();
+        });
         NeoForge.EVENT_BUS.register(OcApiCompat.class);
     }
     public static String run(ServerLevel level) throws Exception {
@@ -58,6 +61,7 @@ public final class OcApiCompat {
         finished = false;
         BaseContract.run(level);
         CheckpointContract.run(level);
+        ProductionContract.run(level);
         return RuntimeContract.run(level);
     }
     @SubscribeEvent public static void commands(RegisterCommandsEvent event) {
@@ -78,8 +82,8 @@ public final class OcApiCompat {
         catch (Throwable error) { LOGGER.error("API_FIXTURE FAIL startup", error); throw new IllegalStateException("External API fixture failed", error); }
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event) {
-        RuntimeContract.tick(); BaseContract.tick(); CheckpointContract.tick();
-        if (!AUTOMATED.get() || finished || RuntimeContract.isRunning() || BaseContract.isRunning() || CheckpointContract.isRunning()) return;
+        RuntimeContract.tick(); BaseContract.tick(); CheckpointContract.tick(); ProductionContract.tick();
+        if (!AUTOMATED.get() || finished || RuntimeContract.isRunning() || BaseContract.isRunning() || CheckpointContract.isRunning() || ProductionContract.isRunning()) return;
         finished = true;
         boolean failure = results().stream().anyMatch(result -> result.startsWith("FAIL"));
         for (String result : results()) LOGGER.info("API_FIXTURE {}", result);
@@ -100,6 +104,6 @@ public final class OcApiCompat {
             Files.write(path, lines, StandardCharsets.UTF_8);
         } catch (IOException error) { throw new UncheckedIOException("Could not write the API contract report", error); }
     }
-    public static List<String> results() { return java.util.stream.Stream.of(BaseContract.results(), RuntimeContract.results(), CheckpointContract.results()).flatMap(List::stream).toList(); }
-    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { RuntimeContract.close(); BaseContract.close(); CheckpointContract.close(); AUTOMATED.set(false); }
+    public static List<String> results() { return java.util.stream.Stream.of(BaseContract.results(), RuntimeContract.results(), CheckpointContract.results(), ProductionContract.results()).flatMap(List::stream).toList(); }
+    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { RuntimeContract.close(); BaseContract.close(); CheckpointContract.close(); ProductionContract.close(); AUTOMATED.set(false); }
 }

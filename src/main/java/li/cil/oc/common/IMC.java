@@ -51,13 +51,13 @@ public final class IMC {
             State state = State.REGISTERED;
             String detail;
             switch (method) {
-                case li.cil.oc.api.IMC.REGISTER_ASSEMBLER_FILTER -> { AssemblerTemplates.addFilter(string(payload)); state = State.REGISTERED_PENDING_DEVICE; detail = "Callable assembler filter registered; assembler device is not yet ported"; }
-                case li.cil.oc.api.IMC.REGISTER_ASSEMBLER_TEMPLATE -> { AssemblerTemplates.add(compound(payload)); state = State.REGISTERED_PENDING_DEVICE; detail = "Typed select/validate/assemble template registered; assembler device is not yet ported"; }
-                case li.cil.oc.api.IMC.REGISTER_DISASSEMBLER_TEMPLATE -> { DisassemblerTemplates.add(compound(payload)); state = State.REGISTERED_PENDING_DEVICE; detail = "Typed selector and disassembly outputs registered; disassembler device is not yet ported"; }
+                case li.cil.oc.api.IMC.REGISTER_ASSEMBLER_FILTER -> { AssemblerTemplates.addFilter(string(payload)); detail = "Applied to the assembler's template selection"; }
+                case li.cil.oc.api.IMC.REGISTER_ASSEMBLER_TEMPLATE -> { AssemblerTemplates.add(compound(payload)); detail = "Registered with the assembler's validation, inventory and production flow"; }
+                case li.cil.oc.api.IMC.REGISTER_DISASSEMBLER_TEMPLATE -> { DisassemblerTemplates.add(compound(payload)); detail = "Registered with the disassembler's recovery queue and guaranteed-drop flow"; }
                 case li.cil.oc.api.IMC.REGISTER_TOOL_DURABILITY_PROVIDER -> { ToolDurabilityProviders.add(callback(string(payload), double.class, ItemStack.class)); detail = "Registered in callable ToolDurabilityProviders.getDurability"; }
                 case li.cil.oc.api.IMC.REGISTER_WRENCH_TOOL_CHECK -> { WrenchTools.addCheck(callback(string(payload), boolean.class, ItemStack.class)); detail = "Registered in real wrench item queries"; }
                 case li.cil.oc.api.IMC.REGISTER_WRENCH_TOOL -> { WrenchTools.addUsage(callback(string(payload), boolean.class, Player.class, BlockPos.class, boolean.class)); detail = "Registered in real wrench simulation and usage"; }
-                case li.cil.oc.api.IMC.REGISTER_ITEM_CHARGE -> { CompoundTag data = compound(payload); Method check = callback(required(data, "canCharge"), boolean.class, ItemStack.class); Method charge = callback(required(data, "charge"), double.class, ItemStack.class, double.class, boolean.class); ItemCharge.add(data.getString("name"), check, charge); detail = "Callable item charging handler registered; standalone charger device is not yet ported"; }
+                case li.cil.oc.api.IMC.REGISTER_ITEM_CHARGE -> { CompoundTag data = compound(payload); Method check = callback(required(data, "canCharge"), boolean.class, ItemStack.class); Method charge = callback(required(data, "charge"), double.class, ItemStack.class, double.class, boolean.class); ItemCharge.add(data.getString("name"), check, charge); detail = "Registered with the charger's item charging flow"; }
                 case li.cil.oc.api.IMC.REGISTER_INK_PROVIDER -> { PrintData.addInkProvider(callback(string(payload), int.class, ItemStack.class)); detail = "Registered in the existing PrintData.inkValue consumer"; }
                 case li.cil.oc.api.IMC.BLACKLIST_PERIPHERAL -> { PeripheralBlacklist.add(string(payload)); state = State.REGISTERED_PENDING_DEVICE; detail = "Peripheral blacklist retained; ComputerCraft integration driver is not yet ported"; }
                 case li.cil.oc.api.IMC.BLACKLIST_HOST -> {

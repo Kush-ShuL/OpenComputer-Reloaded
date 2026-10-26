@@ -58,6 +58,16 @@ manual textures. It initializes on the physical client before addon setup
 registration; dedicated servers keep `API.manual` null. This does not establish
 parity for every manual item interaction or every optional addon.
 
+The robot/drone control platform, portable data, physical hosts, inventory and
+screen/keyboard drivers, movement, interaction, client models and input are now
+registered. Robot movement retains its controller and VM. Racks, server blades,
+component buses and paired wireless terminals are also registered. The production
+chain includes original robot/drone assembly layouts, template-driven powered
+assembly and disassembly, the 3D printer and dynamic printed blocks, and the
+redstone-controlled charger. These modules compile and the Windows development
+client joins the existing world; their full gameplay acceptance is outstanding.
+Advanced agent upgrades, tablets and microcontrollers remain incomplete.
+
 Earlier Windows testing exposed texture/layout problems, fractional energy
 accounting errors, host-thread deadlocks and native-library class-loader issues.
 The source contains targeted corrections, including deferred server-thread dirty
@@ -65,9 +75,9 @@ updates and an FML game-library manifest around unchanged upstream JNLua classes
 These findings should not be presented as acceptance of all rendering, boot,
 persistence or multiplayer behavior in the current tree.
 
-Still required: completion and functional acceptance of robots/drones and their
-upgrades; servers/racks, tablets/terminals and microcontrollers; the remaining
-automation/power/production devices; holograms/printers/prints; remaining
+Still required: completion of advanced robot/drone upgrades, tablets and
+microcontrollers; functional acceptance of robot/drone and rack/server/terminal
+platforms, holograms, printers and prints; remaining automation/power devices,
 item/block/component families; commands, manual item behavior, loot and
 configuration parity; optional integrations; saved VM restoration; and full
 client/server behavior. Existing menus, payloads, rendering, energy, persistence
@@ -85,6 +95,12 @@ open tmpfs handle and queued signal. LuaJ retains the upstream reboot-on-load
 behavior. This exposed and fixed a LuaJ direct-callback pause/start monitor
 deadlock. Actual chunk unload and cold-server restoration remain separate
 acceptance steps. No public SDK signatures changed for these runtime fixes.
+
+The external-addon fixture also passed an end-to-end IMC production contract:
+the real assembler validates and consumes addon inputs, applies energy over
+multiple work ticks and produces the requested item; the real disassembler
+uses the addon callback and inserts its guaranteed drops into an adjacent chest.
+This confirms those extension flows, not every built-in device recipe or model.
 
 The standalone SDK has successfully compiled and published to Maven Local.
 A separately compiled addon has passed on a Windows dedicated server: legacy
