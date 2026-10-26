@@ -201,7 +201,10 @@ public final class AgentScreen extends AbstractContainerScreen<AgentMenu> {
         }
     }
 
-    @Override public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partial) {}
+    @Override public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partial) {
+        // Keep the original unblurred backdrop while drawing the container panel.
+        renderBg(graphics, partial, mouseX, mouseY);
+    }
     private boolean keyboard() { return robot() != null && robot().clientScreen != null && robot().clientHasKeyboard; }
     @Override public boolean keyPressed(int key, int scancode, int modifiers) {
         if (key == GLFW.GLFW_KEY_ESCAPE || key == GLFW.GLFW_KEY_F11 || !keyboard()) return super.keyPressed(key, scancode, modifiers);

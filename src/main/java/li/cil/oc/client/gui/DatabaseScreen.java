@@ -11,5 +11,5 @@ public final class DatabaseScreen extends AbstractContainerScreen<DatabaseMenu> 
     public DatabaseScreen(DatabaseMenu menu,Inventory inventory,Component title){super(menu,inventory,title);imageWidth=176;imageHeight=256;titleLabelY=-10000;inventoryLabelY=-10000;}
     @Override protected void renderBg(GuiGraphics graphics,float partial,int mouseX,int mouseY){for(int layer=0;layer<=menu.tier;layer++){com.mojang.blaze3d.systems.RenderSystem.enableBlend();graphics.blit(ResourceLocation.fromNamespaceAndPath("opencomputers","textures/gui/database"+(layer==0?"":layer)+".png"),leftPos,topPos,0,0,imageWidth,imageHeight,256,256);com.mojang.blaze3d.systems.RenderSystem.disableBlend();}}
     @Override public void render(GuiGraphics graphics,int mouseX,int mouseY,float partial){super.render(graphics,mouseX,mouseY,partial);renderTooltip(graphics,mouseX,mouseY);}
-    @Override public void renderBackground(GuiGraphics graphics,int mouseX,int mouseY,float partial){}
+    @Override public void renderBackground(GuiGraphics graphics,int mouseX,int mouseY,float partial){renderBg(graphics,partial,mouseX,mouseY);}
 }

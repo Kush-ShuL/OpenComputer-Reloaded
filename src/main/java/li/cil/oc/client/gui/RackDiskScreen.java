@@ -13,7 +13,10 @@ public final class RackDiskScreen extends AbstractContainerScreen<RackDiskMenu> 
     private static ResourceLocation texture(String path){return ResourceLocation.fromNamespaceAndPath("opencomputers","textures/"+path+".png");}
     private static final ResourceLocation BACKGROUND=texture("gui/background"),SLOT=texture("gui/slot"),FLOPPY=texture("icons/floppy");
     public RackDiskScreen(RackDiskMenu menu,Inventory inventory,Component title){super(menu,inventory,title);imageWidth=176;imageHeight=166;}
-    @Override public void renderBackground(GuiGraphics graphics,int mouseX,int mouseY,float partial){}
+    @Override public void renderBackground(GuiGraphics graphics,int mouseX,int mouseY,float partial){
+        // Container screens enter renderBg through this method in Minecraft 1.21.
+        renderBg(graphics,partial,mouseX,mouseY);
+    }
     @Override protected void renderBg(GuiGraphics graphics,float partial,int mouseX,int mouseY){
         RenderSystem.enableBlend();RenderSystem.defaultBlendFunc();RenderSystem.setShaderColor(1,1,1,1);
         graphics.blit(BACKGROUND,leftPos,topPos,0,0,imageWidth,imageHeight);
