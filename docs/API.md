@@ -12,8 +12,9 @@
 打进扩展模组，也不要单独放进玩家的 `mods` 文件夹。开发运行环境和玩家环境都需要另装
 与 API 对应版本的完整主模组；API JAR 不能提供运行时实现。
 
-API 通过 **JitPack** 分发。预览标签 `api-8.0.0-alpha.1` 已发布，远端标签构建尚待确认。
-它不是稳定 ABI 承诺；实际接入时固定精确标签：
+API 通过 **JitPack** 分发。预览标签 `api-8.0.0-alpha.1` 已发布，
+[远端构建已成功](https://jitpack.io/com/github/Kush-ShuL/OpenComputer-Reloaded/api-8.0.0-alpha.1/build.log)，
+其 Maven POM 已可获取。它不是稳定 ABI 承诺；实际接入时固定精确标签：
 
 ```groovy
 repositories {
@@ -162,3 +163,7 @@ setup 阶段注册 `PathProvider`、`ContentProvider`、图片提供者与标签
 
 独立 SDK 构建和 API 兼容性用例用于检查集成契约；它们不证明完整模组、所有宿主设备或
 全部可选集成已经可用。游戏功能的迁移状态见 [移植说明](PORTING.md)。
+
+当前版本已由独立编译的扩展在 Windows 专服运行验证：旧两参数 Converter 二进制、
+注册表上下文、网络与 prefab 生命周期、外部 SimpleComponent、原生 Lua 5.3 / LuaJ 的
+组件和 Value 回调，以及 IMC 程序磁盘映射。测试源见 `tools/api-compat-addon`。

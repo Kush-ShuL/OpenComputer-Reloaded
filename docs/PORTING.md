@@ -76,7 +76,10 @@ Converter binaries, registry-aware persistence, network and prefab lifecycles,
 placed SimpleComponent discovery, and native Lua 5.3 / LuaJ callback conversion
 and IMC program mappings. The new Windows client also starts and joins the
 development world. Manual rendering and newly registered devices still need
-interactive acceptance. The remote JitPack build has not been verified.
+interactive acceptance. The remote JitPack tag build has succeeded and its Maven
+POM is available. The player manual item is registered, reuses the original
+book + tier-one chip recipes, and opens the client manual with page history or
+contextual block navigation; its interactive acceptance remains pending.
 
 ## API and release packaging
 
@@ -93,7 +96,8 @@ and a GitHub Release with **no attached assets**. JARs and Maven archives are no
 uploaded to that Release; GitHub Packages is not used. Local SDK publishing uses
 the separate `io.github.kush-shul:opencomputer-reloaded-api:<api_version>`
 coordinate. The `api-8.0.0-alpha.1` preview release has been created without
-attached assets; its remote JitPack tag build remains to be verified.
+attached assets; its remote JitPack tag build succeeded with Java 21 and produced
+the SDK, sources, Javadoc, POM and Gradle metadata.
 
 Integrations use `compileOnly`, must not shade the API, and must install the
 corresponding full mod separately for development and gameplay. Old Forge addons
