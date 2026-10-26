@@ -15,6 +15,8 @@ import java.util.*;
 /** Lua filesystem component, including per-computer descriptor ownership and I/O budgets. */
 public final class FileSystem extends AbstractManagedEnvironment implements DeviceInfo {
     private final li.cil.oc.api.fs.FileSystem fileSystem;
+    /** Original Scala val access, used by storage hosts when formatting or releasing a volume. */
+    public li.cil.oc.api.fs.FileSystem fileSystem(){return fileSystem;}
     private final Label label;
     private final EnvironmentHost host;
     private final String sound;

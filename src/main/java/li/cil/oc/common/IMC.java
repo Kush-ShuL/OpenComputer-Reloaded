@@ -59,7 +59,7 @@ public final class IMC {
                 case li.cil.oc.api.IMC.REGISTER_WRENCH_TOOL -> { WrenchTools.addUsage(callback(string(payload), boolean.class, Player.class, BlockPos.class, boolean.class)); detail = "Registered in real wrench simulation and usage"; }
                 case li.cil.oc.api.IMC.REGISTER_ITEM_CHARGE -> { CompoundTag data = compound(payload); Method check = callback(required(data, "canCharge"), boolean.class, ItemStack.class); Method charge = callback(required(data, "charge"), double.class, ItemStack.class, double.class, boolean.class); ItemCharge.add(data.getString("name"), check, charge); detail = "Registered with the charger's item charging flow"; }
                 case li.cil.oc.api.IMC.REGISTER_INK_PROVIDER -> { PrintData.addInkProvider(callback(string(payload), int.class, ItemStack.class)); detail = "Registered in the existing PrintData.inkValue consumer"; }
-                case li.cil.oc.api.IMC.BLACKLIST_PERIPHERAL -> { PeripheralBlacklist.add(string(payload)); state = State.REGISTERED_PENDING_DEVICE; detail = "Peripheral blacklist retained; ComputerCraft integration driver is not yet ported"; }
+                case li.cil.oc.api.IMC.BLACKLIST_PERIPHERAL -> { PeripheralBlacklist.add(string(payload)); state = State.REGISTERED; detail = "Peripheral blacklist registered; the optional ComputerCraft bridge enforces it when loaded"; }
                 case li.cil.oc.api.IMC.BLACKLIST_HOST -> {
                     CompoundTag data = compound(payload); Class<?> host = Class.forName(required(data, "host"));
                     ResourceLocation id = ResourceLocation.tryParse(required(data.getCompound("item"), "id"));

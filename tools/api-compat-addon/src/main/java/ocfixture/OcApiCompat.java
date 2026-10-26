@@ -34,6 +34,7 @@ public final class OcApiCompat {
     private static boolean finished;
     public OcApiCompat(IEventBus bus) {
         FixtureBlocks.register(bus);
+        WorldPersistenceContract.registerBlocks(bus);
         bus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(() -> {
             if (API.driver == null || API.network == null) throw new AssertionError("OC facades unavailable during enqueued common setup");
             if (!ModList.get().isLoaded(API.ID_OWNER)) throw new AssertionError("SDK API.ID_OWNER differs from runtime mod metadata: " + API.ID_OWNER);
@@ -48,6 +49,10 @@ public final class OcApiCompat {
             RuntimeContract.register();
             CheckpointContract.register();
             ProductionContract.register();
+            if (computerCraftLoaded()) {
+                verifyComputerCraftSelection();
+                ComputerCraftContract.register();
+            }
             LOGGER.info("API_FIXTURE SDK={} owner={} registered", API.VERSION, API.ID_OWNER);
         }));
         bus.addListener((InterModEnqueueEvent event) -> {
@@ -59,9 +64,18 @@ public final class OcApiCompat {
     public static String run(ServerLevel level) throws Exception {
         if (RuntimeContract.isRunning()) throw new IllegalStateException("A fixture run is already active");
         finished = false;
+        if (Boolean.getBoolean("ocfixture.computerCraftOnly")) {
+            if (!computerCraftLoaded()) throw new IllegalStateException("The requested optional ComputerCraft runtime mod was not loaded");
+            verifyComputerCraftSelection();
+            return computerCraftAllowed() ? ComputerCraftContract.run(level) : ComputerCraftContract.runDisabled(level);
+        }
         BaseContract.run(level);
         CheckpointContract.run(level);
         ProductionContract.run(level);
+        if (computerCraftLoaded()) {
+            if (computerCraftAllowed()) ComputerCraftContract.run(level);
+            else ComputerCraftContract.runDisabled(level);
+        }
         return RuntimeContract.run(level);
     }
     @SubscribeEvent public static void commands(RegisterCommandsEvent event) {
@@ -76,14 +90,17 @@ public final class OcApiCompat {
                 })));
     }
     @SubscribeEvent public static void started(ServerStartedEvent event) {
+        if (WorldPersistenceContract.enabled()) { WorldPersistenceContract.start(event.getServer()); return; }
         if (!Boolean.getBoolean("ocfixture.autorun")) return;
         AUTOMATED.set(true);
         try { LOGGER.info("API_FIXTURE {}", run(event.getServer().overworld())); }
         catch (Throwable error) { LOGGER.error("API_FIXTURE FAIL startup", error); throw new IllegalStateException("External API fixture failed", error); }
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event) {
+        if (WorldPersistenceContract.enabled()) { WorldPersistenceContract.tick(event.getServer()); return; }
         RuntimeContract.tick(); BaseContract.tick(); CheckpointContract.tick(); ProductionContract.tick();
-        if (!AUTOMATED.get() || finished || RuntimeContract.isRunning() || BaseContract.isRunning() || CheckpointContract.isRunning() || ProductionContract.isRunning()) return;
+        if (computerCraftLoaded()) ComputerCraftContract.tick();
+        if (!AUTOMATED.get() || finished || RuntimeContract.isRunning() || BaseContract.isRunning() || CheckpointContract.isRunning() || ProductionContract.isRunning() || computerCraftLoaded() && ComputerCraftContract.isRunning()) return;
         finished = true;
         boolean failure = results().stream().anyMatch(result -> result.startsWith("FAIL"));
         for (String result : results()) LOGGER.info("API_FIXTURE {}", result);
@@ -104,6 +121,20 @@ public final class OcApiCompat {
             Files.write(path, lines, StandardCharsets.UTF_8);
         } catch (IOException error) { throw new UncheckedIOException("Could not write the API contract report", error); }
     }
-    public static List<String> results() { return java.util.stream.Stream.of(BaseContract.results(), RuntimeContract.results(), CheckpointContract.results(), ProductionContract.results()).flatMap(List::stream).toList(); }
-    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { RuntimeContract.close(); BaseContract.close(); CheckpointContract.close(); ProductionContract.close(); AUTOMATED.set(false); }
+    private static boolean computerCraftLoaded() { return ModList.get().isLoaded("computercraft"); }
+    private static boolean computerCraftEnabled() {
+        return API.config != null && API.config.hasPath("integration.computerCraft.enabled")
+                && API.config.getBoolean("integration.computerCraft.enabled");
+    }
+    private static boolean computerCraftAllowed() {
+        return computerCraftEnabled() && (!API.config.hasPath("integration.modBlacklist")
+                || API.config.getStringList("integration.modBlacklist").stream().noneMatch(id -> id.equalsIgnoreCase("computercraft")));
+    }
+    private static void verifyComputerCraftSelection() {
+        String expected = System.getProperty("ocfixture.enableComputerCraft");
+        if (expected != null && computerCraftEnabled() != Boolean.parseBoolean(expected))
+            throw new AssertionError("Isolated ComputerCraft configuration differs from explicit ocEnableComputerCraft selection");
+    }
+    public static List<String> results() { return java.util.stream.Stream.of(BaseContract.results(), RuntimeContract.results(), CheckpointContract.results(), ProductionContract.results(), computerCraftLoaded() ? ComputerCraftContract.results() : List.<String>of()).flatMap(List::stream).toList(); }
+    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { WorldPersistenceContract.stopped(); RuntimeContract.close(); BaseContract.close(); CheckpointContract.close(); ProductionContract.close(); if (computerCraftLoaded()) ComputerCraftContract.close(); AUTOMATED.set(false); }
 }

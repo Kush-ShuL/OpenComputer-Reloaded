@@ -26,7 +26,7 @@ import li.cil.oc.util.InternetFilteringRule;
 /** Original Internet component with asynchronous HTTP and nonblocking TCP userdata. */
 public final class InternetCard extends AbstractManagedEnvironment implements DeviceInfo {
     private static final AtomicInteger THREAD_ID=new AtomicInteger();
-    private static ThreadFactory threadFactory(String name) { return task->{var thread=new Thread(task,"OpenComputers-"+name+"-"+THREAD_ID.incrementAndGet());thread.setDaemon(true);return thread;}; }
+    private static ThreadFactory threadFactory(String name) { return task->li.cil.oc.util.ThreadPoolFactory.daemon(task,"OpenComputers-"+name+"-"+THREAD_ID.incrementAndGet()); }
     private static final class Workers {
         static final ExecutorService IO=Executors.newFixedThreadPool(Math.max(1,Settings.get().internetThreads),threadFactory("Internet"));
         // Closing a blocking HTTP stream must also stay off the server thread.

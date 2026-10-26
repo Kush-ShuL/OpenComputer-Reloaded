@@ -52,5 +52,11 @@ public final class AgentPlayer extends FakePlayer {
     public AgentHost agent(){return host;}
     @Override public boolean canHarmPlayer(net.minecraft.world.entity.player.Player player){return Settings.get().canAttackPlayers&&super.canHarmPlayer(player);}
     @Override public float getAttackStrengthScale(float partial){return 1;}
+    @Override public void causeFoodExhaustion(float amount){
+        if(host==null)return;
+        if(Settings.get().robotExhaustionCost>0&&host.machine()!=null&&host.machine().node() instanceof li.cil.oc.api.network.Connector connector)
+            connector.changeBuffer(-Settings.get().robotExhaustionCost*amount);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new li.cil.oc.api.event.RobotExhaustionEvent(host,amount));
+    }
     public static UUID determineUUID(UUID owner){UUID random=UUID.randomUUID();try{return UUID.fromString(Settings.get().uuidFormat.replace("$random$",random.toString()).replace("$player$",owner.toString()));}catch(IllegalArgumentException ignored){return random;}}
 }

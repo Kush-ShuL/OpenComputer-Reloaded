@@ -226,7 +226,7 @@ public class TextBuffer extends AbstractManagedEnvironment implements TextBuffer
     @Override public boolean isRenderingEnabled() { return isRendering; }
     @Override public void keyDown(char character, int code, Player player) { keyboardInput("keyboard.keyDown", player, character, code); }
     @Override public void keyUp(char character, int code, Player player) { keyboardInput("keyboard.keyUp", player, character, code); }
-    @Override public void clipboard(String value, Player player) { keyboardInput("keyboard.clipboard", player, value); }
+    @Override public void clipboard(String value, Player player) { if(value!=null&&value.length()<=Settings.get().maxClipboardTextLength)keyboardInput("keyboard.clipboard", player, value); }
     private void keyboardInput(String name, Player player, Object... values) {
         if (services.client()) { services.sendInput(nodeAddress(), name, values); return; }
         Object[] payload = new Object[values.length + 1]; payload[0] = player; System.arraycopy(values, 0, payload, 1, values.length);

@@ -24,7 +24,7 @@ public final class Inventory implements DriverBlock {
         if (!world.hasChunkAt(pos)) return null;
         return world.getBlockEntity(pos) instanceof Container container ? new InvWrapper(container) : world.getCapability(Capabilities.ItemHandler.BLOCK, pos, side);
     }
-    @Override public boolean worksWith(Level world, BlockPos pos, Direction side) { return inventory(world, pos, side) != null; }
+    @Override public boolean worksWith(Level world, BlockPos pos, Direction side) { return Settings.get().enableInventoryDriver && li.cil.oc.common.integration.VanillaDrivers.integrationEnabled("minecraft") && inventory(world, pos, side) != null; }
     @Override public ManagedEnvironment createEnvironment(Level world, BlockPos pos, Direction side) { return !world.isClientSide && worksWith(world, pos, side) ? new Environment(world, pos, side) : null; }
     public static final class Environment extends BlockEnvironment {
         Environment(Level level, BlockPos pos, Direction side) { super(level, pos, side, "inventory"); }

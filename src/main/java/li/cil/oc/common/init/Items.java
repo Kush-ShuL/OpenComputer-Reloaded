@@ -206,6 +206,7 @@ public final class Items implements ItemAPI {
         List<ItemStack> hardware = new ArrayList<>();
         List<ItemStack> other = new ArrayList<>();
         for (BaseDescriptor descriptor : baseDescriptors) {
+            if (descriptor.name.equals("present")) continue;
             ItemStack stack = descriptor.createItemStack(1);
             (stack.getItem() instanceof ComponentItem ? hardware : other).add(stack);
         }

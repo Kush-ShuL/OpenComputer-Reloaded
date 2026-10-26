@@ -44,3 +44,57 @@ With the addon installed in another test instance, `/oc_api_compat verify` start
 The default legacy input is the saved `build/api-compat-addon/legacy-sdk/opencomputers-api-two-arg.jar`, independent of later builds in `build/libs`. Use `-PlegacyApiJar=ABSOLUTE_PATH_TO_OLD_SDK.jar` to select another preserved two-argument SDK.
 
 This proves the specific Converter method/SPI compatibility case. It does not claim binary compatibility for every historical snapshot: constants such as the old Forge `API.ID_OWNER` may have been inlined into callers and require recompilation.
+
+## Real world cold restart
+
+`runPersistenceServer` exercises a real `Case` block entity across two separate server processes. It does not run the older replacement-host, base, production or optional ComputerCraft contracts. It still compiles only against the published OC SDK and public game APIs; it imports no OC implementation classes, replaces no machine host, and uses no private reflection.
+
+Run both stages from the repository root with the same explicit run id and mod/SDK artifacts. A new id creates a separate directory under `build/api-compat-addon/persistence/<id>` and a world named `ocfixture-persistence-world`. The task refuses to prepare over an existing world. It never resets or copies a player world. Its EULA file is copied only when the existing isolated `build/api-compat-addon/run/eula.txt` already records acceptance; otherwise set the EULA in the newly created run directory and retry.
+
+```powershell
+$fixture = @(
+  '-p', 'tools/api-compat-addon',
+  '-PocApiJar=ABSOLUTE_PATH_TO_PUBLISHED_SDK.jar',
+  '-PocModJar=ABSOLUTE_PATH_TO_STAGED_MOD.jar',
+  '-PlegacyApiJar=G:/Projects/OpenComputer-Reloaded/build/api-compat-addon/legacy-sdk/opencomputers-api-two-arg.jar'
+)
+$nativeRun = 'native53-' + (Get-Date -Format 'yyyyMMdd-HHmmss')
+& .\gradlew.bat @fixture runPersistenceServer "-PocPersistenceRunId=$nativeRun" '-PocPersistenceArchitecture=Lua 5.3' '-PocPersistenceStage=prepare'
+if ($LASTEXITCODE -ne 0) { throw 'Native prepare failed; inspect its report before continuing' }
+& .\gradlew.bat @fixture runPersistenceServer "-PocPersistenceRunId=$nativeRun" '-PocPersistenceArchitecture=Lua 5.3' '-PocPersistenceStage=resume'
+if ($LASTEXITCODE -ne 0) { throw 'Native resume failed' }
+
+$luaJRun = 'luaj-' + (Get-Date -Format 'yyyyMMdd-HHmmss')
+& .\gradlew.bat @fixture runPersistenceServer "-PocPersistenceRunId=$luaJRun" '-PocPersistenceArchitecture=LuaJ' '-PocPersistenceStage=prepare'
+if ($LASTEXITCODE -ne 0) { throw 'LuaJ prepare failed; inspect its report before continuing' }
+& .\gradlew.bat @fixture runPersistenceServer "-PocPersistenceRunId=$luaJRun" '-PocPersistenceArchitecture=LuaJ' '-PocPersistenceStage=resume'
+if ($LASTEXITCODE -ne 0) { throw 'LuaJ resume failed' }
+```
+
+The native prepare stage places real case/CPU/RAM/HDD/EEPROM hardware and an adjacent addon probe in an otherwise empty, distant chunk. Its EEPROM program reaches a paused checkpoint with an open tmpfs reader at offset three, a nested suspended coroutine, live locals, and a live addon `Value` containing named/custom-data item stacks and a public `ItemStackArrayValue` iterator. The test queues a signal, saves through Minecraft's world-saving API, and requests normal server shutdown. `prepare-results.txt` becomes `status=PASS` only after `ServerStoppedEvent`; a pre-shutdown report says `PENDING_STOP`.
+
+The resume process loads that same real block entity from world storage. It checks persisted machine/tmpfs/HDD/EEPROM/probe addresses before releasing the deliberately paused checkpoint through the public `Machine.start()` API. The running Lua program must prove that the BIOS has not restarted, its locals and nested coroutine continue, the userdata was reconstructed with the invoking world's registry provider, the tmpfs descriptor retained its offset, and its queued signal and persistent HDD/EEPROM bytes survived. Native `Value` loading is required; a blank constructor or Java-side replacement cannot satisfy the checks.
+
+Native runs then release the actual forced-chunk ticket, wait for `ChunkEvent.Unload` and node detachment without loading the chunk during the wait, and load a new block entity from disk. The program must continue through a second persisted signal, descriptor position and userdata iterator cursor. `-PocPersistenceChunks=false` limits the run to the two-process cold restart. `-PocPersistenceArchitecture=Lua 5.2` selects the other native implementation when available.
+
+LuaJ has a separate run id and expectation: its BIOS must execute a second time, with the boot counter and HDD/EEPROM data preserved. The fixture does not substitute or claim a persistent LuaJ coroutine stack, and it does not run the native chunk-stack contract for LuaJ.
+
+Each stage writes `prepare-results.txt` or `resume-results.txt` with a first line of `status=PASS` or `status=FAIL`, plus machine-readable evidence. A missing or incomplete report makes the Gradle run task fail even when the server process exits normally. The log includes `API_WORLD_PERSISTENCE_COMPLETE ... status=PASS` after successful shutdown. These are executable acceptance contracts, not claims that a test has already passed.
+
+## Optional ComputerCraft runtime
+
+The addon compiles against CC:Tweaked's official `core-api` and `forge-api` version `1.120.2` from `https://maven.squiddev.cc`. `-PocComputerCraftJar=ABSOLUTE_PATH_TO_FULL_CC_MOD.jar` installs that mod for the isolated `runServer` scenario. Compatibility remains disabled by default; only the separate explicit `-PocEnableComputerCraft=true` enables it. Supplying the JAR alone does not enable the bridge. `integration.modBlacklist` still overrides the enable flag; `computercraft` and `ComputerCraft` match without regard to case.
+
+With the optional JAR present, this scenario runs only its ComputerCraft contract, avoiding another run of the older base/runtime/checkpoint/production contracts:
+
+```powershell
+# Installed but disabled: assert the actual relay/adapter/media bridges are absent.
+& .\gradlew.bat @fixture runServer '-PocComputerCraftJar=ABSOLUTE_PATH_TO_FULL_CC_MOD.jar' '-PocEnableComputerCraft=false'
+
+# Explicitly enabled: exercise the real relay packet flow, adapter calls and media I/O.
+& .\gradlew.bat @fixture runServer '-PocComputerCraftJar=ABSOLUTE_PATH_TO_FULL_CC_MOD.jar' '-PocEnableComputerCraft=true'
+```
+
+Both choices regenerate only the isolated fixture's HOCON configuration and write `opencomputers.integration.computerCraft.enabled` to the selected boolean value. The Gradle task tracks that boolean as an input, so a previous enabled run cannot leave the next disabled run enabled through an up-to-date configuration. The runtime checks that the public configuration matches the explicit fixture selection.
+
+OC-only runs do not load `ComputerCraftContract` or its CC API references. The persistence run keeps its two-stage cold-restart protocol and does not run either ComputerCraft contract, regardless of the optional mod's presence.

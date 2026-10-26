@@ -7,10 +7,25 @@ group = 'ocfixture'
 version = '1.0.0'
 def repositoryRoot = file('../..')
 def contractReport = file("${repositoryRoot}/build/api-compat-addon/run/contract-results.txt")
+def persistenceId = providers.gradleProperty('ocPersistenceRunId').getOrElse('unselected')
+def persistenceStage = providers.gradleProperty('ocPersistenceStage').getOrElse('prepare')
+def persistenceArchitecture = providers.gradleProperty('ocPersistenceArchitecture').getOrElse('Lua 5.3')
+def persistenceDirectory = file("${repositoryRoot}/build/api-compat-addon/persistence/${persistenceId}")
+def persistenceReport = new File(persistenceDirectory, "${persistenceStage}-results.txt")
+def computerCraftEnabled = providers.gradleProperty('ocEnableComputerCraft').getOrElse('false') == 'true'
+def computerCraftScenario = providers.gradleProperty('ocComputerCraftJar').isPresent()
+def fixtureConfiguration = { String version ->
+    file("${repositoryRoot}/src/main/resources/application.conf").getText('UTF-8')
+            .replaceAll(/registerLuaJArchitecture:\s*false/, 'registerLuaJArchitecture: true')
+            .replace('@VERSION@', version) +
+            "\n# Isolated fixture selection. Installing the optional mod never enables this bridge.\n" +
+            "opencomputers.integration.computerCraft.enabled = ${computerCraftEnabled}\n"
+}
 layout.buildDirectory = file("${repositoryRoot}/build/api-compat-addon")
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 repositories {
     mavenCentral()
+    maven { url = 'https://maven.squiddev.cc' }
     maven { url = uri(providers.gradleProperty('ocApiMaven').getOrElse("${repositoryRoot}/build/jitpack-maven")) }
 }
 
@@ -38,8 +53,21 @@ neoForge {
             systemProperty 'ocfixture.worldFixture', 'true'
             systemProperty 'ocfixture.stopAfterRun', 'true'
             systemProperty 'ocfixture.reportFile', contractReport.absolutePath
+            systemProperty 'ocfixture.enableComputerCraft', computerCraftEnabled.toString()
+            systemProperty 'ocfixture.computerCraftOnly', computerCraftScenario.toString()
         }
         client { client(); gameDirectory = file("${repositoryRoot}/build/api-compat-addon/client-run") }
+        persistenceServer {
+            server()
+            gameDirectory = persistenceDirectory
+            programArgument '--nogui'
+            systemProperty 'ocfixture.persistenceStage', persistenceStage
+            systemProperty 'ocfixture.persistenceRunId', persistenceId
+            systemProperty 'ocfixture.persistenceArchitecture', persistenceArchitecture
+            systemProperty 'ocfixture.persistenceDirectory', persistenceDirectory.absolutePath
+            systemProperty 'ocfixture.persistenceChunks', providers.gradleProperty('ocPersistenceChunks').getOrElse('true')
+            systemProperty 'ocfixture.enableComputerCraft', computerCraftEnabled.toString()
+        }
     }
     mods { oc_api_compat { sourceSet sourceSets.main; sourceSet sourceSets.legacy } }
 }
@@ -47,8 +75,11 @@ dependencies {
     if (providers.gradleProperty('ocApiCoordinate').isPresent()) compileOnly providers.gradleProperty('ocApiCoordinate').get()
     else compileOnly files(sdkFile)
     compileOnly 'com.typesafe:config:1.4.1'
+    compileOnly 'cc.tweaked:cc-tweaked-1.21.1-core-api:1.120.2'
+    compileOnly 'cc.tweaked:cc-tweaked-1.21.1-forge-api:1.120.2'
     legacyCompileOnly files(legacyFile)
     runtimeOnly files(runtimeFile)
+    if (providers.gradleProperty('ocComputerCraftJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocComputerCraftJar').get())
 }
 tasks.named('compileLegacyJava') {
     doFirst {
@@ -63,12 +94,11 @@ tasks.named('compileLegacyJava') {
 def prepareFixtureRun = tasks.register('prepareFixtureRun') {
     def configFile = file("${repositoryRoot}/build/api-compat-addon/run/config/opencomputers/settings.conf")
     inputs.file file("${repositoryRoot}/src/main/resources/application.conf")
+    inputs.property 'computerCraftEnabled', computerCraftEnabled
     outputs.file configFile
     doLast {
         configFile.parentFile.mkdirs()
-        configFile.text = file("${repositoryRoot}/src/main/resources/application.conf").getText('UTF-8')
-                .replaceAll(/registerLuaJArchitecture:\s*false/, 'registerLuaJArchitecture: true')
-                .replace('@VERSION@', 'api-fixture')
+        configFile.text = fixtureConfiguration('api-fixture')
     }
 }
 tasks.matching { it.name == 'runServer' }.configureEach {
@@ -81,6 +111,51 @@ tasks.matching { it.name == 'runServer' }.configureEach {
         def lines = contractReport.isFile() ? contractReport.readLines('UTF-8') : []
         if (lines.isEmpty() || lines[0] != 'status=PASS')
             throw new GradleException("The dedicated server did not complete the API contracts successfully; see ${contractReport} and its startup log")
+    }
+}
+def preparePersistenceRun = tasks.register('preparePersistenceRun') {
+    outputs.upToDateWhen { false }
+    doLast {
+        if (!providers.gradleProperty('ocPersistenceRunId').isPresent() || !(persistenceId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a new, explicit -PocPersistenceRunId=NAME (letters, digits, dot, underscore or hyphen)')
+        if (!(persistenceStage in ['prepare', 'resume'])) throw new GradleException('ocPersistenceStage must be prepare or resume')
+        def manifest = new File(persistenceDirectory, 'checkpoint.properties')
+        def worldFile = new File(persistenceDirectory, 'ocfixture-persistence-world/level.dat')
+        if (persistenceStage == 'prepare' && (manifest.exists() || worldFile.exists()))
+            throw new GradleException('The persistence run already has a world/checkpoint; choose a new run id. Existing worlds are never reset.')
+        if (persistenceStage == 'resume' && !manifest.isFile()) throw new GradleException('Run prepare successfully with the same run id before resume')
+        def settings = new File(persistenceDirectory, 'config/opencomputers/settings.conf')
+        settings.parentFile.mkdirs()
+        settings.text = fixtureConfiguration('world-persistence-fixture')
+        def propertiesFile = new File(persistenceDirectory, 'server.properties')
+        if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-persistence-world
+level-type=minecraft\\:flat
+online-mode=false
+server-port=25578
+gamemode=creative
+spawn-protection=0
+view-distance=2
+simulation-distance=2
+enable-command-block=false
+''', 'UTF-8')
+        def serverProperties = new Properties()
+        propertiesFile.withInputStream { serverProperties.load(it) }
+        if (serverProperties.getProperty('level-name') != 'ocfixture-persistence-world') throw new GradleException('Refusing to run against a different world name')
+        def eula = new File(persistenceDirectory, 'eula.txt')
+        def previousEula = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
+        if (!eula.exists() && previousEula.isFile()) {
+            def accepted = new Properties(); previousEula.withInputStream { accepted.load(it) }
+            if (accepted.getProperty('eula') == 'true') eula.bytes = previousEula.bytes
+        }
+        if (!eula.isFile()) throw new GradleException("Set the isolated server's EULA in ${eula}, then retry; no acceptance is generated by this task")
+        if (persistenceReport.exists() && !persistenceReport.delete()) throw new GradleException("Could not remove previous stage report ${persistenceReport}")
+    }
+}
+tasks.matching { it.name == 'runPersistenceServer' }.configureEach {
+    dependsOn preparePersistenceRun
+    doLast {
+        def lines = persistenceReport.isFile() ? persistenceReport.readLines('UTF-8') : []
+        if (lines.isEmpty() || lines[0] != 'status=PASS') throw new GradleException("The real-world ${persistenceStage} stage did not pass; see ${persistenceReport}")
     }
 }
 tasks.named('jar') { from sourceSets.legacy.output }

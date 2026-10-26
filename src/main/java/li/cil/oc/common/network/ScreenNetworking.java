@@ -105,7 +105,7 @@ public final class ScreenNetworking {
     }
     public static void broadcast(ScreenBlockEntity screen, boolean full, CompoundTag tag) {
         if (screen.getLevel() instanceof ServerLevel level)
-            PacketDistributor.sendToPlayersTrackingChunk(level, new net.minecraft.world.level.ChunkPos(screen.getBlockPos()), new Sync(screen.getBlockPos(), screen.revision(), full, tag));
+            li.cil.oc.server.PacketSender.sendToPlayersTrackingBlock(screen, new Sync(screen.getBlockPos(), screen.revision(), full, tag));
     }
     private static boolean canReach(ServerPlayer player, BlockPos pos) {
         if (player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) > 64 || !player.level().mayInteract(player, pos)) return false;

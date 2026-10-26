@@ -18,5 +18,5 @@ public interface AgentHost extends Agent, Environment {
     void synchronize();
     void animate(double seconds, int kind);
     default ManagedEnvironment environment(int slot) { return runtime().environment(slot); }
-    default double delay(String action) { return li.cil.oc.Settings.get().config.getDouble("robot.delays." + action); }
+    default double delay(String action) {var settings=li.cil.oc.Settings.get();return switch(action){case "turn"->settings.turnDelay;case "move"->settings.moveDelay;case "swing"->settings.swingDelay;case "use"->settings.useDelay;case "place"->settings.placeDelay;case "drop"->settings.dropDelay;case "suck"->settings.suckDelay;default->throw new IllegalArgumentException("unknown robot action delay: "+action);};}
 }

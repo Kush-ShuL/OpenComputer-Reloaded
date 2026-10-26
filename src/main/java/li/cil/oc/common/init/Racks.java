@@ -51,6 +51,6 @@ public final class Racks {
     }
     private Racks(){}
     public static void register(IEventBus bus){BLOCKS.register(bus);ITEMS.register(bus);TYPES.register(bus);MENUS.register(bus);bus.addListener(RackNetworking::register);bus.addListener(Racks::capabilities);if(FMLEnvironment.dist==Dist.CLIENT)li.cil.oc.client.RackClient.initialize(bus);}
-    private static void capabilities(RegisterCapabilitiesEvent event){event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,RACK_TYPE.get(),(rack,side)->new InvWrapper(rack));event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK,RACK_TYPE.get(),(rack,side)->rack.energy(side));}
+    private static void capabilities(RegisterCapabilitiesEvent event){event.registerBlockEntity(Capabilities.ItemHandler.BLOCK,RACK_TYPE.get(),(rack,side)->new InvWrapper(rack));event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK,RACK_TYPE.get(),(rack,side)->li.cil.oc.common.capabilities.ExternalPower.expose(()->rack.energy(side)));}
     public static synchronized void initializeDrivers(){if(driversInitialized)return;li.cil.oc.api.Driver.add(new li.cil.oc.server.driver.item.RackMountableDriver());li.cil.oc.api.Driver.add(new li.cil.oc.server.driver.item.ComponentBus());li.cil.oc.api.Driver.add(new li.cil.oc.server.driver.item.ServerInventoryProvider());driversInitialized=true;}
 }

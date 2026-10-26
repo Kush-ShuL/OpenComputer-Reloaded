@@ -51,7 +51,7 @@ public final class HologramNetworking {
     }
     public static void broadcast(HologramBlockEntity entity, CompoundTag data) {
         if (entity.getLevel() instanceof ServerLevel level)
-            PacketDistributor.sendToPlayersTrackingChunk(level, new net.minecraft.world.level.ChunkPos(entity.getBlockPos()),
+            li.cil.oc.server.PacketSender.sendToPlayersTrackingBlock(entity,
                     new Sync(level.dimension().location(), entity.getBlockPos(), entity.revision(), false, data.copy()));
     }
     /** Common registration does not link Minecraft client classes on a dedicated server. */

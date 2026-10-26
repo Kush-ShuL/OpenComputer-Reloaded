@@ -42,7 +42,7 @@ public final class Capabilities {
 
     private static <T extends BlockEntity> void registerType(RegisterCapabilitiesEvent event, BlockEntityType<T> type) {
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.BLOCK, type,
-            (entity, side) -> entity instanceof EnergyProvider provider ? provider.energy(side) : null);
+            (entity, side) -> entity instanceof EnergyProvider provider ? ExternalPower.expose(() -> provider.energy(side)) : null);
         event.registerBlockEntity(EnvironmentCapability, type,
             (entity, side) -> entity instanceof Environment environment ? environment : SimpleComponentBridge.environment(entity));
         event.registerBlockEntity(ColoredCapability, type,

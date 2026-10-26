@@ -95,8 +95,9 @@ public abstract class AgentComponent extends AbstractManagedEnvironment implemen
         }
         if(!level.hasChunkAt(target)||!level.mayInteract(player,target))return new Object[]{false,"block"};var state=level.getBlockState(target);
         if(state.is(net.minecraft.world.level.block.Blocks.FIRE)||state.is(net.minecraft.world.level.block.Blocks.SOUL_FIRE)){level.removeBlock(target,false);delay(context,"swing");return new Object[]{true,"fire"};}
-        if(state.isAir())return new Object[]{false,"air"};float progress=state.getDestroyProgress(player,level,target);if(progress<=0)return new Object[]{false,"block"};
-        var event=new RobotBreakBlockEvent.Pre(agent,level,target,Math.max(agent.delay("swing"),1d/progress/20*Settings.get().harvestRatio));NeoForge.EVENT_BUS.post(event);if(event.isCanceled())return new Object[]{false,"block"};
+        if(state.isAir())return new Object[]{false,"air"};boolean cobwebOverride=state.is(net.minecraft.world.level.block.Blocks.COBWEB)&&Settings.get().screwCobwebs;float progress=state.getDestroyProgress(player,level,target);if(progress<=0&&!cobwebOverride)return new Object[]{false,"block"};
+        double breakTime=cobwebOverride?Math.max(.05,Settings.get().swingDelay*Settings.get().harvestRatio):Math.max(agent.delay("swing"),1d/progress/20*Settings.get().harvestRatio);
+        var event=new RobotBreakBlockEvent.Pre(agent,level,target,breakTime);NeoForge.EVENT_BUS.post(event);if(event.isCanceled())return new Object[]{false,"block"};
         Set<Integer> old=new HashSet<>(),oldExperience=new HashSet<>();for(ItemEntity entity:level.getEntitiesOfClass(ItemEntity.class,new AABB(target).inflate(2)))old.add(entity.getId());for(ExperienceOrb orb:level.getEntitiesOfClass(ExperienceOrb.class,new AABB(target).inflate(2)))oldExperience.add(orb.getId());
         ItemStack before=player.getMainHandItem().copy();boolean result=player.gameMode.destroyBlock(target);toolUsed(before,player.getMainHandItem());
         if(result){collectDrops(target,old);int experience=level.getEntitiesOfClass(ExperienceOrb.class,new AABB(target).inflate(2),orb->!oldExperience.contains(orb.getId())).stream().mapToInt(ExperienceOrb::getValue).sum();NeoForge.EVENT_BUS.post(new RobotBreakBlockEvent.Post(agent,experience));context.pause(event.getBreakTime());agent.animate(event.getBreakTime(),1);}

@@ -18,6 +18,11 @@ java {
 
 repositories {
     mavenCentral()
+    maven {
+        name = 'ComputerCraftOfficial'
+        url = 'https://maven.squiddev.cc'
+        content { includeGroup 'cc.tweaked' }
+    }
     ivy {
         name = 'OriginalOpenComputersLuaLibraries'
         url = 'https://asie.pl/javadeps'
@@ -70,6 +75,12 @@ var jnluaGameLibrary = tasks.register('jnluaGameLibrary', Jar) {
 }
 
 dependencies {
+    // Optional CC: Tweaked integration. Its 1.21.1 NeoForge artifacts retain the forge name.
+    compileOnly 'cc.tweaked:cc-tweaked-1.21.1-core-api:1.120.2'
+    compileOnly 'cc.tweaked:cc-tweaked-1.21.1-forge-api:1.120.2'
+    if (providers.gradleProperty('ocWithComputerCraft').map { it.toBoolean() }.getOrElse(false)) {
+        localRuntime 'cc.tweaked:cc-tweaked-1.21.1-forge:1.120.2'
+    }
     apiImplementation 'com.typesafe:config:1.4.1'
     apiCompileOnly 'org.jetbrains:annotations:26.0.2'
     implementation sourceSets.api.output
@@ -185,4 +196,24 @@ publishing {
     repositories {
         maven { name = 'localDistribution'; url = layout.buildDirectory.dir('maven') }
     }
+}
+
+// Standalone real-file Settings.load verification; this source set is never shipped in the mod.
+sourceSets {
+    configVerification {
+        java.srcDirs = ['tools/config-verification/src/main/java']
+        resources.srcDirs = []
+        compileClasspath += sourceSets.main.runtimeClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+tasks.register('verifyConfiguration', JavaExec) {
+    group = 'verification'
+    description = 'Verify real configuration loading, migration, retention and errors in isolated temporary files'
+    dependsOn tasks.named('classes'), tasks.named('configVerificationClasses')
+    classpath = sourceSets.configVerification.runtimeClasspath
+    mainClass = 'li.cil.oc.tools.config.ConfigurationVerification'
+    javaLauncher = javaToolchains.launcherFor(java.toolchain)
+    systemProperty 'oc.configVerificationDirectory', layout.buildDirectory.dir('config-verification').get().asFile.absolutePath
+    jvmArgs '-Dfile.encoding=UTF-8', '-Djava.awt.headless=true'
 }

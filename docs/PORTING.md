@@ -76,6 +76,29 @@ are connected as well. These additions require gameplay acceptance, including
 world-save restoration, protection interactions and multiplayer use; their
 presence is not a claim that every upstream behavior has been validated.
 
+RAID storage, the debug card/debugger/texture picker, hover boots, seasonal
+presents and artificial end stone are also registered. RAID retains the original
+three-disk concatenation and destructive member-removal behavior. Missing vanilla
+Adapter drivers now include beacons, brewing stands, command blocks, comparators,
+spawners, note blocks and jukeboxes. The command-block driver remains opt-in.
+
+Configuration loading now includes the original version patches, array and value
+validation, one-time NeoForge schema marking, legacy filtering/effect/class/energy
+mapping, migration backups and atomic writes. Existing port configurations retain
+their custom values across repeated loads. Invalid existing files are retained.
+The actual inventory/fluid-driver toggles, clipboard cap, thread priority, robot
+delays/exhaustion/cobweb behavior, rack switch tier, packet ranges and external FE
+blacklist are connected to existing modules. The isolated configuration behavior
+tool passed on Windows; this does not establish every optional integration.
+
+ComputerCraft compatibility requires explicit
+`integration.computerCraft.enabled=true`, an installed supported CC:Tweaked, and
+no matching integration blacklist entry. It is disabled by default. Windows
+dedicated-server contracts passed with CC installed but compatibility disabled,
+and with compatibility enabled: real relay packets and modem events, Adapter
+computer calls, and two-way disk mount I/O, labels and remount identity. See
+[the integration details](computercraft-integration.md) for public-API limitations.
+
 Earlier Windows testing exposed texture/layout problems, fractional energy
 accounting errors, host-thread deadlocks and native-library class-loader issues.
 The source contains targeted corrections, including deferred server-thread dirty
@@ -87,7 +110,8 @@ Still required: functional acceptance of advanced robot/drone upgrades, tablets,
 microcontrollers, network devices, robot/drone and rack/server/terminal
 platforms, holograms, printers and prints; remaining automation/power devices,
 item/block/component families; commands, manual item behavior, loot and
-configuration parity; optional integrations; saved VM restoration; and full
+configuration parity; remaining optional integrations and configuration
+consumers; restoration on remaining host types; and full
 client/server behavior. Existing menus, payloads, rendering, energy, persistence
 and crafting also need functional acceptance.
 
@@ -101,8 +125,12 @@ Native Lua 5.2 and 5.3 have passed replacement-host checkpoints retaining the
 coroutine, synchronized-return stack, addon Value with registry-aware item data,
 open tmpfs handle and queued signal. LuaJ retains the upstream reboot-on-load
 behavior. This exposed and fixed a LuaJ direct-callback pause/start monitor
-deadlock. Actual chunk unload and cold-server restoration remain separate
-acceptance steps. No public SDK signatures changed for these runtime fixes.
+deadlock. A separate Windows world fixture then passed a real case's native Lua
+5.3 cold-server restart and chunk unload/reload, retaining the coroutine, open
+tmpfs position, userdata/iterator state, signal and component identities. A
+separate LuaJ world passed its expected reboot and disk-data restoration. Native
+5.2 cold-world restoration and other physical host types still need acceptance.
+No public SDK signatures changed for these runtime fixes.
 
 The external-addon fixture also passed an end-to-end IMC production contract:
 the real assembler validates and consumes addon inputs, applies energy over

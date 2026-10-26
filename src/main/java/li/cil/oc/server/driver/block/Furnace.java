@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
 
 /** Exact furnace timings, including smoker and blast-furnace subclasses. */
 public final class Furnace implements DriverBlock {
-    @Override public boolean worksWith(Level world, BlockPos pos, Direction side) { return world.hasChunkAt(pos) && world.getBlockEntity(pos) instanceof AbstractFurnaceBlockEntity; }
+    @Override public boolean worksWith(Level world, BlockPos pos, Direction side) { return li.cil.oc.common.integration.VanillaDrivers.integrationEnabled("minecraft") && world.hasChunkAt(pos) && world.getBlockEntity(pos) instanceof AbstractFurnaceBlockEntity; }
     @Override public ManagedEnvironment createEnvironment(Level world, BlockPos pos, Direction side) { return !world.isClientSide && worksWith(world, pos, side) ? new Environment(world, pos, side) : null; }
     public static final class Environment extends BlockEnvironment implements NamedBlock {
         Environment(Level level, BlockPos pos, Direction side) { super(level, pos, side, "furnace"); }

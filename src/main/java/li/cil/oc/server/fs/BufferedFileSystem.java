@@ -11,7 +11,7 @@ import java.util.concurrent.*;
 /** Buffered disks keep world data in RAM and serialize ordered snapshots when the world saves. */
 @net.neoforged.fml.common.EventBusSubscriber(modid=li.cil.oc.OpenComputers.ID)
 public final class BufferedFileSystem extends VirtualFileSystem {
-    private static final ExecutorService SAVER=Executors.newSingleThreadExecutor(task->{Thread thread=new Thread(task,"OpenComputers-FileSystem");thread.setDaemon(true);return thread;});
+    private static final ExecutorService SAVER=Executors.newSingleThreadExecutor(task->li.cil.oc.util.ThreadPoolFactory.daemon(task,"OpenComputers-FileSystem"));
     private final Path root;
     private final Map<String,Long> deletions=new LinkedHashMap<>();
     private Future<?> saving;

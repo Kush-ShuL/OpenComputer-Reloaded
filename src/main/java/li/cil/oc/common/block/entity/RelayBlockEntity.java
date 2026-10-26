@@ -25,6 +25,13 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 
 /** Original switch/access point: six isolated networks and a bounded, hop-limited relay queue. */
 public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements SidedEnvironment,Container,MenuProvider,WirelessEndpoint,QuantumNetwork.QuantumNode,EnergyProvider,Analyzable {
+    /** Optional integration hook without linking any ComputerCraft classes into this block. */
+    public interface PacketListener { void receive(Packet packet); default void removed(){} }
+    private final java.util.concurrent.CopyOnWriteArrayList<PacketListener> packetListeners=new java.util.concurrent.CopyOnWriteArrayList<>();
+    public void addPacketListener(PacketListener listener){packetListeners.addIfAbsent(listener);}
+    public void removePacketListener(PacketListener listener){packetListeners.remove(listener);}
+    public boolean wirelessEnabled(){return wirelessTier>=0;}
+    public boolean linkedEnabled(){return linked;}
     private record Queued(Direction source,Packet packet){}
     private final ArrayDeque<Queued> queue=new ArrayDeque<>();
     private final NonNullList<ItemStack> items=NonNullList.withSize(4,ItemStack.EMPTY);
@@ -54,7 +61,7 @@ public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements 
         }
     }
     @Override protected void onInitialize(){ensurePlugs();updateHardware();Network.joinOrCreateNetwork(this);updateComponents();}
-    @Override protected void onDetach(){Network.leaveWirelessNetwork(this);QuantumNetwork.remove(this);for(Node node:componentNodes)if(node!=null)node.remove();for(Plug plug:plugs)if(plug!=null)plug.node.remove();}
+    @Override protected void onDetach(){for(var listener:packetListeners)listener.removed();packetListeners.clear();Network.leaveWirelessNetwork(this);QuantumNetwork.remove(this);for(Node node:componentNodes)if(node!=null)node.remove();for(Plug plug:plugs)if(plug!=null)plug.node.remove();}
     @Override public Node sidedNode(Direction side){if(side==null)return null;ensurePlugs();return plugs[side.get3DDataValue()]==null?null:plugs[side.get3DDataValue()].node;}
     @Override public boolean canConnect(Direction side){return side!=null;}
     private final class Plug implements Environment {
@@ -83,7 +90,7 @@ public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements 
             if(connected&&wirelessTier>=0)Network.joinWirelessNetwork(this);else Network.leaveWirelessNetwork(this);
         }finally{updatingComponents=false;}
     }
-    public boolean tryEnqueuePacket(Direction source,Packet packet){synchronized(queue){if(packet.ttl()<=0||queue.size()>=maxQueueSize)return false;queue.addLast(new Queued(source,packet.hop()));if(relayCooldown<0)relayCooldown=relayDelay-1;setChanged();return true;}}
+    public boolean tryEnqueuePacket(Direction source,Packet packet){for(var listener:packetListeners)listener.receive(packet);synchronized(queue){if(packet.ttl()<=0||queue.size()>=maxQueueSize)return false;queue.addLast(new Queued(source,packet.hop()));if(relayCooldown<0)relayCooldown=relayDelay-1;setChanged();return true;}}
     private boolean consume(Direction source,double cost){if(source!=null){Plug plug=plugs[source.get3DDataValue()];return plug!=null&&plug.node.tryChangeBuffer(-cost);}for(Plug plug:plugs)if(plug!=null&&plug.node.tryChangeBuffer(-cost))return true;return false;}
     private void relay(Queued entry){
         Packet packet=entry.packet;

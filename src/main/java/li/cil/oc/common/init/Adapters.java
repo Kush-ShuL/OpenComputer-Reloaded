@@ -37,10 +37,13 @@ public final class Adapters {
         if (driversInitialized) return;
         var mfu = new li.cil.oc.server.driver.item.UpgradeMF();
         li.cil.oc.api.Driver.add((li.cil.oc.api.driver.DriverItem) mfu); li.cil.oc.api.Driver.add((li.cil.oc.api.driver.EnvironmentProvider) mfu);
-        li.cil.oc.api.Driver.add(new li.cil.oc.server.driver.block.Inventory());
-        li.cil.oc.api.Driver.add(new li.cil.oc.server.driver.block.Furnace());
-        li.cil.oc.api.Driver.add(new li.cil.oc.server.driver.block.FluidHandler());
-        li.cil.oc.api.Driver.add(new li.cil.oc.server.driver.block.EnergyStorage());
+        // The original Minecraft and Forge proxies have independent gates.
+        if (li.cil.oc.common.integration.VanillaDrivers.integrationEnabled("minecraft")) {
+            if (li.cil.oc.Settings.get().enableInventoryDriver) li.cil.oc.api.Driver.add(new li.cil.oc.server.driver.block.Inventory());
+            if (li.cil.oc.Settings.get().enableTankDriver) li.cil.oc.api.Driver.add(new li.cil.oc.server.driver.block.FluidHandler());
+        }
+        if (li.cil.oc.common.integration.VanillaDrivers.integrationEnabled("forge", "neoforge"))
+            li.cil.oc.api.Driver.add(new li.cil.oc.server.driver.block.EnergyStorage());
         driversInitialized = true;
     }
 }

@@ -44,7 +44,7 @@ public final class Machine extends AbstractManagedEnvironment implements li.cil.
     private String error;
     private static volatile ScheduledExecutorService workers;
     private static synchronized ScheduledExecutorService workers(){
-        if(workers==null||workers.isShutdown())workers=Executors.newScheduledThreadPool(Settings.get().threads,r->{Thread t=new Thread(SideTracker.serverTask(r),"OpenComputers-Computer");t.setDaemon(true);return t;});return workers;
+        if(workers==null||workers.isShutdown())workers=Executors.newScheduledThreadPool(Settings.get().threads,r->li.cil.oc.util.ThreadPoolFactory.daemon(SideTracker.serverTask(r),"OpenComputers-Computer"));return workers;
     }
     public static synchronized void shutdownWorkers(){if(workers!=null){workers.shutdownNow();workers=null;}}
     public Machine(MachineHost host){

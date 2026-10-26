@@ -16,7 +16,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 /** Modern replacement for the original FluidHandler/FluidTank inspection APIs. */
 public final class FluidHandler implements DriverBlock {
-    @Override public boolean worksWith(Level world, BlockPos pos, Direction side) { return world.hasChunkAt(pos) && world.getCapability(Capabilities.FluidHandler.BLOCK, pos, side) != null; }
+    @Override public boolean worksWith(Level world, BlockPos pos, Direction side) { return li.cil.oc.Settings.get().enableTankDriver && li.cil.oc.common.integration.VanillaDrivers.integrationEnabled("minecraft") && world.hasChunkAt(pos) && world.getCapability(Capabilities.FluidHandler.BLOCK, pos, side) != null; }
     @Override public ManagedEnvironment createEnvironment(Level world, BlockPos pos, Direction side) { return !world.isClientSide && worksWith(world, pos, side) ? new Environment(world, pos, side) : null; }
     public static final class Environment extends BlockEnvironment {
         Environment(Level level, BlockPos pos, Direction side) { super(level, pos, side, "fluid_handler"); }

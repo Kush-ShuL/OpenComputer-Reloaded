@@ -9,9 +9,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -25,11 +27,15 @@ import java.util.*;
 @EventBusSubscriber(modid=OpenComputers.ID,bus=EventBusSubscriber.Bus.MOD)
 public final class PacketSender {
     private PacketSender() {}
+    /** Original nearby-update range; a zero global cap leaves the view/explicit range intact. */
+    private static double packetRange(ServerLevel level,double requested){double range=requested<0?(level.getServer().getPlayerList().getViewDistance()+1)*16d:requested;double maximum=Settings.get().maxNetworkClientPacketDistance;return maximum>0?Math.min(range,maximum):range;}
+    public static void sendToPlayersTrackingBlock(BlockEntity entity,CustomPacketPayload payload){sendToPlayersTrackingBlock(entity,-1,payload);}
+    public static void sendToPlayersTrackingBlock(BlockEntity entity,double requested,CustomPacketPayload payload){if(!(entity.getLevel() instanceof ServerLevel level))return;double range=packetRange(level,requested),squared=range*range;var pos=entity.getBlockPos();for(ServerPlayer player:level.getChunkSource().chunkMap.getPlayers(new net.minecraft.world.level.ChunkPos(pos),false))if(player.distanceToSqr(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5)<=squared)PacketDistributor.sendToPlayer(player,payload);}
+    public static void sendToPlayersNear(ServerLevel level,double x,double y,double z,double requested,CustomPacketPayload payload){PacketDistributor.sendToPlayersNear(level,null,x,y,z,packetRange(level,requested),payload);}
     public interface ActivityListener { void onComponentActivity(String address, boolean network); }
     public static void sendNetworkActivity(Node node,EnvironmentHost host){ activity(node,host,true); }
     private static void activity(Node node,EnvironmentHost host,boolean network){
-        if(host.world() instanceof ServerLevel level)PacketDistributor.sendToPlayersNear(level,null,host.xPosition(),host.yPosition(),host.zPosition(),Settings.get().maxNetworkClientEffectPacketDistance,
-            new Activity(level.dimension().location(),net.minecraft.core.BlockPos.containing(host.xPosition(),host.yPosition(),host.zPosition()),node.address()==null?"":node.address(),network));
+        if(host.world() instanceof ServerLevel level){double range=network?Settings.get().maxNetworkClientEffectPacketDistance:Settings.get().maxNetworkClientSoundPacketDistance;var packet=new Activity(level.dimension().location(),net.minecraft.core.BlockPos.containing(host.xPosition(),host.yPosition(),host.zPosition()),node.address()==null?"":node.address(),network);if(host instanceof BlockEntity block)sendToPlayersTrackingBlock(block,range,packet);else sendToPlayersNear(level,host.xPosition(),host.yPosition(),host.zPosition(),range,packet);}
     }
     public record Activity(ResourceLocation dimension,net.minecraft.core.BlockPos pos,String address,boolean network) implements CustomPacketPayload {
         public static final Type<Activity> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(OpenComputers.ID,"component_activity"));
@@ -44,7 +50,7 @@ public final class PacketSender {
         if(previous!=null&&now-previous<Math.max(0,Settings.get().diskActivitySoundDelay))return;
         LAST_ACTIVITY.put(node,now);
         ResourceLocation id=ResourceLocation.tryParse(sound.contains(":")?sound:OpenComputers.ID+":"+sound);
-        if(id!=null)level.playSound(null,host.xPosition(),host.yPosition(),host.zPosition(),SoundEvent.createVariableRangeEvent(id),SoundSource.BLOCKS,Settings.get().soundVolume,1);
+        if(id!=null){double range=packetRange(level,Settings.get().maxNetworkClientSoundPacketDistance),squared=range*range;var packet=new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.Holder.direct(SoundEvent.createVariableRangeEvent(id)),SoundSource.BLOCKS,host.xPosition(),host.yPosition(),host.zPosition(),Settings.get().soundVolume,1,java.util.concurrent.ThreadLocalRandom.current().nextLong());Iterable<ServerPlayer> players=host instanceof BlockEntity block?level.getChunkSource().chunkMap.getPlayers(new net.minecraft.world.level.ChunkPos(block.getBlockPos()),false):level.players();for(ServerPlayer player:players)if(player.distanceToSqr(host.xPosition(),host.yPosition(),host.zPosition())<=squared)player.connection.send(packet);}
     }
     public static void sendSound(Level world,double x,double y,double z,int frequency,int duration){
         send(world,x,y,z,new Speaker(world.dimension().location(),x,y,z,Math.max(20,Math.min(2000,frequency)),Math.max(0,Math.min(10000,duration)),""));
@@ -54,7 +60,7 @@ public final class PacketSender {
         send(world,x,y,z,new Speaker(world.dimension().location(),x,y,z,1000,0,pattern));
     }
     private static void send(Level world,double x,double y,double z,Speaker message){
-        if(world instanceof ServerLevel level)PacketDistributor.sendToPlayersNear(level,null,x,y,z,Settings.get().beepRadius,message);
+        if(world instanceof ServerLevel level)sendToPlayersNear(level,x,y,z,Settings.get().maxNetworkClientSoundPacketDistance,message);
     }
     public record Speaker(ResourceLocation dimension,double x,double y,double z,int frequency,int duration,String pattern) implements CustomPacketPayload {
         public static final Type<Speaker> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(OpenComputers.ID,"speaker"));

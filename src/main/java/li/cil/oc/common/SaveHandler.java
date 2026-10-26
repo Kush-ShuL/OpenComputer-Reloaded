@@ -26,7 +26,7 @@ public final class SaveHandler {
     public static boolean isSavingForClients(){return CLIENT_SYNC.get();}
     public static void forClientSync(Runnable action){boolean old=CLIENT_SYNC.get();CLIENT_SYNC.set(true);try{action.run();}finally{if(old)CLIENT_SYNC.set(true);else CLIENT_SYNC.remove();}}
     private static synchronized ExecutorService executor(){
-        if(executor==null||executor.isShutdown())executor=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(SideTracker.serverTask(r),"OpenComputers-SaveHandler");t.setDaemon(true);return t;});
+        if(executor==null||executor.isShutdown())executor=Executors.newSingleThreadExecutor(r->li.cil.oc.util.ThreadPoolFactory.daemon(SideTracker.serverTask(r),"OpenComputers-SaveHandler"));
         return executor;
     }
     public static Path savePath(){

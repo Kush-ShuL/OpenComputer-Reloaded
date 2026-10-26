@@ -97,7 +97,8 @@ public final class ScreenGui extends Screen {
         return true;
     }
     private void paste() {
-        String text = minecraft.keyboardHandler.getClipboard();
+        String text = li.cil.oc.client.ClipboardInput.read();
+        if (text == null) return;
         for (int start = 0; start < text.length();) {
             int end = Math.min(start + 8192, text.length());
             if (end < text.length() && Character.isHighSurrogate(text.charAt(end - 1))) end--;

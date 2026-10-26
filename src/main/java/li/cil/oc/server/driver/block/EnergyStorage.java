@@ -13,7 +13,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public final class EnergyStorage implements DriverBlock {
-    @Override public boolean worksWith(Level world, BlockPos pos, Direction side) { return world.hasChunkAt(pos) && world.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side) != null; }
+    @Override public boolean worksWith(Level world, BlockPos pos, Direction side) { return li.cil.oc.common.integration.VanillaDrivers.integrationEnabled("forge", "neoforge") && world.hasChunkAt(pos) && world.getCapability(Capabilities.EnergyStorage.BLOCK, pos, side) != null; }
     @Override public ManagedEnvironment createEnvironment(Level world, BlockPos pos, Direction side) { return !world.isClientSide && worksWith(world, pos, side) ? new Environment(world, pos, side) : null; }
     public static final class Environment extends BlockEnvironment implements NamedBlock {
         Environment(Level level, BlockPos pos, Direction side) { super(level, pos, side, "energy_device"); }

@@ -29,7 +29,7 @@
 
 开发测试版的手册可用一本书和一级芯片无序合成，或用 `/give @s opencomputers:manual` 获取。拿着手册右键阅读；蹲下右键重置阅读位置，对有文档的方块右键可打开对应页面。
 
-当前迁移进展与已知缺口见 [移植说明](docs/PORTING.md)。遇到问题可提交 [Issue](https://github.com/Kush-ShuL/OpenComputer-Reloaded/issues)，附上模组版本、游戏日志和复现步骤。
+配置位置和常用开关见 [配置说明](docs/CONFIGURATION.md)，CC:Tweaked 兼容需要手动启用。当前迁移进展与已知缺口见 [移植说明](docs/PORTING.md)。遇到问题可提交 [Issue](https://github.com/Kush-ShuL/OpenComputer-Reloaded/issues)，附上模组版本、游戏日志和复现步骤。
 
 ## 致谢与许可
 
