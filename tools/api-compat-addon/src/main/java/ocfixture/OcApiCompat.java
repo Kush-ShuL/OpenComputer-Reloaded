@@ -36,6 +36,8 @@ public final class OcApiCompat {
         FixtureBlocks.register(bus);
         WorldPersistenceContract.registerBlocks(bus);
         bus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(() -> {
+            if (HostPersistenceContract.enabled()) { HostPersistenceContract.register(); return; }
+            if (DeviceContract.enabled()) return;
             if (API.driver == null || API.network == null) throw new AssertionError("OC facades unavailable during enqueued common setup");
             if (!ModList.get().isLoaded(API.ID_OWNER)) throw new AssertionError("SDK API.ID_OWNER differs from runtime mod metadata: " + API.ID_OWNER);
             if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
@@ -56,6 +58,8 @@ public final class OcApiCompat {
             LOGGER.info("API_FIXTURE SDK={} owner={} registered", API.VERSION, API.ID_OWNER);
         }));
         bus.addListener((InterModEnqueueEvent event) -> {
+            if (HostPersistenceContract.enabled()) return;
+            if (DeviceContract.enabled()) return;
             li.cil.oc.api.IMC.registerProgramDiskLabel("oc_fixture_program", "fixture-disk");
             ProductionContract.enqueue();
         });
@@ -90,6 +94,8 @@ public final class OcApiCompat {
                 })));
     }
     @SubscribeEvent public static void started(ServerStartedEvent event) {
+        if (HostPersistenceContract.enabled()) { HostPersistenceContract.start(event.getServer()); return; }
+        if (DeviceContract.enabled()) { DeviceContract.start(event.getServer()); return; }
         if (WorldPersistenceContract.enabled()) { WorldPersistenceContract.start(event.getServer()); return; }
         if (!Boolean.getBoolean("ocfixture.autorun")) return;
         AUTOMATED.set(true);
@@ -97,6 +103,8 @@ public final class OcApiCompat {
         catch (Throwable error) { LOGGER.error("API_FIXTURE FAIL startup", error); throw new IllegalStateException("External API fixture failed", error); }
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event) {
+        if (HostPersistenceContract.enabled()) { HostPersistenceContract.tick(); return; }
+        if (DeviceContract.enabled()) { DeviceContract.tick(); return; }
         if (WorldPersistenceContract.enabled()) { WorldPersistenceContract.tick(event.getServer()); return; }
         RuntimeContract.tick(); BaseContract.tick(); CheckpointContract.tick(); ProductionContract.tick();
         if (computerCraftLoaded()) ComputerCraftContract.tick();
@@ -136,5 +144,5 @@ public final class OcApiCompat {
             throw new AssertionError("Isolated ComputerCraft configuration differs from explicit ocEnableComputerCraft selection");
     }
     public static List<String> results() { return java.util.stream.Stream.of(BaseContract.results(), RuntimeContract.results(), CheckpointContract.results(), ProductionContract.results(), computerCraftLoaded() ? ComputerCraftContract.results() : List.<String>of()).flatMap(List::stream).toList(); }
-    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { WorldPersistenceContract.stopped(); RuntimeContract.close(); BaseContract.close(); CheckpointContract.close(); ProductionContract.close(); if (computerCraftLoaded()) ComputerCraftContract.close(); AUTOMATED.set(false); }
+    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { if (HostPersistenceContract.enabled()) { HostPersistenceContract.stopped(); return; } if (DeviceContract.enabled()) { DeviceContract.stopped(); return; } WorldPersistenceContract.stopped(); RuntimeContract.close(); BaseContract.close(); CheckpointContract.close(); ProductionContract.close(); if (computerCraftLoaded()) ComputerCraftContract.close(); AUTOMATED.set(false); }
 }

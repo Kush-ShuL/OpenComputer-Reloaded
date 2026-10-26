@@ -12,6 +12,15 @@ def persistenceStage = providers.gradleProperty('ocPersistenceStage').getOrElse(
 def persistenceArchitecture = providers.gradleProperty('ocPersistenceArchitecture').getOrElse('Lua 5.3')
 def persistenceDirectory = file("${repositoryRoot}/build/api-compat-addon/persistence/${persistenceId}")
 def persistenceReport = new File(persistenceDirectory, "${persistenceStage}-results.txt")
+def deviceId = providers.gradleProperty('ocDeviceRunId').getOrElse('unselected')
+def deviceDirectory = file("${repositoryRoot}/build/api-compat-addon/devices/${deviceId}")
+def deviceReport = new File(deviceDirectory, 'device-results.txt')
+def hostName = providers.gradleProperty('ocHost').getOrElse('robot')
+def hostId = providers.gradleProperty('ocHostRunId').getOrElse('unselected')
+def hostStage = providers.gradleProperty('ocHostStage').getOrElse('prepare')
+def hostArchitecture = providers.gradleProperty('ocHostArchitecture').getOrElse('Lua 5.3')
+def hostDirectory = file("${repositoryRoot}/build/api-compat-addon/hosts/${hostName}/${hostId}")
+def hostReport = new File(hostDirectory, "${hostStage}-results.txt")
 def computerCraftEnabled = providers.gradleProperty('ocEnableComputerCraft').getOrElse('false') == 'true'
 def computerCraftScenario = providers.gradleProperty('ocComputerCraftJar').isPresent()
 def fixtureConfiguration = { String version ->
@@ -67,6 +76,24 @@ neoForge {
             systemProperty 'ocfixture.persistenceDirectory', persistenceDirectory.absolutePath
             systemProperty 'ocfixture.persistenceChunks', providers.gradleProperty('ocPersistenceChunks').getOrElse('true')
             systemProperty 'ocfixture.enableComputerCraft', computerCraftEnabled.toString()
+        }
+        deviceServer {
+            server()
+            gameDirectory = deviceDirectory
+            programArgument '--nogui'
+            systemProperty 'ocfixture.deviceRunId', deviceId
+            systemProperty 'ocfixture.deviceDirectory', deviceDirectory.absolutePath
+            systemProperty 'ocfixture.driveConcurrencyOnly', providers.gradleProperty('ocDriveConcurrencyOnly').getOrElse('false')
+        }
+        hostPersistenceServer {
+            server()
+            gameDirectory = hostDirectory
+            programArgument '--nogui'
+            systemProperty 'ocfixture.host', hostName
+            systemProperty 'ocfixture.hostStage', hostStage
+            systemProperty 'ocfixture.hostRunId', hostId
+            systemProperty 'ocfixture.hostArchitecture', hostArchitecture
+            systemProperty 'ocfixture.hostDirectory', hostDirectory.absolutePath
         }
     }
     mods { oc_api_compat { sourceSet sourceSets.main; sourceSet sourceSets.legacy } }
@@ -156,6 +183,88 @@ tasks.matching { it.name == 'runPersistenceServer' }.configureEach {
     doLast {
         def lines = persistenceReport.isFile() ? persistenceReport.readLines('UTF-8') : []
         if (lines.isEmpty() || lines[0] != 'status=PASS') throw new GradleException("The real-world ${persistenceStage} stage did not pass; see ${persistenceReport}")
+    }
+}
+def prepareDeviceRun = tasks.register('prepareDeviceRun') {
+    outputs.upToDateWhen { false }
+    doLast {
+        if (!providers.gradleProperty('ocDeviceRunId').isPresent() || !(deviceId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a new, explicit -PocDeviceRunId=NAME')
+        if (new File(deviceDirectory, 'ocfixture-device-world/level.dat').exists() || deviceReport.exists())
+            throw new GradleException('This device run already has a world/report; choose a new run id. Existing worlds are never reset.')
+        def settings = new File(deviceDirectory, 'config/opencomputers/settings.conf')
+        settings.parentFile.mkdirs()
+        settings.text = fixtureConfiguration('real-device-fixture')
+        def propertiesFile = new File(deviceDirectory, 'server.properties')
+        if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-device-world
+level-type=minecraft\\:flat
+online-mode=false
+server-port=25579
+gamemode=creative
+spawn-protection=0
+view-distance=2
+simulation-distance=2
+enable-command-block=false
+''', 'UTF-8')
+        def selected = new Properties(); propertiesFile.withInputStream { selected.load(it) }
+        if (selected.getProperty('level-name') != 'ocfixture-device-world') throw new GradleException('Refusing a different world name')
+        def eula = new File(deviceDirectory, 'eula.txt')
+        def previousEula = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
+        if (!eula.exists() && previousEula.isFile()) {
+            def accepted = new Properties(); previousEula.withInputStream { accepted.load(it) }
+            if (accepted.getProperty('eula') == 'true') eula.bytes = previousEula.bytes
+        }
+        if (!eula.isFile()) throw new GradleException("Set the isolated server's EULA in ${eula}, then retry; acceptance is not generated")
+    }
+}
+tasks.matching { it.name == 'runDeviceServer' }.configureEach {
+    dependsOn prepareDeviceRun
+    doLast {
+        def lines = deviceReport.isFile() ? deviceReport.readLines('UTF-8') : []
+        if (lines.isEmpty() || lines[0] != 'status=PASS') throw new GradleException("The real-device scenario did not pass; see ${deviceReport}")
+    }
+}
+def prepareHostPersistenceRun = tasks.register('prepareHostPersistenceRun') {
+    outputs.upToDateWhen { false }
+    doLast {
+        if (hostName != 'robot') throw new GradleException('This first real-host scenario currently supports ocHost=robot only')
+        if (!providers.gradleProperty('ocHostRunId').isPresent() || !(hostId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a new, explicit -PocHostRunId=NAME')
+        if (!(hostStage in ['prepare', 'resume'])) throw new GradleException('ocHostStage must be prepare or resume')
+        def manifest = new File(hostDirectory, 'checkpoint.properties')
+        def world = new File(hostDirectory, 'ocfixture-host-world/level.dat')
+        if (hostStage == 'prepare' && (manifest.exists() || world.exists())) throw new GradleException('Existing host worlds/checkpoints are never reset; choose a new run id')
+        if (hostStage == 'resume' && !manifest.isFile()) throw new GradleException('Run the matching host prepare stage successfully before resume')
+        def settings = new File(hostDirectory, 'config/opencomputers/settings.conf')
+        settings.parentFile.mkdirs(); settings.text = fixtureConfiguration('real-host-persistence-fixture')
+        def propertiesFile = new File(hostDirectory, 'server.properties')
+        if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-host-world
+level-type=minecraft\\:flat
+online-mode=false
+server-port=25580
+gamemode=creative
+spawn-protection=0
+view-distance=2
+simulation-distance=2
+enable-command-block=false
+''', 'UTF-8')
+        def selected = new Properties(); propertiesFile.withInputStream { selected.load(it) }
+        if (selected.getProperty('level-name') != 'ocfixture-host-world') throw new GradleException('Refusing a different Minecraft world')
+        def eula = new File(hostDirectory, 'eula.txt')
+        def previous = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
+        if (!eula.exists() && previous.isFile()) {
+            def accepted = new Properties(); previous.withInputStream { accepted.load(it) }
+            if (accepted.getProperty('eula') == 'true') eula.bytes = previous.bytes
+        }
+        if (!eula.isFile()) throw new GradleException("Set the isolated server's EULA in ${eula}, then retry; acceptance is not generated")
+        if (hostReport.exists() && !hostReport.delete()) throw new GradleException("Cannot replace host stage report ${hostReport}")
+    }
+}
+tasks.matching { it.name == 'runHostPersistenceServer' }.configureEach {
+    dependsOn prepareHostPersistenceRun
+    doLast {
+        def lines = hostReport.isFile() ? hostReport.readLines('UTF-8') : []
+        if (lines.isEmpty() || lines[0] != 'status=PASS') throw new GradleException("The actual ${hostName} ${hostStage} stage failed; see ${hostReport}")
     }
 }
 tasks.named('jar') { from sourceSets.legacy.output }

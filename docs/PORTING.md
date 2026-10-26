@@ -141,6 +141,13 @@ sound recipient lookups are also dispatched to the server thread without waiting
 inside the callback. The captured stacks remain development evidence, not a claim
 that every host/thread combination has passed acceptance.
 
+The Windows external-drive regression then passed the actual native Lua 5.3
+worker path: a direct read completed while the main thread deliberately did not
+pump chunk tasks, keyboard down/up returned in 0 ms during a bounded held-volume
+lock, and the VM completed 80 reads and 10 writes with 181 received key-up signals.
+The filled-to-empty drive update also passed NeoForge's real `onDataPacket`
+receiver path and cleared the inventory state used by the disk renderer.
+
 Still required: functional acceptance of advanced robot/drone upgrades, tablets,
 microcontrollers, network devices, robot/drone and rack/server/terminal
 platforms, holograms, printers and prints; remaining automation/power devices,
