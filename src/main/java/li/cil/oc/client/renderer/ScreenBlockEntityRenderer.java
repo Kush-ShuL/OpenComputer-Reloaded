@@ -52,7 +52,7 @@ public final class ScreenBlockEntityRenderer implements BlockEntityRenderer<Scre
         if (!screen.facing().getAxis().isVertical() || player == null) return;
         var stack = player.getMainHandItem();
         boolean screenItem = stack.getItem() instanceof BlockItem item && item.getBlock() instanceof ScreenBlock;
-        boolean wrench = stack.getItem() instanceof li.cil.oc.api.internal.Wrench tool && tool.useWrenchOnBlock(player, screen.getLevel(), screen.getBlockPos(), true);
+        boolean wrench = li.cil.oc.common.integration.WrenchTools.holdsApplicableWrench(player, screen.getBlockPos());
         if (!screenItem && !wrench) return;
         float x = screen.groupWidth() / 2F - 0.5F, y = screen.groupHeight() / 2F - 0.5F;
         var out = buffers.getBuffer(ScreenRenderTypes.texture(UP_INDICATOR, false));

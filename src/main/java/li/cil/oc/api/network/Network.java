@@ -74,9 +74,10 @@ public interface Network {
     /**
      * Removes a node from the network.
      * <br>
-     * This should be called by nodes when they are destroyed (e.g. in
-     * {@link net.minecraft.world.level.block.entity.BlockEntity#invalidate()}) or unloaded
-     * (e.g. in {@link net.minecraft.world.level.block.entity.BlockEntity#onChunkUnload()}).
+     * Block entity hosts should call this when removed in
+     * {@link net.minecraft.world.level.block.entity.BlockEntity#setRemoved()}, and
+     * when their chunk unloads in NeoForge's
+     * {@link net.neoforged.neoforge.common.extensions.IBlockEntityExtension#onChunkUnloaded()} hook.
      * Removing the node can lead to one or more new networks if it was the a
      * bridge node, i.e. the only node connecting the resulting networks.
      *

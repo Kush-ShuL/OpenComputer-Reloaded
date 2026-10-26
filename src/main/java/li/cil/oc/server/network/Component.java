@@ -34,7 +34,11 @@ public class Component extends Node implements li.cil.oc.api.network.Component {
     public boolean canBeSeenFrom(li.cil.oc.api.network.Node other) { return switch (visibility) { case None -> false; case Neighbors -> isNeighborOf(other); case Network -> canBeReachedFrom(other); }; }
     public Collection<String> methods() { return Callbacks.methods(host); }
     public Callback annotation(String method) { return Callbacks.annotation(host, method); }
-    public Object[] invoke(String method, Context context, Object... arguments) throws Exception { return Callbacks.invoke(host, method, context, arguments); }
+    public Object[] invoke(String method, Context context, Object... arguments) throws Exception {
+        var registries = context instanceof li.cil.oc.api.machine.Machine machine && machine.host().world() != null
+            ? machine.host().world().registryAccess() : null;
+        return li.cil.oc.server.driver.Registry.convert(Callbacks.invoke(host, method, context, arguments), registries);
+    }
     public void load(CompoundTag nbt) { super.load(nbt); if (nbt.contains("visibility")) { int value = nbt.getInt("visibility"); if (value >= 0 && value <= reachability.ordinal()) visibility = Visibility.values()[value]; } }
     public void save(CompoundTag nbt) { super.save(nbt); nbt.putInt("visibility", visibility.ordinal()); }
 }

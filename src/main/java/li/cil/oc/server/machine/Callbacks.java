@@ -31,6 +31,10 @@ public final class Callbacks {
                 if(!Modifier.isPublic(m.getModifiers())||m.getReturnType()!=Object[].class||!Arrays.equals(m.getParameterTypes(),new Class<?>[]{Context.class,Arguments.class})){
                     OpenComputers.LOGGER.error("Invalid Callback signature {}.{}",c.getName(),m.getName());continue;
                 }
+                // Addons commonly use non-public environment classes with public callbacks.
+                if(!m.trySetAccessible()){
+                    OpenComputers.LOGGER.error("Inaccessible Callback {}.{}",c.getName(),m.getName());continue;
+                }
                 result.putIfAbsent(a.value().isBlank()?m.getName():a.value(),m);
             }
             return Collections.unmodifiableMap(result);

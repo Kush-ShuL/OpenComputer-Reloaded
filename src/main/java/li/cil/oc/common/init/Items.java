@@ -215,6 +215,18 @@ public final class Items implements ItemAPI {
         return Collections.unmodifiableMap(new LinkedHashMap<>(floppyFactories));
     }
 
+    /** Resolve a program hint to actual, factory-backed registered media. */
+    public synchronized List<ItemStack> programDisks(String label) {
+        List<ItemStack> disks = new ArrayList<>();
+        for (ItemStack stack : extraCreativeItems) {
+            CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+            String factory = root.getString("oc:lootFactory");
+            if (factory.isEmpty() || !floppyFactories.containsKey(factory)) continue;
+            if (label.equals(stack.getHoverName().getString()) || label.equals(root.getCompound("oc:data").getString("oc:fs.label")) || label.equals(factory)) disks.add(stack.copy());
+        }
+        return List.copyOf(disks);
+    }
+
     @Override
     public ItemStack registerFloppy(String name, DyeColor color, Callable<FileSystem> factory, boolean doRecipeCycling) {
         return registerFloppy(ModLoadingContext.get().getActiveNamespace(), name, color, factory, doRecipeCycling);

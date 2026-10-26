@@ -1,5 +1,6 @@
 package li.cil.oc.server.fs;
 import li.cil.oc.api.fs.*;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import java.io.FileNotFoundException;
 public final class ReadOnlyWrapper implements li.cil.oc.api.fs.FileSystem {
@@ -22,4 +23,6 @@ public final class ReadOnlyWrapper implements li.cil.oc.api.fs.FileSystem {
     public void close(){inner.close();}
     public void load(CompoundTag nbt){inner.load(nbt);}
     public void save(CompoundTag nbt){inner.save(nbt);}
+    @Override public void load(CompoundTag nbt,HolderLookup.Provider registries){inner.load(nbt,registries);}
+    @Override public void save(CompoundTag nbt,HolderLookup.Provider registries){inner.save(nbt,registries);}
 }

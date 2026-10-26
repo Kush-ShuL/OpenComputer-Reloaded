@@ -126,7 +126,7 @@ public final class ScreenNetworking {
             SESSIONS.remove(player.getUUID()); return;
         }
         long tick = player.level().getGameTime();
-        if (player.isSpectator() || player.serverLevel() != session.level || tick - session.lastTick > 1200 ||
+        if (player.isSpectator() || player.serverLevel() != session.level ||
                 !player.level().hasChunkAt(session.anchor) || !canReach(player, session.anchor) ||
                 !(player.level().getBlockEntity(session.origin) instanceof ScreenBlockEntity entity) || !entity.isOrigin() ||
                 !sameScreenAnchor(player, session.anchor, entity)) {

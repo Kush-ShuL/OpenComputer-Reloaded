@@ -2,7 +2,7 @@
 
 使用 **Java 21** 将 OpenComputers 的可编程电脑和机器人带到 **Minecraft Java 1.21.1 · NeoForge**。
 
-**目前正在移植，尚无可游玩的 1.21.1 模组正式版。** 仓库中的原版源码、已转换资源和 API 包不代表所有游戏功能已经可用。请等待 Releases 中明确标注的模组版本。
+**目前正在移植，尚无可游玩的 1.21.1 模组正式版。** 当前源码、已转换资源和 API 包不代表所有游戏功能已经可用。请等待 Releases 中明确标注的模组版本。
 
 ## 在 Minecraft 里编程
 
@@ -19,7 +19,7 @@
 
 目标环境为 Minecraft **1.21.1**、**NeoForge 21.1.224 或更新的 21.1.x**、**Java 21**。客户端与服务器需要安装相同版本。
 
-可游玩版本发布后，从 [Releases](https://github.com/Kush-ShuL/OpenComputer-Reloaded/releases) 下载模组主 JAR，放入实例的 `mods` 文件夹。带 `api`、`sources` 或 `javadoc` 的文件供其他模组开发者使用，无需放入玩家的 `mods` 文件夹。
+可游玩版本发布后，从 [Releases](https://github.com/Kush-ShuL/OpenComputer-Reloaded/releases) 中明确标为模组版本的发布页下载主 JAR，放入实例的 `mods` 文件夹。API 发布页供模组开发者使用，不提供游戏模组下载；API、sources 和 Javadoc 包无需放入玩家的 `mods` 文件夹。
 
 旧版 Minecraft 存档和已安装的电脑不能直接视为兼容。迁移支持确认前，请保留原存档备份。
 

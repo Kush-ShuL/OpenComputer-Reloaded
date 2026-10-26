@@ -137,7 +137,7 @@ public final class Machine extends AbstractManagedEnvironment implements li.cil.
         synchronized(stateLock){if(state()==State.Stopped||state()==State.Stopping)return false;synchronized(signals){if(signals.size()>=Settings.get().maxSignalQueueSize)return false;Object[] copy=args==null?new Object[0]:Arrays.stream(args).map(this::signalArg).toArray();signals.add(new QueuedSignal(name,copy));}}
         if(architecture!=null)architecture.onSignal();return true;
     }
-    @Override public Signal popSignal(){synchronized(signals){QueuedSignal signal=signals.poll();return signal==null?null:new QueuedSignal(signal.name,Registry.convert(signal.args));}}
+    @Override public Signal popSignal(){synchronized(signals){QueuedSignal signal=signals.poll();return signal==null?null:new QueuedSignal(signal.name,Registry.convert(signal.args,host.world()==null?null:host.world().registryAccess()));}}
     private record QueuedSignal(String name,Object[] args) implements Signal {}
     @Override public Map<String,Callback> methods(Object value){Map<String,Callback> result=new LinkedHashMap<>();for(String name:Callbacks.methods(value))result.put(name,Callbacks.annotation(value,name));return result;}
     @Override public Object[] invoke(String address,String method,Object[] args)throws Exception{
@@ -145,10 +145,11 @@ public final class Machine extends AbstractManagedEnvironment implements li.cil.
         if(!(target instanceof Component component)||!(target==node()||component.canBeSeenFrom(node())))throw new IllegalArgumentException("no such component");
         Callback annotation=Callbacks.annotation(component.host(),method);if(annotation==null)throw new NoSuchMethodException(method);if(annotation.direct())consumeCallBudget(1d/annotation.limit());return component.invoke(method,this,args);
     }
-    @Override public Object[] invoke(Value value,String method,Object[] args)throws Exception{Callback a=Callbacks.annotation(value,method);if(a==null)throw new NoSuchMethodException(method);if(a.direct())consumeCallBudget(1d/a.limit());return Registry.convert(Callbacks.invoke(value,method,this,args));}
+    @Override public Object[] invoke(Value value,String method,Object[] args)throws Exception{Callback a=Callbacks.annotation(value,method);if(a==null)throw new NoSuchMethodException(method);if(a.direct())consumeCallBudget(1d/a.limit());return Registry.convert(Callbacks.invoke(value,method,this,args),host.world()==null?null:host.world().registryAccess());}
     @Callback public Object[] start(Context context,Arguments args){return new Object[]{start()};}
     @Callback public Object[] stop(Context context,Arguments args){return new Object[]{stop()};}
     @Callback(direct=true) public Object[] isRunning(Context context,Arguments args){return new Object[]{isRunning()};}
+    @Callback(direct=true) public Object[] getProgramLocations(Context context,Arguments args){return new Object[]{ProgramLocations.getMappings(li.cil.oc.api.Machine.getArchitectureName(architecture.getClass()))};}
     @Callback public Object[] beep(Context context,Arguments args){if(args.isString(0))beep(args.checkString(0));else beep((short)args.optInteger(0,1000),(short)Math.round(args.optDouble(1,.1)*1000));return new Object[]{true};}
     @Callback(direct=true) public Object[] getDeviceInfo(Context context,Arguments args){Map<String,Object> devices=new LinkedHashMap<>();if(node().network()!=null)for(Node n:node().network().nodes())if(n.host() instanceof DeviceInfo info&&info.getDeviceInfo()!=null)devices.put(n.address(),info.getDeviceInfo());return new Object[]{devices};}
     @Override public boolean canUpdate(){return true;}

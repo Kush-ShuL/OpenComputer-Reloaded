@@ -34,6 +34,8 @@ public final class OpenComputers {
         API.machine = li.cil.oc.server.machine.MachineFactory.INSTANCE;
         API.items = li.cil.oc.common.init.Items.INSTANCE;
         API.nanomachines = li.cil.oc.common.nanomachines.Nanomachines.INSTANCE;
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT)
+            li.cil.oc.client.ClientBootstrap.initialize();
         li.cil.oc.common.nanomachines.Nanomachines.registerBuiltins();
         NeoForge.EVENT_BUS.register(li.cil.oc.common.nanomachines.Nanomachines.class);
         modBus.addListener(li.cil.oc.common.network.ScreenNetworking::register);
@@ -41,7 +43,10 @@ public final class OpenComputers {
         li.cil.oc.common.init.Blocks.register(modBus);
         li.cil.oc.common.init.DiskDrives.register(modBus);
         li.cil.oc.common.init.PowerDevices.register(modBus);
+        li.cil.oc.common.init.Adapters.register(modBus);
+        li.cil.oc.common.init.AutomationDevices.register(modBus);
         li.cil.oc.common.capabilities.SimpleComponentBridge.register(modBus);
+        li.cil.oc.common.IMC.register(modBus);
         NeoForge.EVENT_BUS.register(li.cil.oc.common.capabilities.SimpleComponentBridge.class);
         NeoForge.EVENT_BUS.register(li.cil.oc.common.CommonEvents.class);
         li.cil.oc.common.init.Items.register(modBus);
@@ -62,6 +67,8 @@ public final class OpenComputers {
             LOGGER.info("Available Lua architectures: {}; selected default: {}", factory.architectures().stream().map(factory::getArchitectureName).toList(), factory.getArchitectureName(li.cil.oc.api.Machine.LuaArchitecture));
             li.cil.oc.common.init.Blocks.initialize();
             li.cil.oc.common.init.Items.initializeDrivers();
+            li.cil.oc.common.init.Adapters.initializeDrivers();
+            li.cil.oc.common.init.Converters.initialize();
             li.cil.oc.common.init.Items.INSTANCE.initializeLuaBios();
             li.cil.oc.common.init.Items.INSTANCE.initializeBundledLootDisks();
             Recipes.setLootRecraftingSupplier(() -> Settings.get().lootRecrafting);

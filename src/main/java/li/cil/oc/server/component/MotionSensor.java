@@ -24,7 +24,10 @@ public final class MotionSensor extends AbstractManagedEnvironment implements De
     private Vec3 origin(){return new Vec3(host.xPosition(),host.yPosition(),host.zPosition());}
     private boolean clear(Vec3 target){Vec3 origin=origin(),eye=origin.add(target.subtract(origin).normalize());return host.world().clip(new ClipContext(eye,target,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,CollisionContext.empty())).getType()==HitResult.Type.MISS;}
     @Override public void update(){
-        if(!canUpdate()||host.world().getGameTime()%10!=0)return;Vec3 origin=origin();Set<LivingEntity> visible=Collections.newSetFromMap(new IdentityHashMap<>());
+        if(!canUpdate()||host.world().getGameTime()%10!=0)return;
+        // Preserve the original sensorBounds/isInRange/signal reference point;
+        // the line-of-sight ray still starts at the host position itself.
+        Vec3 origin=origin().add(.5,.5,.5);Set<LivingEntity> visible=Collections.newSetFromMap(new IdentityHashMap<>());
         for(LivingEntity entity:host.world().getEntitiesOfClass(LivingEntity.class,new AABB(origin,origin).inflate(8),entity->entity.isAlive()&&!entity.hasEffect(MobEffects.INVISIBILITY)&&entity.distanceToSqr(origin)<=64)){
             if(!clear(entity.position())&&!clear(entity.getEyePosition()))continue;visible.add(entity);Vec3 previous=tracked.put(entity,entity.position());
             if(previous==null||entity.distanceToSqr(previous)>sensitivity*sensitivity*2){Vec3 offset=entity.position().subtract(origin);if(Settings.get().inputUsername)node().sendToReachable("computer.signal","motion",offset.x,offset.y,offset.z,entity.getName().getString());else node().sendToReachable("computer.signal","motion",offset.x,offset.y,offset.z);}

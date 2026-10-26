@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+[[mods]]
+modId="oc_api_compat"
+version="1.0.0"
+displayName="OpenComputers API Compatibility Fixture"
+description='''External addon contract fixture. Do not distribute to players.'''
+[[dependencies.oc_api_compat]]
+modId="neoforge"
+type="required"
+versionRange="[21.1.224,21.2)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.oc_api_compat]]
+modId="minecraft"
+type="required"
+versionRange="[1.21.1]"
+ordering="NONE"
+side="BOTH"
+[[dependencies.oc_api_compat]]
+modId="opencomputers"
+type="required"
+versionRange="[0.1.0-SNAPSHOT,)"
+ordering="AFTER"
+side="BOTH"

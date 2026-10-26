@@ -17,7 +17,7 @@ import li.cil.oc.api.detail.NetworkAPI;
  * common setup phase, so integrations should register through enqueued common setup work.
  */
 public class API {
-    public static final String ID_OWNER = "opencomputers|core";
+    public static final String ID_OWNER = "opencomputers";
     public static final String VERSION = "8.0.0-alpha.1";
 
     // ----------------------------------------------------------------------- //

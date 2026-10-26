@@ -7,6 +7,7 @@ import li.cil.oc.api.machine.*;
 import li.cil.oc.api.network.*;
 import li.cil.oc.api.prefab.AbstractManagedEnvironment;
 import li.cil.oc.api.prefab.AbstractValue;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
 import java.io.*;
 import java.util.*;
@@ -51,8 +52,50 @@ public final class FileSystem extends AbstractManagedEnvironment implements Devi
     private void closeOwner(String owner){Set<Integer> owned=owners.remove(owner);if(owned!=null)for(int id:owned){Handle handle=fileSystem.getHandle(id);if(handle!=null)handle.close();}}
     public void onMessage(Message message){synchronized(fileSystem){if(message.name().equals("computer.stopped")||message.name().equals("computer.started"))closeOwner(message.source().address());}}
     public void onDisconnect(Node node){synchronized(fileSystem){if(node==node())fileSystem.close();else closeOwner(node.address());}}
-    public void load(CompoundTag nbt){synchronized(fileSystem){super.load(nbt);owners.clear();for(Tag raw:nbt.getList("owners",Tag.TAG_COMPOUND)){CompoundTag tag=(CompoundTag)raw;String address=tag.getString("address");if(!address.isEmpty()){Set<Integer> ids=new LinkedHashSet<>();for(int id:tag.getIntArray("handles"))ids.add(id);owners.put(address,ids);}}if(label!=null)label.load(nbt);fileSystem.load(nbt.getCompound("fs"));}}
-    public void save(CompoundTag nbt){synchronized(fileSystem){super.save(nbt);if(label!=null)label.save(nbt);if(li.cil.oc.common.SaveHandler.isSavingForClients())return;ListTag list=new ListTag();owners.forEach((address,ids)->{CompoundTag tag=new CompoundTag();tag.putString("address",address);tag.putIntArray("handles",ids.stream().mapToInt(Integer::intValue).toArray());list.add(tag);});nbt.put("owners",list);CompoundTag contents=new CompoundTag();fileSystem.save(contents);nbt.put("fs",contents);}}
+    @Override public void load(CompoundTag nbt){load(nbt,null,false);}
+    @Override public void load(CompoundTag nbt,HolderLookup.Provider registries){load(nbt,registries,true);}
+    private void load(CompoundTag nbt,HolderLookup.Provider registries,boolean registryAware){
+        synchronized(fileSystem){
+            super.load(nbt);
+            owners.clear();
+            for(Tag raw:nbt.getList("owners",Tag.TAG_COMPOUND)){
+                CompoundTag tag=(CompoundTag)raw;
+                String address=tag.getString("address");
+                if(!address.isEmpty()){
+                    Set<Integer> ids=new LinkedHashSet<>();
+                    for(int id:tag.getIntArray("handles"))ids.add(id);
+                    owners.put(address,ids);
+                }
+            }
+            if(registryAware){
+                if(label!=null)label.load(nbt,registries);
+                fileSystem.load(nbt.getCompound("fs"),registries);
+            }else{
+                if(label!=null)label.load(nbt);
+                fileSystem.load(nbt.getCompound("fs"));
+            }
+        }
+    }
+    @Override public void save(CompoundTag nbt){save(nbt,null,false);}
+    @Override public void save(CompoundTag nbt,HolderLookup.Provider registries){save(nbt,registries,true);}
+    private void save(CompoundTag nbt,HolderLookup.Provider registries,boolean registryAware){
+        synchronized(fileSystem){
+            super.save(nbt);
+            if(label!=null){if(registryAware)label.save(nbt,registries);else label.save(nbt);}
+            if(li.cil.oc.common.SaveHandler.isSavingForClients())return;
+            ListTag list=new ListTag();
+            owners.forEach((address,ids)->{
+                CompoundTag tag=new CompoundTag();
+                tag.putString("address",address);
+                tag.putIntArray("handles",ids.stream().mapToInt(Integer::intValue).toArray());
+                list.add(tag);
+            });
+            nbt.put("owners",list);
+            CompoundTag contents=new CompoundTag();
+            if(registryAware)fileSystem.save(contents,registries);else fileSystem.save(contents);
+            nbt.put("fs",contents);
+        }
+    }
     private static String clean(String path){return li.cil.oc.server.fs.FileSystem.validatePath(path);}
     private static Mode mode(String mode){return switch(mode){case "r","rb"->Mode.Read;case "w","wb"->Mode.Write;case "a","ab"->Mode.Append;default->throw new IllegalArgumentException("unsupported mode");};}
     private void activity(){if(sound!=null&&host!=null)li.cil.oc.server.PacketSender.sendFileSystemActivity(node(),host,sound);}

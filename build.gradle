@@ -6,6 +6,10 @@ plugins {
 
 version = project.mod_version
 group = project.mod_group
+// A staged developer build can prepare new game artifacts while Windows holds the current ones open.
+if (providers.gradleProperty('ocBuildDirectory').isPresent()) {
+    layout.buildDirectory = file(providers.gradleProperty('ocBuildDirectory').get())
+}
 base { archivesName = 'OpenComputer-Reloaded' }
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -180,15 +184,5 @@ publishing {
     }
     repositories {
         maven { name = 'localDistribution'; url = layout.buildDirectory.dir('maven') }
-        if (System.getenv('GITHUB_TOKEN')) {
-            maven {
-                name = 'GitHubPackages'
-                url = 'https://maven.pkg.github.com/Kush-ShuL/OpenComputer-Reloaded'
-                credentials {
-                    username = System.getenv('GITHUB_ACTOR') ?: 'Kush-ShuL'
-                    password = System.getenv('GITHUB_TOKEN')
-                }
-            }
-        }
     }
 }

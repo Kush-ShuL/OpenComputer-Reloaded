@@ -1,34 +1,28 @@
-name: Publish API package
+name: Validate API tag
 
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: API package version
-        required: true
+      ref:
+        description: Git ref to validate (leave empty for the selected ref)
+        required: false
         type: string
   release:
     types: [published]
 permissions:
   contents: read
-  packages: write
 
 jobs:
   api:
     if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'api-')
     runs-on: ubuntu-latest
-    env:
-      GITHUB_ACTOR: ${{ github.actor }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      API_VERSION: ${{ inputs.version || github.event.release.tag_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
-      - name: Publish independent API with source and Javadoc
-        shell: bash
-        run: |
-          version="${API_VERSION#api-}"
-          ./gradlew -Pmod_version="$version" publishApiPublicationToGitHubPackagesRepository --console=plain
+      - name: Validate the standalone API build used by JitPack
+        run: ./gradlew -p api publishToMavenLocal --console=plain

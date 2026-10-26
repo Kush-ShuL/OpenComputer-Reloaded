@@ -157,7 +157,6 @@ public final class Recipes {
     }
 
     static boolean isWrench(ItemStack stack) {
-        return !stack.isEmpty() && (stack.getItem() instanceof li.cil.oc.api.internal.Wrench
-                || is(stack, "wrench") || stack.is(WRENCHES));
+        return li.cil.oc.common.integration.WrenchTools.isWrench(stack) || is(stack, "wrench");
     }
 }

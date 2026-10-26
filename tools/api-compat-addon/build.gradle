@@ -1,0 +1,88 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.144'
+}
+
+group = 'ocfixture'
+version = '1.0.0'
+def repositoryRoot = file('../..')
+def contractReport = file("${repositoryRoot}/build/api-compat-addon/run/contract-results.txt")
+layout.buildDirectory = file("${repositoryRoot}/build/api-compat-addon")
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+repositories {
+    mavenCentral()
+    maven { url = uri(providers.gradleProperty('ocApiMaven').getOrElse("${repositoryRoot}/build/jitpack-maven")) }
+}
+
+def sdkFile = providers.provider {
+    if (providers.gradleProperty('ocApiJar').isPresent()) return file(providers.gradleProperty('ocApiJar').get())
+    def jars = fileTree("${repositoryRoot}/build/sdk/libs") { include '*.jar'; exclude '*-sources.jar', '*-javadoc.jar' }.files
+    if (jars.size() != 1) throw new GradleException('Supply -PocApiJar=/absolute/path/to/published-sdk.jar or -PocApiCoordinate=group:artifact:version')
+    return jars.first()
+}
+def legacyFile = file(providers.gradleProperty('legacyApiJar').getOrElse("${repositoryRoot}/build/api-compat-addon/legacy-sdk/opencomputers-api-two-arg.jar"))
+def runtimeFile = file(providers.gradleProperty('ocModJar').getOrElse("${repositoryRoot}/build/libs/OpenComputer-Reloaded-0.1.0-SNAPSHOT.jar"))
+sourceSets {
+    legacy { java.srcDir 'src/legacy/java'; resources.srcDirs = [] }
+    main { compileClasspath += sourceSets.legacy.output; runtimeClasspath += sourceSets.legacy.output }
+}
+neoForge {
+    version = '21.1.224'
+    addModdingDependenciesTo sourceSets.legacy
+    runs {
+        server {
+            server()
+            gameDirectory = file("${repositoryRoot}/build/api-compat-addon/run")
+            programArgument '--nogui'
+            systemProperty 'ocfixture.autorun', 'true'
+            systemProperty 'ocfixture.worldFixture', 'true'
+            systemProperty 'ocfixture.stopAfterRun', 'true'
+            systemProperty 'ocfixture.reportFile', contractReport.absolutePath
+        }
+        client { client(); gameDirectory = file("${repositoryRoot}/build/api-compat-addon/client-run") }
+    }
+    mods { oc_api_compat { sourceSet sourceSets.main; sourceSet sourceSets.legacy } }
+}
+dependencies {
+    if (providers.gradleProperty('ocApiCoordinate').isPresent()) compileOnly providers.gradleProperty('ocApiCoordinate').get()
+    else compileOnly files(sdkFile)
+    compileOnly 'com.typesafe:config:1.4.1'
+    legacyCompileOnly files(legacyFile)
+    runtimeOnly files(runtimeFile)
+}
+tasks.named('compileLegacyJava') {
+    doFirst {
+        if (!legacyFile.isFile()) throw new GradleException('The old two-argument SDK is required: provide -PlegacyApiJar=/path/to/old-sdk.jar')
+        new java.util.jar.JarFile(legacyFile).withCloseable { jar ->
+            def bytes = jar.getInputStream(jar.getJarEntry('li/cil/oc/api/driver/Converter.class')).withCloseable { it.readAllBytes() }
+            if (new String(bytes, java.nio.charset.StandardCharsets.ISO_8859_1).contains('net/minecraft/core/HolderLookup$Provider'))
+                throw new GradleException('legacyApiJar already contains the new Converter overload; use a preserved two-argument SDK for the binary-compatibility test')
+        }
+    }
+}
+def prepareFixtureRun = tasks.register('prepareFixtureRun') {
+    def configFile = file("${repositoryRoot}/build/api-compat-addon/run/config/opencomputers/settings.conf")
+    inputs.file file("${repositoryRoot}/src/main/resources/application.conf")
+    outputs.file configFile
+    doLast {
+        configFile.parentFile.mkdirs()
+        configFile.text = file("${repositoryRoot}/src/main/resources/application.conf").getText('UTF-8')
+                .replaceAll(/registerLuaJArchitecture:\s*false/, 'registerLuaJArchitecture: true')
+                .replace('@VERSION@', 'api-fixture')
+    }
+}
+tasks.matching { it.name == 'runServer' }.configureEach {
+    dependsOn prepareFixtureRun
+    doFirst {
+        if (contractReport.exists() && !contractReport.delete())
+            throw new GradleException("Could not remove the previous API contract report: ${contractReport}")
+    }
+    doLast {
+        def lines = contractReport.isFile() ? contractReport.readLines('UTF-8') : []
+        if (lines.isEmpty() || lines[0] != 'status=PASS')
+            throw new GradleException("The dedicated server did not complete the API contracts successfully; see ${contractReport} and its startup log")
+    }
+}
+tasks.named('jar') { from sourceSets.legacy.output }
+tasks.withType(JavaCompile).configureEach { options.release = 21; options.encoding = 'UTF-8' }
+tasks.withType(AbstractArchiveTask).configureEach { preserveFileTimestamps = false; reproducibleFileOrder = true }

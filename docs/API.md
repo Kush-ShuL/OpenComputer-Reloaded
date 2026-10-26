@@ -1,38 +1,68 @@
 # OpenComputer-Reloaded API
 
 目标环境：Minecraft **1.21.1**、NeoForge **21.1.224 或更新的 21.1.x**、Java **21**。
-API ABI 版本为 `8.0.0-alpha.1`，沿用 `li.cil.oc.api` 包名。它来自
+当前 API 验证版本为 `8.0.0-alpha.1`，沿用 `li.cil.oc.api` 包名，**尚未承诺稳定 ABI**。它来自
 [MightyPirates/OpenComputers](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c/src/main/java/li/cil/oc/api)，
 保留原 MIT 许可证。Minecraft 平台类型、持久化和渲染签名已更新，因此旧 Forge
-扩展需要重新编译和适配。API 包可以独立构建；具体功能的运行支持仍取决于主模组对应系统的迁移状态。
+扩展需要重新编译和适配。API 包可以独立构建；接口存在不代表对应设备和游戏功能已完成迁移。
 
 ## 获取 API
 
-玩家只安装主模组。`-api.jar` 供其他模组编译集成使用，不要放进玩家的 `mods` 文件夹，
-不要把 API 打进其他模组，也不要将 API 与主模组作为两个模组一起安装。
+玩家只安装主模组。API 是其他模组的 `compileOnly` 编译依赖，不要 shade、重定位或将 API
+打进扩展模组，也不要单独放进玩家的 `mods` 文件夹。开发运行环境和玩家环境都需要另装
+与 API 对应版本的完整主模组；API JAR 不能提供运行时实现。
 
-在项目根目录执行：
-
-```sh
-./gradlew apiJar apiSourcesJar apiJavadocJar
-./gradlew publishApiPublicationToLocalDistributionRepository
-```
-
-独立 API 的 Maven 坐标：
+API 通过 **JitPack** 分发。下例使用待验证的标签 `api-8.0.0-alpha.1`，不表示该标签
+已发布或 JitPack 已构建成功。实际接入时使用已发布并验证过的精确标签：
 
 ```groovy
 repositories {
-    // 本地构建生成的 Maven 仓库；替换成实际路径。
-    maven { url = uri('/path/to/OpenComputer-Reloaded/build/maven') }
+    maven { url = uri('https://jitpack.io') }
 }
 dependencies {
-    compileOnly 'io.github.kush-shul:opencomputer-reloaded-api:0.1.0-SNAPSHOT'
+    compileOnly 'com.github.Kush-ShuL:OpenComputer-Reloaded:api-8.0.0-alpha.1'
 }
 ```
 
-也可从 GitHub Release 下载同版本 `-api.jar` 和 `-api-sources.jar`，
-通过 `compileOnly files('libs/实际的-api.jar文件名.jar')` 使用。运行开发实例时仍需加载完整主模组。
-使用 GitHub Packages 时，该服务可能要求 GitHub 身份验证；Release 附件和本地 Maven 仓库无需依赖该服务。
+JitPack 的仓库名 artifact 仅包含 `li.cil.oc.api` SDK，不是完整模组。
+仓库根目录的 `jitpack.yml` 使用 Java 21，运行独立 SDK 构建：
+
+```sh
+./gradlew -p api publishToMavenLocal --console=plain
+```
+
+这条命令只编译 API，不要求未完成的主模组通过构建。独立项目还生成 sources 和 Javadoc，
+并在包内保留许可证和 NOTICE。维护者发布 API 时创建 tag 和**无附件的 GitHub Release**；
+不向 Release 上传 JAR，也不通过 GitHub Packages 发布。消费者从 JitPack 获取包。
+
+本地开发也可执行上述命令，然后使用本地 Maven 坐标。它与 JitPack 的坐标不同：
+
+```groovy
+repositories {
+    mavenLocal()
+}
+dependencies {
+    compileOnly 'io.github.kush-shul:opencomputer-reloaded-api:8.0.0-alpha.1'
+}
+```
+
+`api/` 使用根目录的 `api_version` 作为本地版本；JitPack 使用完整 Git 标签作为依赖版本，
+因此不要省略示例标签中的 `api-` 前缀，也不要使用会随分支变化的版本来约定稳定接口。
+
+## 版本与兼容性
+
+`API.ID_OWNER` 为真实模组 ID `opencomputers`，不是仓库名。依赖声明、IMC 和注册表相关
+代码应使用这一 ID。Java 会把 `public static final String` 常量内联到调用方；如果扩展
+此前针对错误的 `ID_OWNER` 值编译，需要重新编译扩展，只替换 API JAR 不会更新旧字节码。
+
+Minecraft 1.21.1 的平台类型变化意味着旧 Forge 扩展必须重新编译。当前 alpha 版本也可能
+继续调整适配接口；在明确宣布稳定前，应固定精确标签，并让扩展注明支持的主模组版本。
+
+`Converter` 保留 `convert(Object, Map<Object, Object>)` 作为唯一抽象方法，所以原有两参数
+lambda 和转换器实现仍可编译。新增的三参数 `convert(value, output, registries)` 是 default
+方法，默认转调原方法；需要处理 ItemStack data components 的转换器可覆盖该方法，使用
+调用机器所在 level 的 `HolderLookup.Provider`。上下文可能为 `null`，需要注册表的转换器
+应明确报告缺少上下文，不能查全局服务器或静默丢弃数据。
 
 ## 组件与回调
 
@@ -124,3 +154,11 @@ host.markChanged();
 `machine`、`manual`、`nanomachines`、`network`、`prefab`、`util` 全部保留。
 `detail` 是主模组注入的实现桥，常规集成优先使用 `Driver`、`Network`、`FileSystem`、
 `Machine`、`Items`、`Manual`、`Nanomachines` 等门面。不要在自己的模组中改写 `API` 静态实现。
+
+手册扩展只在物理客户端注册。客户端的 `Manual` 后端在主模组构造阶段初始化，扩展可在
+setup 阶段注册 `PathProvider`、`ContentProvider`、图片提供者与标签；专用服务器的
+`API.manual` 按原约定保持 `null`。手册图片和标签渲染器使用 `GuiGraphics`，应放在客户端
+隔离的类中。不要依赖主模组的 `li.cil.oc.client` 或 `li.cil.oc.server` 实现类。
+
+独立 SDK 构建和 API 兼容性用例用于检查集成契约；它们不证明完整模组、所有宿主设备或
+全部可选集成已经可用。游戏功能的迁移状态见 [移植说明](PORTING.md)。

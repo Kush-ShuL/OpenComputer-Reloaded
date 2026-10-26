@@ -2,53 +2,108 @@
 
 ## Source of truth
 
-- Only MightyPirates/OpenComputers is used as the implementation source.
-- Branch: master-MC1.12.
-- Commit: 258943363ea8fc4ef14948e6bc6f67375061580c.
-- Official master-MC1.16 is an older ancestor of this 1.12.2 branch, not a finished 1.16 port.
+- Only [MightyPirates/OpenComputers](https://github.com/MightyPirates/OpenComputers) is used as the implementation source.
+- Branch: `master-MC1.12`.
+- Pinned commit: [`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c).
 - No community port code is used.
 
-The original source tree is retained in the upstream/master-MC1.12 Git reference. Lua programs, manuals, assets and license notices remain in the main tree. Runtime code is being rewritten in Java 21; there is no Scala compiler or Scala runtime dependency. A rewritten module is not automatically validated in game.
+The public repository starts with an independent root commit, `de9a637`, rather
+than the original project's Git history. Upstream history is used only through
+local development references and the external source link above; it is not
+pushed into the new repository. Starting a new Git history does not remove the
+original authorship or license obligations.
+
+Lua programs, manuals, assets, original copyright notices, MIT LICENSE and the
+third-party notices in NOTICE are retained. Runtime code is being rewritten in
+Java 21; there is no Scala compiler or Scala runtime dependency. Original Scala
+implementations are consulted as source references, not shipped as the runtime.
+A rewritten module is not automatically validated in game.
 
 ## Delivery requirements
 
 Completion requires the whole mod, not just registration or an API JAR: computers and persistent Lua VM state; native Lua and LuaJ; OpenOS and loot disks; driver discovery and component networks; storage and EEPROM; graphics and input; robots and upgrades; drones; tablets and terminals; servers and racks; redstone, transposers and fluid/inventory automation; printers, holograms, geolyzers and motion sensors; nanomachines; recipes/configuration; multiplayer menus and payloads; rendering; and compatible optional integrations.
 
-The main source set contains Java implementations. Original Scala files remain in the upstream reference for semantic comparison and are not shipped as a runtime implementation. Systems awaiting Java migration remain incomplete, even if the current Java modules compile. Empty components are not a substitute for their original behavior.
+Systems awaiting Java migration remain incomplete, even if the current Java
+modules compile. Empty components are not a substitute for their original
+behavior.
 
 ## Current state
 
-Work in progress. Current Java modules and the independent API compile. The Windows development client has started with Minecraft 1.21.1, NeoForge 21.1.224 and OpenComputer-Reloaded loaded. This is a partial development implementation, not a complete playable release.
+Work in progress. This is a partial development implementation, not a complete
+playable release. Earlier Windows development clients loaded Minecraft 1.21.1,
+NeoForge 21.1.224 and this mod. That startup evidence does not validate later
+changes or establish functional completion.
 
-The current implementation includes API types, core network/filesystem/machine/driver logic, LuaJ and native architecture code, CPU/memory/storage/GPU/network-card items, cases, screens, keyboards, cables, configuration/recipes and nanomachines. Module presence and client startup do not establish functional completion.
+The Java source includes the API types, core network/filesystem/machine/driver
+logic, LuaJ and native architecture code, CPU/APU/memory/storage/GPU/network-card
+items, cases, screens, keyboards, cables, floppy drives, power devices,
+configuration/recipes and nanomachines. Adapter and automation devices, including
+transposers, geolyzers and motion sensors, are connected to mod registration;
+adapter drivers are also connected to setup initialization. These modules are
+included in the current full build and still require functional validation.
+Module presence is distinct from complete upstream behavior and player acceptance.
 
-The current visual corrections restore the layered case panel, component sockets and power/activity/error overlays; the original six-face and joined-screen texture selection; screen text bounds and font filtering; and floppy color model selection. Screen menus bypass the modern default background blur. Legacy display transforms that were ignored by 1.12 are not promoted into active modern hand transforms. Player screenshots identified additional screen-window sizing, case-title overlap and button-tooltip focus problems. The follow-up version compiled, packaged and started in a Windows singleplayer world with these corrections; visual acceptance of the follow-up is still pending.
+The manual API now has a Java client backend, resource and addon providers,
+language fallback, tabs and interactive Markdown rendering using the original
+manual textures. It initializes on the physical client before addon setup
+registration; dedicated servers keep `API.manual` null. This does not establish
+parity for every manual item interaction or every optional addon.
 
-The creative catalog now includes ordinary hardware as well as BIOS/loot-disk variants: three CPUs, six RAM levels, three GPUs, three hard drives, EEPROMs, blank floppy disks and network cards. These items use the migrated component drivers. Their in-game specifications and stack limits are implemented; installing and booting a complete computer still requires acceptance.
+Earlier Windows testing exposed texture/layout problems, fractional energy
+accounting errors, host-thread deadlocks and native-library class-loader issues.
+The source contains targeted corrections, including deferred server-thread dirty
+updates and an FML game-library manifest around unchanged upstream JNLua classes.
+These findings should not be presented as acceptance of all rendering, boot,
+persistence or multiplayer behavior in the current tree.
 
-The next compiled modules include the three original APUs, the external floppy disk drive with its filesystem node/menu/media insertion and ejection, FE power conversion, isolated six-side power distribution, and normal/carpeted capacitors with adjacency capacity bonuses. The original `oc_spawnComputer` (`oc_sc`) and disassembly-protection commands are registered with operator level 2. The spawn command creates the original creative-case/APU/RAM/HDD/BIOS/OpenOS combination. These modules compile and package; functional device acceptance is pending.
+Still required: completion and functional acceptance of robots/drones and their
+upgrades; servers/racks, tablets/terminals and microcontrollers; the remaining
+automation/power/production devices; holograms/printers/prints; remaining
+item/block/component families; commands, manual item behavior, loot and
+configuration parity; optional integrations; saved VM restoration; and full
+client/server behavior. Existing menus, payloads, rendering, energy, persistence
+and crafting also need functional acceptance.
 
-A live Windows probe traced the OpenOS/Plan9k boot failure to shared energy accounting: the installed system disk was visible and its `init.lua` could be read by the backend, but the component rejected the read as out of power because a complete fractional energy withdrawal left a floating-point remainder. The connector/network implementation now follows the upstream whole-request branch, setting the remainder to zero when the request is fully satisfied. A fresh-client boot is required to validate this fix.
+A successful API build validates the SDK build. API compatibility checks cover
+the specific contracts they exercise; they do not establish computer boot, saved
+VM restoration, all host devices, automation, multiplayer synchronization,
+graphics fidelity or a complete migration. The current API validation version is
+`8.0.0-alpha.1`; a stable ABI has not been announced.
 
-The next live boot exposed a separate host-threading deadlock. The computer
-worker held the machine state monitor while `CaseBlockEntity.markChanged()`
-called Minecraft chunk access and waited for the server thread; that thread was
-waiting for the same state monitor. The upstream scheduled-dirty behavior is
-restored using atomic flags consumed by server ticks. Screen/keyboard/power
-hosts and screen snapshot/command publication follow the same thread boundary.
-The deadlocked client was terminated by the player; the corrected build still
-requires a fresh-client boot check.
-
-Windows startup initially failed because the obsolete Typesafe implementation-package hook conflicted with the standalone Typesafe module; the unused hook was removed. Module resource lookup now finds and extracts the original native Lua libraries. JNLua was then found in the bootstrap class loader while OC was in the game class loader. The build wraps the unchanged upstream JNLua classes with an FML game-library manifest so JNI and OC share the game loader. The latest Windows run successfully loaded native Lua 5.2, 5.3 and 5.4; the configured architectures are Lua 5.3 and 5.2, with Lua 5.3 selected by default. Saved coroutine restoration and complete computer boot still require functional validation.
-
-Still required: robots/drones and upgrades; servers/racks, tablets/terminals and microcontrollers; automation/power/production devices; holograms/printers/prints; remaining item/block/component families; commands/manual UI/loot/configuration parity; optional integrations; saved VM restoration; and full client/server functional validation. Existing menus, payloads, rendering, energy, persistence and crafting implementations also need functional acceptance.
-
-A successful API compilation only validates the SDK. It does not establish mod startup, computer boot, saved VM restoration, automation, multiplayer synchronization, graphics fidelity, or completeness.
+The standalone SDK has successfully compiled and published to Maven Local.
+A separately compiled addon has passed on a Windows dedicated server: legacy
+Converter binaries, registry-aware persistence, network and prefab lifecycles,
+placed SimpleComponent discovery, and native Lua 5.3 / LuaJ callback conversion
+and IMC program mappings. The new Windows client also starts and joins the
+development world. Manual rendering and newly registered devices still need
+interactive acceptance. The remote JitPack build has not been verified.
 
 ## API and release packaging
 
-`./gradlew apiJar apiSourcesJar apiJavadocJar` builds the independent SDK and its documentation without requiring the unfinished runtime to compile. `./gradlew build` must compile the complete mod before a playable release is published.
+The standalone SDK project lives in `api/`. The root `jitpack.yml` selects Java
+21 and runs `./gradlew -p api publishToMavenLocal --console=plain`, which compiles
+only `li.cil.oc.api` and produces API, sources and Javadoc artifacts with the
+license files and NOTICE. It does not require the unfinished runtime to compile.
+`./gradlew build` builds the full mod; compilation alone is insufficient for a
+playable release.
 
-The API has changed ABI for Minecraft 1.21.1. Integrations must be recompiled. ItemStack persistence now uses explicit HolderLookup.Provider context, dimensions use ResourceKey<Level>, and CustomData modifications must be committed to the stack. See API.md.
+The API is distributed through JitPack as
+`com.github.Kush-ShuL:OpenComputer-Reloaded:<tag>`. For an API release, create a tag
+and a GitHub Release with **no attached assets**. JARs and Maven archives are not
+uploaded to that Release; GitHub Packages is not used. Local SDK publishing uses
+the separate `io.github.kush-shul:opencomputer-reloaded-api:<api_version>`
+coordinate. `api-8.0.0-alpha.1` is an example validation tag, not a claim that a
+release exists or that JitPack has successfully built it.
 
-Maven publications are configured for the complete mod and a separate `io.github.kush-shul:opencomputer-reloaded-api` artifact. A local distribution repository is created with `publishApiPublicationToLocalDistributionRepository`; authenticated GitHub Packages publishing requires a token with package write permissions. The CLI credential cannot create workflows, so CI templates are retained under `docs/ci` and the API is distributed through GitHub Release attachments. A runtime release must not call an incomplete migration a complete port.
+Integrations use `compileOnly`, must not shade the API, and must install the
+corresponding full mod separately for development and gameplay. Old Forge addons
+must be adapted and recompiled. `API.ID_OWNER` is `opencomputers`; callers built
+against the earlier incorrect constant must be recompiled because Java inlines
+the value. Registry-aware persistence and converters use an explicit
+`HolderLookup.Provider`; the new three-argument Converter overload is a default
+method preserving the existing two-argument functional interface. See
+[API.md](API.md) for dependency and migration details.
+
+CI definitions under `docs/ci/` are inactive templates. They validate builds and
+do not upload release assets or publish GitHub packages. A runtime release must
+not call an incomplete migration a complete port.

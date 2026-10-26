@@ -1,5 +1,6 @@
 package li.cil.oc.server.fs;
 import li.cil.oc.api.fs.*;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -25,4 +26,6 @@ public final class CompositeReadOnlyFileSystem implements li.cil.oc.api.fs.FileS
     public void close(){parts.values().forEach(li.cil.oc.api.fs.FileSystem::close);}
     public void load(CompoundTag nbt){parts.forEach((name,fs)->fs.load(nbt.getCompound(name)));}
     public void save(CompoundTag nbt){parts.forEach((name,fs)->{CompoundTag tag=new CompoundTag();fs.save(tag);nbt.put(name,tag);});}
+    @Override public void load(CompoundTag nbt,HolderLookup.Provider registries){parts.forEach((name,fs)->fs.load(nbt.getCompound(name),registries));}
+    @Override public void save(CompoundTag nbt,HolderLookup.Provider registries){parts.forEach((name,fs)->{CompoundTag tag=new CompoundTag();fs.save(tag,registries);nbt.put(name,tag);});}
 }

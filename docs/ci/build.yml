@@ -13,11 +13,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Build Java modules and API distribution
-        run: ./gradlew build apiJavadocJar publishApiPublicationToLocalDistributionRepository --console=plain
+      - name: Build Java game modules
+        run: ./gradlew build --console=plain
+      - name: Build the standalone API used by JitPack
+        run: ./gradlew -p api publishToMavenLocal --console=plain
       - uses: actions/upload-artifact@v4
         with:
           name: OpenComputer-Reloaded-development
           path: |
             build/libs/*.jar
-            build/maven/
+            build/sdk/libs/*.jar

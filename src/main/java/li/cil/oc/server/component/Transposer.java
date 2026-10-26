@@ -19,6 +19,7 @@ import java.util.function.Function;
 public class Transposer extends WorldComponent implements DeviceInfo {
     public interface ActivityHost {void onTransposerActivity();}
     public Transposer(EnvironmentHost host){super(host);setNode(li.cil.oc.api.Network.newNode(this,Visibility.Network).withComponent("transposer").withConnector().create());}
+    @Override protected Direction side(Arguments args,int index){int value=args.checkInteger(index);if(value<0||value>5)throw new IllegalArgumentException("invalid side");return Direction.from3DDataValue(value);}
     @Override public Map<String,String> getDeviceInfo(){return Map.of("class","generic","description","Transposer","vendor","MightyPirates GmbH & Co. KG","product","TP4k-iX");}
     private Object[] inventory(Arguments args,Function<IItemHandler,Object[]> action){Direction direction=side(args,0);var source=InventoryUtils.inventorySourceAt(host.world(),position().relative(direction),direction.getOpposite());return source.isPresent()&&mayInteract(source.get())?action.apply(source.get().inventory()):new Object[]{null,"no inventory"};}
     private IItemHandler inventory(Direction direction){var source=InventoryUtils.inventorySourceAt(host.world(),position().relative(direction),direction.getOpposite());if(source.isEmpty()||!mayInteract(source.get()))return null;return source.get().inventory();}

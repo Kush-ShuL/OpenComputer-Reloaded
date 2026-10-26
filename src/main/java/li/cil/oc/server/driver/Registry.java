@@ -19,6 +19,8 @@ import li.cil.oc.api.driver.DriverItem;
 import li.cil.oc.api.driver.EnvironmentProvider;
 import li.cil.oc.api.driver.InventoryProvider;
 import li.cil.oc.api.driver.item.HostAware;
+import li.cil.oc.server.driver.converter.MissingRegistryContextException;
+import net.minecraft.core.HolderLookup;
 import li.cil.oc.api.machine.Value;
 import li.cil.oc.api.network.EnvironmentHost;
 import net.minecraft.core.BlockPos;
@@ -138,34 +140,43 @@ public final class Registry implements DriverAPI {
 
     /** Convert a callback result, retaining cycles and shared references. */
     public static Object[] convert(Object[] values) {
+        return convert(values, null);
+    }
+
+    /** Use the invoking machine's lookup throughout the complete object graph. */
+    public static Object[] convert(Object[] values, HolderLookup.Provider registries) {
         if (values == null) return null;
         Object[] result = new Object[values.length];
         IdentityHashMap<Object, Object> memo = new IdentityHashMap<>();
         memo.put(values, result);
-        for (int i = 0; i < values.length; i++) result[i] = convertRecursively(values[i], memo);
+        for (int i = 0; i < values.length; i++) result[i] = convertRecursively(values[i], memo, registries);
         return result;
     }
 
     public static Object convertRecursively(Object value, IdentityHashMap<Object, Object> memo) {
+        return convertRecursively(value, memo, null);
+    }
+
+    private static Object convertRecursively(Object value, IdentityHashMap<Object, Object> memo, HolderLookup.Provider registries) {
         if (value == null) return null;
         if (memo.containsKey(value)) return memo.get(value);
         if (value instanceof Boolean || value instanceof Character || value instanceof Byte || value instanceof Short
                 || value instanceof Integer || value instanceof Long || value instanceof Float || value instanceof Double
                 || value instanceof String || value instanceof Value) return value;
         if (value instanceof Number number) return number.doubleValue();
-        if (value instanceof Optional<?> optional) return convertRecursively(optional.orElse(null), memo);
+        if (value instanceof Optional<?> optional) return convertRecursively(optional.orElse(null), memo, registries);
         Class<?> type = value.getClass();
         if (type.isArray()) {
             if (type.componentType().isPrimitive() || type.componentType() == String.class) return value;
             Object[] converted = new Object[Array.getLength(value)];
             memo.put(value, converted);
-            for (int i = 0; i < converted.length; i++) converted[i] = convertRecursively(Array.get(value, i), memo);
+            for (int i = 0; i < converted.length; i++) converted[i] = convertRecursively(Array.get(value, i), memo, registries);
             return converted;
         }
         if (value instanceof Map<?, ?> map) {
             Map<Object, Object> converted = new LinkedHashMap<>();
             memo.put(value, converted);
-            fillMap(map, converted, memo);
+            fillMap(map, converted, memo, registries);
             return converted;
         }
         if (value instanceof Iterable<?> iterable) {
@@ -173,13 +184,14 @@ public final class Registry implements DriverAPI {
             for (Object entry : iterable) source.add(entry);
             Object[] converted = new Object[source.size()];
             memo.put(value, converted);
-            for (int i = 0; i < converted.length; i++) converted[i] = convertRecursively(source.get(i), memo);
+            for (int i = 0; i < converted.length; i++) converted[i] = convertRecursively(source.get(i), memo, registries);
             return converted;
         }
         Map<Object, Object> converted = new LinkedHashMap<>();
         memo.put(value, converted);
         for (Converter converter : INSTANCE.converters) {
-            try { converter.convert(value, converted); }
+            try { converter.convert(value, converted, registries); }
+            catch (MissingRegistryContextException error) { throw error; }
             catch (RuntimeException error) { LOGGER.warn("An OpenComputers type converter threw an exception", error); }
         }
         if (converted.isEmpty()) {
@@ -192,7 +204,7 @@ public final class Registry implements DriverAPI {
         Map<Object, Object> source = new LinkedHashMap<>(converted);
         converted.clear();
         memo.put(converted, converted);
-        fillMap(source, converted, memo);
+        fillMap(source, converted, memo, registries);
         memo.remove(converted);
         if (converted.size() == 1 && converted.containsKey("oc:flatten")) {
             Object flattened = converted.get("oc:flatten");
@@ -202,10 +214,10 @@ public final class Registry implements DriverAPI {
         return converted;
     }
 
-    private static void fillMap(Map<?, ?> source, Map<Object, Object> destination, IdentityHashMap<Object, Object> memo) {
+    private static void fillMap(Map<?, ?> source, Map<Object, Object> destination, IdentityHashMap<Object, Object> memo, HolderLookup.Provider registries) {
         for (Map.Entry<?, ?> entry : source.entrySet()) {
             if (entry.getKey() != null && entry.getValue() != null)
-                destination.put(convertRecursively(entry.getKey(), memo), convertRecursively(entry.getValue(), memo));
+                destination.put(convertRecursively(entry.getKey(), memo, registries), convertRecursively(entry.getValue(), memo, registries));
         }
     }
 }
