@@ -52,6 +52,10 @@ public final class OpenComputers {
         li.cil.oc.common.init.Printing.register(modBus);
         li.cil.oc.common.init.Workstations.register(modBus);
         li.cil.oc.common.init.Charging.register(modBus);
+        li.cil.oc.common.init.PortableDevices.register(modBus);
+        li.cil.oc.common.init.AgentUpgrades.register(modBus);
+        li.cil.oc.common.init.NetworkCards.register(modBus);
+        li.cil.oc.common.init.NetworkBlocks.register(modBus);
         li.cil.oc.common.capabilities.SimpleComponentBridge.register(modBus);
         li.cil.oc.common.IMC.register(modBus);
         NeoForge.EVENT_BUS.register(li.cil.oc.common.capabilities.SimpleComponentBridge.class);
@@ -78,6 +82,9 @@ public final class OpenComputers {
             li.cil.oc.common.init.RedstoneDevices.initializeDrivers();
             li.cil.oc.common.init.Agents.initializeDrivers();
             li.cil.oc.common.init.Racks.initializeDrivers();
+            li.cil.oc.common.init.PortableDevices.initializeDrivers();
+            li.cil.oc.common.init.AgentUpgrades.initializeDrivers();
+            li.cil.oc.common.init.NetworkCards.initializeDrivers();
             li.cil.oc.common.template.BuiltinAssemblyTemplates.initialize();
             li.cil.oc.common.init.Converters.initialize();
             li.cil.oc.common.init.Items.INSTANCE.initializeLuaBios();

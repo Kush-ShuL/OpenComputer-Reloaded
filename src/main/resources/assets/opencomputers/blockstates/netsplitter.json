@@ -1,7 +1,105 @@
 {
-  "variants": {
-    "": {
-      "model": "opencomputers:block/switch"
+  "multipart": [
+    {
+      "apply": {
+        "model": "opencomputers:block/netsplitter_base"
+      }
+    },
+    {
+      "when": {
+        "down": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_down_closed"
+      }
+    },
+    {
+      "when": {
+        "down": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_down_open"
+      }
+    },
+    {
+      "when": {
+        "up": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_up_closed"
+      }
+    },
+    {
+      "when": {
+        "up": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_up_open"
+      }
+    },
+    {
+      "when": {
+        "north": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_north_closed"
+      }
+    },
+    {
+      "when": {
+        "north": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_north_open"
+      }
+    },
+    {
+      "when": {
+        "south": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_south_closed"
+      }
+    },
+    {
+      "when": {
+        "south": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_south_open"
+      }
+    },
+    {
+      "when": {
+        "west": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_west_closed"
+      }
+    },
+    {
+      "when": {
+        "west": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_west_open"
+      }
+    },
+    {
+      "when": {
+        "east": "false"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_east_closed"
+      }
+    },
+    {
+      "when": {
+        "east": "true"
+      },
+      "apply": {
+        "model": "opencomputers:block/netsplitter_east_open"
+      }
     }
-  }
+  ]
 }

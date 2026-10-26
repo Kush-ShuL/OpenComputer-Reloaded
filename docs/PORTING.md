@@ -66,7 +66,15 @@ chain includes original robot/drone assembly layouts, template-driven powered
 assembly and disassembly, the 3D printer and dynamic printed blocks, and the
 redstone-controlled charger. These modules compile and the Windows development
 client joins the existing world; their full gameplay acceptance is outstanding.
-Advanced agent upgrades, tablets and microcontrollers remain incomplete.
+The current Java batch connects tablet and microcontroller hosts, their menus,
+screen/input synchronization, charge and storage, and original assembly and
+disassembly layouts. It also adds functional agent upgrades, including battery,
+generator, solar, crafting, database, inventory/fluid controllers, navigation,
+experience, trading and world interactions. Data, Internet and linked cards,
+the queued wired/wireless relay, the sided network splitter and loaded waypoints
+are connected as well. These additions require gameplay acceptance, including
+world-save restoration, protection interactions and multiplayer use; their
+presence is not a claim that every upstream behavior has been validated.
 
 Earlier Windows testing exposed texture/layout problems, fractional energy
 accounting errors, host-thread deadlocks and native-library class-loader issues.
@@ -75,8 +83,8 @@ updates and an FML game-library manifest around unchanged upstream JNLua classes
 These findings should not be presented as acceptance of all rendering, boot,
 persistence or multiplayer behavior in the current tree.
 
-Still required: completion of advanced robot/drone upgrades, tablets and
-microcontrollers; functional acceptance of robot/drone and rack/server/terminal
+Still required: functional acceptance of advanced robot/drone upgrades, tablets,
+microcontrollers, network devices, robot/drone and rack/server/terminal
 platforms, holograms, printers and prints; remaining automation/power devices,
 item/block/component families; commands, manual item behavior, loot and
 configuration parity; optional integrations; saved VM restoration; and full

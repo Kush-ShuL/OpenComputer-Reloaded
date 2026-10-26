@@ -1,10 +1,30 @@
 package li.cil.oc.server.network;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import li.cil.oc.api.network.Packet;
-import java.util.*;
+
+/** Original channel-based, dimension-independent linked-card transport. */
 public final class QuantumNetwork {
-    private static final Map<String, Map<QuantumNode, Boolean>> TUNNELS = new HashMap<>();
-    public interface QuantumNode { String tunnel(); void receivePacket(Packet packet); }
-    public static synchronized void add(QuantumNode node) { TUNNELS.computeIfAbsent(node.tunnel(), ignored -> new WeakHashMap<>()).put(node, Boolean.TRUE); }
-    public static synchronized void remove(QuantumNode node) { Map<QuantumNode,Boolean> nodes=TUNNELS.get(node.tunnel());if(nodes!=null){nodes.remove(node);if(nodes.isEmpty())TUNNELS.remove(node.tunnel());} }
-    public static synchronized Collection<QuantumNode> getEndpoints(String tunnel) { Map<QuantumNode,Boolean> nodes=TUNNELS.get(tunnel);return nodes==null?List.of():new ArrayList<>(nodes.keySet()); }
+    public interface QuantumNode {
+        String tunnel();
+        void receivePacket(Packet packet);
+    }
+    private static final Map<String, WeakHashMap<QuantumNode, Boolean>> TUNNELS = new HashMap<>();
+    private QuantumNetwork() {}
+    public static synchronized void add(QuantumNode card) {
+        TUNNELS.computeIfAbsent(card.tunnel(), key -> new WeakHashMap<>()).put(card, Boolean.TRUE);
+    }
+    public static synchronized void remove(QuantumNode card) {
+        // Also handles a host changing its channel before removing the old registration.
+        TUNNELS.values().forEach(nodes -> nodes.remove(card));
+        TUNNELS.values().removeIf(Map::isEmpty);
+    }
+    public static synchronized List<QuantumNode> getEndpoints(String tunnel) {
+        var nodes = TUNNELS.get(tunnel);
+        return nodes == null ? List.of() : new ArrayList<>(nodes.keySet());
+    }
 }

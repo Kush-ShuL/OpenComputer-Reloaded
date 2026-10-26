@@ -35,19 +35,20 @@ public final class RobotBlockEntityRenderer implements BlockEntityRenderer<Robot
         var event=new RobotRenderEvent(robot,mounts,pose,buffers,light,overlay);NeoForge.EVENT_BUS.post(event);
         if(!event.isCanceled()){
             var out=buffers.getBuffer(RenderType.entityCutoutNoCull(TEXTURE));
+            int chassisColor=BuiltinUpgradeRenderer.chassisColor(robot);
             float l=.1f,h=.9f,g=1f/28,top=.5f+g-(running?0:4*g),bottom=.5f-g-(running?0:2*g);
             float[][] upper={{l,top,h,0,.5f},{h,top,h,.5f,.5f},{h,top,l,.5f,0},{l,top,l,0,0}};
             float[][] lower={{l,bottom,l,.5f,0},{h,bottom,l,1,0},{h,bottom,h,1,.5f},{l,bottom,h,.5f,.5f}};
             for(int i=0;i<4;i++){
-                quad(out,pose,new float[][]{{.5f,1-(running?0:4*g),.5f,.25f,.25f},upper[i],upper[(i+1)%4],upper[(i+1)%4]},-1,light,overlay);
-                quad(out,pose,new float[][]{{.5f,.03f-(running?0:2*g),.5f,.75f,.25f},lower[i],lower[(i+1)%4],lower[(i+1)%4]},-1,light,overlay);
+                quad(out,pose,new float[][]{{.5f,1-(running?0:4*g),.5f,.25f,.25f},upper[i],upper[(i+1)%4],upper[(i+1)%4]},chassisColor,light,overlay);
+                quad(out,pose,new float[][]{{.5f,.03f-(running?0:2*g),.5f,.75f,.25f},lower[i],lower[(i+1)%4],lower[(i+1)%4]},chassisColor,light,overlay);
             }
-            quad(out,pose,new float[][]{{l,top,h,0,1},{l,top,l,0,.5f},{h,top,l,.5f,.5f},{h,top,h,.5f,1}},-1,light,overlay);
-            quad(out,pose,new float[][]{{l,bottom,l,0,.5f},{l,bottom,h,0,1},{h,bottom,h,.5f,1},{h,bottom,l,.5f,.5f}},-1,light,overlay);
+            quad(out,pose,new float[][]{{l,top,h,0,1},{l,top,l,0,.5f},{h,top,l,.5f,.5f},{h,top,h,.5f,1}},chassisColor,light,overlay);
+            quad(out,pose,new float[][]{{l,bottom,l,0,.5f},{l,bottom,h,0,1},{h,bottom,h,.5f,1},{h,bottom,l,.5f,.5f}},chassisColor,light,overlay);
             if(running){var glow=buffers.getBuffer(RenderType.eyes(TEXTURE));float v=.5f+((int)(time/20*16)&15)/32f,v1=v+1f/32;float a=.2f,b=.8f;float[][] corners={{a,a},{b,a},{b,b},{a,b}};for(int i=0;i<4;i++){var p=corners[i];var q=corners[(i+1)%4];quad(glow,pose,new float[][]{{p[0],top,p[1],.5f,v},{p[0],bottom,p[1],.5f,v1},{q[0],bottom,q[1],1,v1},{q[0],top,q[1],1,v}},0xFF000000|color,LightTexture.FULL_BRIGHT,overlay);}}
         }
         if(robot!=null){Set<String> available=new LinkedHashSet<>(List.of(names));pose.pushPose();pose.translate(.5,.5,.5);for(var slot:robot.controller().componentStacks()){
-            var stack=slot.stack();Object candidate=stack.getItem() instanceof UpgradeRenderer?stack.getItem():li.cil.oc.api.Driver.driverFor(stack,robot.controller().getClass());if(!(candidate instanceof UpgradeRenderer renderer))continue;
+            var stack=slot.stack();Object candidate=stack.getItem() instanceof UpgradeRenderer?stack.getItem():li.cil.oc.api.Driver.driverFor(stack,robot.controller().getClass());if(!(candidate instanceof UpgradeRenderer))candidate=BuiltinUpgradeRenderer.forStack(stack);if(!(candidate instanceof UpgradeRenderer renderer))continue;
             String wanted=renderer.computePreferredMountPoint(stack,robot,Collections.unmodifiableSet(available));if(wanted==null||wanted.equals("none"))continue;if(wanted.equals("any"))wanted=available.stream().findFirst().orElse(null);if(wanted==null||!available.remove(wanted))continue;for(var mount:mounts)if(wanted.equals(mount.name)){pose.pushPose();renderer.render(stack,mount,robot,(float)(time-Math.floor(time)),pose,buffers,light,overlay);pose.popPose();break;}
         }pose.popPose();}
     }

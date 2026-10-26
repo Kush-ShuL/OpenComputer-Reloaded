@@ -1,0 +1,41 @@
+{
+  "textures": {
+    "particle": "opencomputers:blocks/netsplitter_side",
+    "side": "opencomputers:blocks/netsplitter_side",
+    "top": "opencomputers:blocks/netsplitter_top"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        5,
+        5
+      ],
+      "to": [
+        5,
+        11,
+        11
+      ],
+      "faces": {
+        "down": {
+          "texture": "#top"
+        },
+        "up": {
+          "texture": "#top"
+        },
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        }
+      }
+    }
+  ]
+}
