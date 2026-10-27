@@ -157,8 +157,11 @@ public class TextBuffer extends AbstractManagedEnvironment implements TextBuffer
     @Callback(doc = "function(enabled:boolean):boolean -- Enables precise mouse coordinates on tier three screens.")
     public Object[] setPrecise(Context context, Arguments args) {
         if (maxDepth != Settings.screenDepthsByTier[2]) return new Object[]{null, "unsupported operation"};
-        boolean old = precisionMode; precisionMode = args.checkBoolean(0); return new Object[]{old};
+        boolean old = precisionMode, value=args.checkBoolean(0);
+        if(old!=value){precisionMode=value;command("precise",value);}
+        return new Object[]{old};
     }
+    public void applyPrecisionMode(boolean value) { precisionMode=value; }
     @Override public void setEnergyCostPerTick(double value) { powerConsumptionPerTick = value; fullyLitCost = computeFullyLitCost(); }
     @Override public double getEnergyCostPerTick() { return powerConsumptionPerTick; }
     @Override public void setPowerState(boolean value) {

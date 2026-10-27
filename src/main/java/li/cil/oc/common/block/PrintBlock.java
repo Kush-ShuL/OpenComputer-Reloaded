@@ -37,7 +37,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public final class PrintBlock extends Block implements EntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     private final Supplier<BlockEntityType<PrintBlockEntity>> type;
-    public PrintBlock(Properties properties, Supplier<BlockEntityType<PrintBlockEntity>> type) { super(properties); this.type = type; registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH)); }
+    public PrintBlock(Properties properties, Supplier<BlockEntityType<PrintBlockEntity>> type) { super(properties.isValidSpawn((state,level,pos,entity)->true)); this.type = type; registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH)); }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(FACING); }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return type.get().create(pos, state); }
     @Override public BlockState getStateForPlacement(BlockPlaceContext context) { return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()); }

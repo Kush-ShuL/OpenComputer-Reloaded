@@ -72,6 +72,19 @@ public final class ScreenClient {
             default -> { }
         }
     }
+    public static boolean touchWorld(ScreenBlockEntity screen,net.minecraft.world.phys.Vec3 point,int projectile){
+        Minecraft client=Minecraft.getInstance();
+        if(client.player==null||client.getConnection()==null||screen.tier==0)return false;
+        double[] coordinates=screen.toScreenCoordinates(point);
+        if(coordinates==null)return false;
+        PacketDistributor.sendToServer(new ScreenNetworking.WorldTouch(screen.getBlockPos(),coordinates[0],coordinates[1],projectile));
+        return true;
+    }
+    @SubscribeEvent public static void highlight(net.neoforged.neoforge.client.event.RenderHighlightEvent.Block event){
+        Minecraft client=Minecraft.getInstance();
+        if(client.level!=null&&client.player!=null&&!client.player.isShiftKeyDown()
+                &&client.level.getBlockState(event.getTarget().getBlockPos()).getBlock() instanceof li.cil.oc.common.block.ScreenBlock)event.setCanceled(true);
+    }
     @SubscribeEvent public static void tick(ClientTickEvent.Post event) {
         var level = Minecraft.getInstance().level;
         if (level != previousLevel) { previousLevel = level; REQUESTS.clear(); PENDING.clear(); }

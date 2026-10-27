@@ -467,7 +467,7 @@ Cases using an external SDK architecture to exercise scheduling and failures.
 Main-thread start/resume/restart requests use the original fast state path
 without waiting for an executing architecture. Actual Lua 5.2, Lua 5.3 and LuaJ
 checkpoint regressions also passed, including direct-callback start/pause.
-The fixed checklist is now 86/120 complete with 34 remaining. See
+That batch increased the fixed checklist to 86 closed items. See
 [graphics cards](graphics-card.md), [holograms](hologram.md),
 [Internet cards](internet-card.md) and [machine scheduling](machine-scheduler.md).
 Shared client rendering, text buffers, remote synchronization and final delivery
@@ -493,6 +493,23 @@ Three actual rendered screenshots were inspected. Legacy shared-item images and
 lowercase packaged diagram paths resolve, while inline code uses the OC font.
 See [player manual](player-manual.md). These runs do not change the shared
 multiplayer, visual, translation or final release checklist items.
+
+The systems/device batch closes C13, C14, D10, D21, D30, D31 and D37. The fixed
+checklist is now 93/120 complete with 27 remaining. Windows NeoForge 21.1.224
+`systems-20261027-f4` passed the complete Debug Card and printer/print contracts,
+plus original OpenOS and Plan9k installation through physical keyboard input,
+normal shutdown, installation-disk removal, independent HDD boot, actual file
+commands/Lua script, original reboot and persistent file-byte checks. It keeps
+the original BIOS/installers/program resources. The same production build then
+passed focused `systems-20261027-f5` for all screen/keyboard topology, input,
+precision, state/power/save, dye split/remerge and actual support-removal drops.
+F4's unrelated screen-fixture item comparison used a nullable block descriptor;
+F5 uses its public created ItemStack and actual joined drop entities instead.
+See [operating systems](operating-systems.md), [Debug Card](debug-card.md),
+[printing](printing.md) and [screens/keyboards](screens-and-keyboards.md).
+New source fixes include RGB normalization for default/loaded screen colors so
+recolored screens merge, and tank-only Debug Card fluid access. Shared client
+appearance, remote packets and full menus remain in their existing C items.
 
 The standalone SDK has successfully compiled and published to Maven Local.
 A separately compiled addon has passed on a Windows dedicated server: legacy

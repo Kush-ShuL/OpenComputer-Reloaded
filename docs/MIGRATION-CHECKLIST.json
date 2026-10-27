@@ -291,7 +291,7 @@
       "id": "C13",
       "group": "基础与交付",
       "name": "OpenOS 安装与基础系统程序",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/resources/assets/opencomputers/loot/openos/"
       ],
@@ -301,14 +301,17 @@
       "acceptance": [
         "保留原系统及许可；空白介质安装、重启、终端输入、文件/组件基础程序通过。"
       ],
-      "remaining": "已有开发客户端启动使用记录；需按固定安装到重启流程闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/operating-systems.md",
+        "build/api-compat-addon/devices/systems-20261027-f4/device-results.txt"
+      ]
     },
     {
       "id": "C14",
       "group": "基础与交付",
       "name": "Plan9k 安装与基础系统程序",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/resources/assets/opencomputers/loot/plan9k/"
       ],
@@ -318,8 +321,11 @@
       "acceptance": [
         "保留原系统与许可；安装、引导、基础进程/终端/文件操作通过。"
       ],
-      "remaining": "保留系统并修过卡死；需闭合真实安装、重启及基础程序流程。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/operating-systems.md",
+        "build/api-compat-addon/devices/systems-20261027-f4/device-results.txt"
+      ]
     },
     {
       "id": "C15",
@@ -729,7 +735,7 @@
       "id": "D10",
       "group": "设备与组件",
       "name": "调试卡",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/DebugCard.scala"
       ],
@@ -739,8 +745,11 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/debug-card.md",
+        "build/api-compat-addon/devices/systems-20261027-f4/device-results.txt"
+      ]
     },
     {
       "id": "D11",
@@ -952,7 +961,7 @@
       "id": "D21",
       "group": "设备与组件",
       "name": "键盘",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Keyboard.scala",
         "src/main/scala/li/cil/oc/server/component/Keyboard.scala"
@@ -964,8 +973,11 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/screens-and-keyboards.md",
+        "build/api-compat-addon/devices/systems-20261027-f5/device-results.txt"
+      ]
     },
     {
       "id": "D22",
@@ -1142,7 +1154,7 @@
       "id": "D30",
       "group": "设备与组件",
       "name": "打印方块",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Print.scala"
       ],
@@ -1152,14 +1164,17 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/printing.md",
+        "build/api-compat-addon/devices/systems-20261027-f4/device-results.txt"
+      ]
     },
     {
       "id": "D31",
       "group": "设备与组件",
       "name": "3D打印机",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Printer.scala"
       ],
@@ -1170,8 +1185,11 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/printing.md",
+        "build/api-compat-addon/devices/systems-20261027-f4/device-results.txt"
+      ]
     },
     {
       "id": "D32",
@@ -1283,7 +1301,7 @@
       "id": "D37",
       "group": "设备与组件",
       "name": "屏幕",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Screen.scala"
       ],
@@ -1293,8 +1311,11 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/screens-and-keyboards.md",
+        "build/api-compat-addon/devices/systems-20261027-f5/device-results.txt"
+      ]
     },
     {
       "id": "D38",

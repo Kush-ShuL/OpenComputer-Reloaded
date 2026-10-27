@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 
 public final class PrintBlockItem extends BlockItem {
     public PrintBlockItem(Block block, Properties properties) { super(block, properties); }
+    @Override public boolean isBookEnchantable(ItemStack stack, ItemStack book) { return false; }
     @Override public Component getName(ItemStack stack) { return new PrintData(stack).label.<Component>map(Component::literal).orElseGet(() -> super.getName(stack)); }
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag); PrintData data = new PrintData(stack);

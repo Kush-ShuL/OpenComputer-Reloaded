@@ -120,6 +120,13 @@ public final class DeviceContract {
             if(Boolean.getBoolean("ocfixture.deviceBatchOnly")){robotDone=rackDone=true;InventoryControlContract.start(level,origin.south(12),results);PowerDevicesContract.start(level,origin.south(48),results);WorldSensorsContract.start(level,origin.south(84),results);NetworkDevicesContract.start(level,origin.south(128),results);RemoteAdapterContract.start(level,origin.south(168),results);return;}
             if(Boolean.getBoolean("ocfixture.hostBatchOnly")){robotDone=rackDone=true;StorageFileSystemContract.start(level,origin.south(12),results);ProductionDevicesContract.start(level,origin.south(48),results);PlayerToolsContract.start(level,origin.south(84),results);MachineHostsContract.start(level,origin.south(128),results);return;}
             if(Boolean.getBoolean("ocfixture.advancedBatchOnly")){robotDone=rackDone=true;GraphicsCardContract.start(level,origin.south(12),results);HologramContract.start(level,origin.south(48),results);InternetCardContract.start(level,origin.south(84),results);SchedulerContract.start(level,origin.south(128),results);CheckpointContract.run(level);return;}
+            if(Boolean.getBoolean("ocfixture.systemsBatchOnly")){
+                robotDone=rackDone=true;String focus=System.getProperty("ocfixture.systemsFocus","all");require(List.of("all","screen","printing","debug","os").contains(focus),"Unknown systems fixture focus");
+                if(focus.equals("all")||focus.equals("screen"))ScreenKeyboardContract.start(level,origin.south(12),results);
+                if(focus.equals("all")||focus.equals("printing"))PrintingContract.start(level,origin.south(48),results);
+                if(focus.equals("all")||focus.equals("debug"))DebugCardContract.start(level,origin.south(84),results);
+                if(focus.equals("all")||focus.equals("os"))OperatingSystemContract.start(level,origin.south(128),results);return;
+            }
             if(Boolean.getBoolean("ocfixture.vanillaOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;VanillaContract.start(level,origin.south(12),results);return;}
             if(Boolean.getBoolean("ocfixture.forgeEnergyOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;ForgeEnergyContract.start(level,origin.south(12),results);return;}
             require(CreativeTab.instance!=null,"OC did not publish its creative tab");
@@ -188,7 +195,7 @@ public final class DeviceContract {
             lower=new Probe();upper=new Probe();probes.add(lower);probes.add(upper);rackPhase=0;rackPhaseTick=ticks;
         }
         void tick(){
-            require(++ticks<=1000,"Real device contracts exceeded 1000 ticks; rack phase="+rackPhase);
+            require(++ticks<=(Boolean.getBoolean("ocfixture.systemsBatchOnly")?3600:1000),"Real device contracts exceeded their bounded tick limit; rack phase="+rackPhase);
             if(!robotDone)try{tickRobot();}catch(Throwable error){robotDone=true;results.add("FAIL robot.vm: "+error);LOGGER.error("DEVICE_FIXTURE robot VM",error);}
             if(!rackDone)try{tickRack();}catch(Throwable error){rackDone=true;results.add("FAIL rack: "+error);LOGGER.error("DEVICE_FIXTURE rack behavior",error);}
             DiskConcurrencyContract.tick();
@@ -218,7 +225,11 @@ public final class DeviceContract {
             InternetCardContract.tick();
             SchedulerContract.tick();
             CheckpointContract.tick();
-            if(robotDone&&rackDone&&!DiskConcurrencyContract.isRunning()&&!AgentFluidContract.isRunning()&&!ForgeEnergyContract.isRunning()&&!ExperienceContract.isRunning()&&!GeneratorContract.isRunning()&&!VanillaContract.isRunning()&&!RecipeConfigContract.isRunning()&&!EnderIOContract.isRunning()&&!Tis3dContract.isRunning()&&!UpgradeStorageContract.isRunning()&&!FlightUpgradeContract.isRunning()&&!CraftingTradingContract.isRunning()&&!ChunkloaderContract.isRunning()&&!InventoryControlContract.isRunning()&&!PowerDevicesContract.isRunning()&&!WorldSensorsContract.isRunning()&&!NetworkDevicesContract.isRunning()&&!RemoteAdapterContract.isRunning()&&!StorageFileSystemContract.isRunning()&&!ProductionDevicesContract.isRunning()&&!PlayerToolsContract.isRunning()&&!MachineHostsContract.isRunning()&&!GraphicsCardContract.isRunning()&&!HologramContract.isRunning()&&!InternetCardContract.isRunning()&&!SchedulerContract.isRunning()&&!CheckpointContract.isRunning())finish();
+            ScreenKeyboardContract.tick();
+            PrintingContract.tick();
+            DebugCardContract.tick();
+            OperatingSystemContract.tick();
+            if(robotDone&&rackDone&&!DiskConcurrencyContract.isRunning()&&!AgentFluidContract.isRunning()&&!ForgeEnergyContract.isRunning()&&!ExperienceContract.isRunning()&&!GeneratorContract.isRunning()&&!VanillaContract.isRunning()&&!RecipeConfigContract.isRunning()&&!EnderIOContract.isRunning()&&!Tis3dContract.isRunning()&&!UpgradeStorageContract.isRunning()&&!FlightUpgradeContract.isRunning()&&!CraftingTradingContract.isRunning()&&!ChunkloaderContract.isRunning()&&!InventoryControlContract.isRunning()&&!PowerDevicesContract.isRunning()&&!WorldSensorsContract.isRunning()&&!NetworkDevicesContract.isRunning()&&!RemoteAdapterContract.isRunning()&&!StorageFileSystemContract.isRunning()&&!ProductionDevicesContract.isRunning()&&!PlayerToolsContract.isRunning()&&!MachineHostsContract.isRunning()&&!GraphicsCardContract.isRunning()&&!HologramContract.isRunning()&&!InternetCardContract.isRunning()&&!SchedulerContract.isRunning()&&!CheckpointContract.isRunning()&&!ScreenKeyboardContract.isRunning()&&!PrintingContract.isRunning()&&!DebugCardContract.isRunning()&&!OperatingSystemContract.isRunning())finish();
         }
         void tickRobot(){
             Machine machine=robot.machine();
@@ -316,6 +327,10 @@ public final class DeviceContract {
             InternetCardContract.close();
             SchedulerContract.close();
             CheckpointContract.close();
+            ScreenKeyboardContract.close();
+            PrintingContract.close();
+            DebugCardContract.close();
+            OperatingSystemContract.close();
             if(player!=null)player.closeFixtureMenu();if(robot!=null){robot.machine().stop();robot.equipmentInventory().clearContent();robot.mainInventory().clearContent();}if(tablet!=null){tablet.machine().stop();tablet.machine().node().remove();}
             for(Probe probe:probes)probe.node().remove();probes.clear();
             var entries=new ArrayList<>(restored.entrySet());Collections.reverse(entries);for(var entry:entries){if(level.getBlockEntity(entry.getKey()) instanceof Rack existing)existing.clearContent();level.setBlock(entry.getKey(),entry.getValue(),3);}restored.clear();

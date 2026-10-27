@@ -23,7 +23,7 @@ import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 
 /** Original two-state printed block, with its own geometry, redstone and light data. */
-public final class PrintBlockEntity extends BlockEntity implements RotatableBlockEntity {
+public final class PrintBlockEntity extends BlockEntity implements RotatableBlockEntity, li.cil.oc.api.internal.Rotatable {
     public static final ModelProperty<PrintGeometry.View> MODEL = new ModelProperty<>();
     public final PrintData data = new PrintData();
     private final int[] input = {-1, -1, -1, -1, -1, -1};
@@ -31,14 +31,16 @@ public final class PrintBlockEntity extends BlockEntity implements RotatableBloc
     private VoxelShape off = Shapes.block(), on = Shapes.block();
     private ModelData modelData = ModelData.EMPTY;
     public PrintBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state); }
-    public Direction facing() { return getBlockState().getValue(PrintBlock.FACING); }
+    @Override public Direction facing() { return getBlockState().getValue(PrintBlock.FACING); }
+    @Override public Direction toGlobal(Direction side) { if(side==null||side.getAxis().isVertical())return side;for(int i=0;i<facing().get2DDataValue();i++)side=side.getClockWise();return side; }
+    @Override public Direction toLocal(Direction side) { if(side==null||side.getAxis().isVertical())return side;for(int i=0;i<facing().get2DDataValue();i++)side=side.getCounterClockWise();return side; }
     @Override public boolean rotate(Direction axis) {
         Direction next = li.cil.oc.util.RotationHelper.rotate(facing(), axis);
         if (next == facing() || !PrintBlock.FACING.getPossibleValues().contains(next) || level == null || level.isClientSide) return false;
         if (!level.setBlock(worldPosition, getBlockState().setValue(PrintBlock.FACING, next), 3)) return false;
         updateGeometry(); changed(); return true;
     }
-    public void setData(ItemStack stack) { data.load(PrintData.customData(stack)); active = false; Arrays.fill(input, -1); updateGeometry(); changed(); }
+    public void setData(ItemStack stack) { data.load(PrintData.customData(stack)); active = false; Arrays.fill(input, -1); updateGeometry(); neighborChanged(); changed(); }
     public ItemStack stack(HolderLookup.Provider registries) { return data.createItemStack(registries); }
     public VoxelShape shape() { return active ? on : off; }
     public VoxelShape collision() { return (active ? data.noclipOn : data.noclipOff) ? Shapes.empty() : shape(); }

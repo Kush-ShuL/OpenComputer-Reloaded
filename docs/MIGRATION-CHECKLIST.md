@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 86 项，剩余 34 项。**
+**总计 120 项，已闭合 93 项，剩余 27 项。**
 
-剩余包括：已有实现待核对/验收 26 项，有明确缺口 8 项。
+剩余包括：已有实现待核对/验收 19 项，有明确缺口 8 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -27,8 +27,8 @@
 
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
-| 基础与交付 | 24 | 15 | 9 |
-| 设备与组件 | 61 | 51 | 10 |
+| 基础与交付 | 24 | 17 | 7 |
+| 设备与组件 | 61 | 56 | 5 |
 | 工具与附加玩法 | 16 | 14 | 2 |
 | 可选集成 | 19 | 6 | 13 |
 
@@ -162,25 +162,25 @@
 
 闭合依据：[docs/PORTING.md](../docs/PORTING.md)、[tools/api-compat-addon/README.md](../tools/api-compat-addon/README.md)
 
-### C13 · OpenOS 安装与基础系统程序 · 已有实现，待核对/验收
+### C13 · OpenOS 安装与基础系统程序 · 已闭合
 
 完成条件：保留原系统及许可；空白介质安装、重启、终端输入、文件/组件基础程序通过。
-
-剩余：已有开发客户端启动使用记录；需按固定安装到重启流程闭合。
 
 原版范围：`src/main/resources/assets/opencomputers/loot/openos/`
 
 当前接入：[src/main/resources/assets/opencomputers/loot/](../src/main/resources/assets/opencomputers/loot/)
 
-### C14 · Plan9k 安装与基础系统程序 · 已有实现，待核对/验收
+闭合依据：[docs/operating-systems.md](../docs/operating-systems.md)、[build/api-compat-addon/devices/systems-20261027-f4/device-results.txt](../build/api-compat-addon/devices/systems-20261027-f4/device-results.txt)
+
+### C14 · Plan9k 安装与基础系统程序 · 已闭合
 
 完成条件：保留原系统与许可；安装、引导、基础进程/终端/文件操作通过。
-
-剩余：保留系统并修过卡死；需闭合真实安装、重启及基础程序流程。
 
 原版范围：`src/main/resources/assets/opencomputers/loot/plan9k/`
 
 当前接入：[src/main/resources/assets/opencomputers/loot/](../src/main/resources/assets/opencomputers/loot/)
+
+闭合依据：[docs/operating-systems.md](../docs/operating-systems.md)、[build/api-compat-addon/devices/systems-20261027-f4/device-results.txt](../build/api-compat-addon/devices/systems-20261027-f4/device-results.txt)
 
 ### C15 · 程序盘、箱子掉落及存档自定义盘 · 已闭合
 
@@ -377,15 +377,15 @@
 
 闭合依据：[docs/data-and-linked-cards.md](../docs/data-and-linked-cards.md)、[src/main/java/li/cil/oc/server/component/DataCard.java](../src/main/java/li/cil/oc/server/component/DataCard.java)、[src/main/java/li/cil/oc/common/item/NetworkCardItem.java](../src/main/java/li/cil/oc/common/item/NetworkCardItem.java)、[build/launch-support/windows-hardware-build.log](../build/launch-support/windows-hardware-build.log)
 
-### D10 · 调试卡 · 已有实现，待核对/验收
+### D10 · 调试卡 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/DebugCard.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/DebugCard.java](../src/main/java/li/cil/oc/server/component/DebugCard.java)
+
+闭合依据：[docs/debug-card.md](../docs/debug-card.md)、[build/api-compat-addon/devices/systems-20261027-f4/device-results.txt](../build/api-compat-addon/devices/systems-20261027-f4/device-results.txt)
 
 ### D11 · 拆解机 · 已闭合
 
@@ -487,15 +487,15 @@
 
 闭合依据：[docs/internet-card.md](../docs/internet-card.md)、[build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt](../build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt)
 
-### D21 · 键盘 · 已有实现，待核对/验收
+### D21 · 键盘 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Keyboard.scala`、`src/main/scala/li/cil/oc/server/component/Keyboard.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/KeyboardBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/KeyboardBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Keyboard.java](../src/main/java/li/cil/oc/server/component/Keyboard.java)
+
+闭合依据：[docs/screens-and-keyboards.md](../docs/screens-and-keyboards.md)、[build/api-compat-addon/devices/systems-20261027-f5/device-results.txt](../build/api-compat-addon/devices/systems-20261027-f5/device-results.txt)
 
 ### D22 · 量子链接卡 · 已闭合
 
@@ -577,25 +577,25 @@
 
 闭合依据：[docs/power-devices.md](../docs/power-devices.md)、[src/main/java/li/cil/oc/common/block/entity/PowerDistributorBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/PowerDistributorBlockEntity.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
-### D30 · 打印方块 · 已有实现，待核对/验收
+### D30 · 打印方块 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Print.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/PrintBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/PrintBlockEntity.java)
 
-### D31 · 3D打印机 · 已有实现，待核对/验收
+闭合依据：[docs/printing.md](../docs/printing.md)、[build/api-compat-addon/devices/systems-20261027-f4/device-results.txt](../build/api-compat-addon/devices/systems-20261027-f4/device-results.txt)
+
+### D31 · 3D打印机 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Printer.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/PrinterBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/PrinterBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Printer.java](../src/main/java/li/cil/oc/server/component/Printer.java)
+
+闭合依据：[docs/printing.md](../docs/printing.md)、[build/api-compat-addon/devices/systems-20261027-f4/device-results.txt](../build/api-compat-addon/devices/systems-20261027-f4/device-results.txt)
 
 ### D32 · 机架 · 已闭合
 
@@ -647,15 +647,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/RobotBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RobotBlockEntity.java)、[src/main/java/li/cil/oc/server/agent/RobotController.java](../src/main/java/li/cil/oc/server/agent/RobotController.java)、[src/main/java/li/cil/oc/server/component/Robot.java](../src/main/java/li/cil/oc/server/component/Robot.java)
 
-### D37 · 屏幕 · 已有实现，待核对/验收
+### D37 · 屏幕 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Screen.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/ScreenBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/ScreenBlockEntity.java)
+
+闭合依据：[docs/screens-and-keyboards.md](../docs/screens-and-keyboards.md)、[build/api-compat-addon/devices/systems-20261027-f5/device-results.txt](../build/api-compat-addon/devices/systems-20261027-f5/device-results.txt)
 
 ### D38 · 服务器刀片 · 已闭合
 

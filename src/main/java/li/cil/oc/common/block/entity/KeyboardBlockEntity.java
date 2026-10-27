@@ -21,7 +21,8 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class KeyboardBlockEntity extends BlockEntity implements Environment, EnvironmentHost, SidedEnvironment {
+public class KeyboardBlockEntity extends BlockEntity implements Environment, EnvironmentHost, SidedEnvironment,
+        li.cil.oc.api.internal.Rotatable, li.cil.oc.api.network.Analyzable {
     private Keyboard keyboard;
     private final AtomicBoolean pendingSave = new AtomicBoolean();
     public KeyboardBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state); }
@@ -49,14 +50,33 @@ public class KeyboardBlockEntity extends BlockEntity implements Environment, Env
         Direction facing = ScreenBlock.facing(getBlockState());
         return side != facing && (!facing.getAxis().isVertical() || side.getOpposite() != getBlockState().getValue(ScreenBlock.YAW));
     }
+    @Override public Direction facing() { return ScreenBlock.facing(getBlockState()); }
+    @Override public Direction toGlobal(Direction side) { return ScreenBlock.toGlobal(getBlockState(), side); }
+    @Override public Direction toLocal(Direction side) { return ScreenBlock.toLocal(getBlockState(), side); }
+    @Override public Node[] onAnalyze(net.minecraft.world.entity.player.Player player, Direction side, float x, float y, float z) { return new Node[]{node()}; }
     @Override public Node sidedNode(Direction side) { return hasNodeOnSide(side) ? node() : null; }
     @OnlyIn(Dist.CLIENT) @Override public boolean canConnect(Direction side) { return hasNodeOnSide(side); }
+    @Override public void setBlockState(BlockState state) {
+        BlockState previous=getBlockState();
+        boolean rotated=previous.hasProperty(ScreenBlock.PITCH)&&state.hasProperty(ScreenBlock.PITCH)
+                &&(previous.getValue(ScreenBlock.PITCH)!=state.getValue(ScreenBlock.PITCH)||previous.getValue(ScreenBlock.YAW)!=state.getValue(ScreenBlock.YAW));
+        super.setBlockState(state);
+        if(rotated&&level!=null&&!level.isClientSide&&keyboard!=null){
+            for(Direction side:Direction.values())if(!hasNodeOnSide(side)){
+                BlockPos neighbor=worldPosition.relative(side);
+                if(level.hasChunkAt(neighbor)){Node remote=li.cil.oc.server.network.Network.getNetworkNode(level.getBlockEntity(neighbor),side.getOpposite());if(remote!=null)node().disconnect(remote);}
+            }
+            level.invalidateCapabilities(worldPosition);Network.joinOrCreateNetwork(this);
+        }
+    }
     public ScreenBlockEntity connectedScreen() {
         if (level == null) return null;
-        Direction support = ScreenBlock.facing(getBlockState()).getOpposite();
-        for (Direction side : new Direction[]{support, getBlockState().getValue(ScreenBlock.YAW), Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST}) {
+        boolean wall = facing().getAxis().isHorizontal();
+        Direction support = facing().getOpposite(), forward = wall ? Direction.UP : getBlockState().getValue(ScreenBlock.YAW);
+        Direction[] sides = wall ? new Direction[]{support, forward, forward.getOpposite()} : new Direction[]{support, forward};
+        for (Direction side : sides) {
             BlockPos pos = worldPosition.relative(side);
-            if (hasNodeOnSide(side) && level.hasChunkAt(pos) && level.getBlockEntity(pos) instanceof ScreenBlockEntity screen) return screen;
+            if (level.hasChunkAt(pos) && level.getBlockEntity(pos) instanceof ScreenBlockEntity screen) return screen;
         }
         return null;
     }

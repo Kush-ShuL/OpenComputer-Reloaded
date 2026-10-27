@@ -44,7 +44,7 @@ public final class Blocks {
             int tier=i;String id="screen"+(tier+1);
             Supplier<ScreenBlock> block=BLOCKS.register(id,()->new ScreenBlock(tier,metal(),()->SCREEN_TYPES.get(tier).get()));SCREENS.add(block);
             SCREEN_TYPES.add(TYPES.register(id,()->BlockEntityType.Builder.of((pos,state)->new ScreenBlockEntity(SCREEN_TYPES.get(tier).get(),pos,state,tier),block.get()).build(null)));
-            var item=BLOCK_ITEMS.register(id,()->new BlockItem(block.get(),new Item.Properties().rarity(tier==0?Rarity.COMMON:tier==1?Rarity.UNCOMMON:Rarity.RARE)));
+            var item=BLOCK_ITEMS.register(id,()->new li.cil.oc.common.item.MachineHostBlockItem(block.get(),new Item.Properties().rarity(tier==0?Rarity.COMMON:tier==1?Rarity.UNCOMMON:Rarity.RARE)));
             DISPLAY_ITEMS.add(item);Items.INSTANCE.registerBlock(id,block,item);
         }
         CABLE=BLOCKS.register("cable",()->new CableBlock(metal(),()->Blocks.CABLE_TYPE.get()));
@@ -52,7 +52,7 @@ public final class Blocks {
         var cableItem=BLOCK_ITEMS.register("cable",()->new BlockItem(CABLE.get(),new Item.Properties()));DISPLAY_ITEMS.add(cableItem);Items.INSTANCE.registerBlock("cable",CABLE,cableItem);
         KEYBOARD=BLOCKS.register("keyboard",()->new KeyboardBlock(metal(),()->Blocks.KEYBOARD_TYPE.get()));
         KEYBOARD_TYPE=TYPES.register("keyboard",()->BlockEntityType.Builder.of((pos,state)->new KeyboardBlockEntity(Blocks.KEYBOARD_TYPE.get(),pos,state),KEYBOARD.get()).build(null));
-        var keyboardItem=BLOCK_ITEMS.register("keyboard",()->new BlockItem(KEYBOARD.get(),new Item.Properties()));DISPLAY_ITEMS.add(keyboardItem);Items.INSTANCE.registerBlock("keyboard",KEYBOARD,keyboardItem);
+        var keyboardItem=BLOCK_ITEMS.register("keyboard",()->new li.cil.oc.common.item.MachineHostBlockItem(KEYBOARD.get(),new Item.Properties()));DISPLAY_ITEMS.add(keyboardItem);Items.INSTANCE.registerBlock("keyboard",KEYBOARD,keyboardItem);
         TAB=TABS.register("main",()->CreativeModeTab.builder().title(Component.literal("OpenComputer-Reloaded")).icon(()->new ItemStack(CASES.get(0).get()))
             .displayItems((parameters,output)->{
                 Set<Item> shownBlocks=Collections.newSetFromMap(new IdentityHashMap<>());

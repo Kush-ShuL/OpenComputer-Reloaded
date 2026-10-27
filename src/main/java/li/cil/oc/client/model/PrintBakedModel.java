@@ -10,7 +10,6 @@ import li.cil.oc.common.block.entity.PrintBlockEntity;
 import li.cil.oc.common.item.data.PrintData;
 import li.cil.oc.common.printing.PrintGeometry;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -45,13 +44,21 @@ public final class PrintBakedModel implements IDynamicBakedModel {
         overrides = fixed == null ? new ItemOverrides() {
             @Override public BakedModel resolve(BakedModel original, ItemStack stack, ClientLevel level, LivingEntity entity, int seed) {
                 PrintData data = new PrintData(stack);
-                PrintGeometry.View view = PrintGeometry.view(data, data.hasActiveState() && Screen.hasShiftDown(), Direction.SOUTH, true);
+                PrintGeometry.View view = PrintGeometry.view(data, data.hasActiveState() && extendedTooltip(), Direction.SOUTH, true);
                 return new PrintBakedModel(base, view, cache);
             }
         } : ItemOverrides.EMPTY;
     }
     @Override public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData data) {
         return level.getBlockEntity(pos) instanceof PrintBlockEntity print ? print.getModelData() : data;
+    }
+    private static boolean extendedTooltip() {
+        var client=Minecraft.getInstance();var key=client.options.keyShift.getKey();long window=client.getWindow().getWindow();
+        return switch(key.getType()) {
+            case MOUSE -> org.lwjgl.glfw.GLFW.glfwGetMouseButton(window,key.getValue())==org.lwjgl.glfw.GLFW.GLFW_PRESS;
+            case KEYSYM -> key.getValue()>=0&&com.mojang.blaze3d.platform.InputConstants.isKeyDown(window,key.getValue());
+            default -> false;
+        };
     }
     @Override public List<BakedQuad> getQuads(BlockState state, Direction side, RandomSource random, ModelData data, RenderType type) {
         if (side != null) return List.of();

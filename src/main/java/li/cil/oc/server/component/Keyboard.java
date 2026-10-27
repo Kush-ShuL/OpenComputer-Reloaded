@@ -58,7 +58,12 @@ public class Keyboard extends AbstractManagedEnvironment implements li.cil.oc.ap
         } else if (values.length == 2 && values[0] instanceof Player player && values[1] instanceof String text &&
                 message.name().equals("keyboard.clipboard") && isUsableByPlayer(player)) {
             for (int start = 0; start < text.length();) {
-                int newline = text.indexOf('\n', start), end = newline < 0 ? text.length() : newline + 1;
+                int end = start;
+                while (end < text.length() && text.charAt(end) != '\n' && text.charAt(end) != '\r') end++;
+                if (end < text.length()) {
+                    char separator = text.charAt(end++);
+                    if (separator == '\r' && end < text.length() && text.charAt(end) == '\n') end++;
+                }
                 keyboardSignal(player, "clipboard", text.substring(start, end)); start = end;
             }
         }

@@ -42,75 +42,78 @@ public final class Printer extends AbstractManagedEnvironment implements DeviceI
     public boolean canPrint() { return !data.stateOff.isEmpty() && data.stateOff.size() <= Settings.get().maxPrintComplexity && data.stateOn.size() <= Settings.get().maxPrintComplexity; }
     public boolean isPrinting() { return !output.isEmpty(); }
     public double progress() { return totalEnergy <= 0 ? (isPrinting() ? 100 : 0) : Math.clamp((1 - remainingEnergy / totalEnergy) * 100, 0, 100); }
+    public int timeRemaining() { return (int) (remainingEnergy / Settings.get().assemblerTickAmount / 20); }
     private void changed(boolean uncommit) { if (uncommit) active = false; data.markShapesChanged(); host.syncPreview(); host.markChanged(); }
-    @Callback(doc = "function() -- Reset the model and stop the queue; the current job finishes.")
+    @Callback(doc = "function() -- Resets the configuration of the printer and stop printing (current job will finish).")
     public Object[] reset(Context context, Arguments args) { data = new PrintData(); changed(true); return null; }
-    @Callback(doc = "function(value:string) -- Set the printed block label.")
+    @Callback(doc = "function(value:string) -- Set a label for the block being printed.")
     public Object[] setLabel(Context context, Arguments args) { data.label = text(args.optString(0, null), 24); changed(true); return null; }
-    @Callback(doc = "function():string -- Get the printed block label.")
+    @Callback(doc = "function():string -- Get the current label for the block being printed.")
     public Object[] getLabel(Context context, Arguments args) { return new Object[]{data.label.orElse(null)}; }
-    @Callback(doc = "function(value:string) -- Set the printed block tooltip.")
+    @Callback(doc = "function(value:string) -- Set a tooltip for the block being printed.")
     public Object[] setTooltip(Context context, Arguments args) { data.tooltip = text(args.optString(0, null), 128); changed(true); return null; }
-    @Callback(doc = "function():string -- Get the printed block tooltip.")
+    @Callback(doc = "function():string -- Get the current tooltip for the block being printed.")
     public Object[] getTooltip(Context context, Arguments args) { return new Object[]{data.tooltip.orElse(null)}; }
     private static Optional<String> text(String value, int length) { return value == null || value.isEmpty() ? Optional.empty() : Optional.of(value.substring(0, Math.min(length, value.length()))); }
-    @Callback(doc = "function(value:number) -- Set the printed block light level.")
+    @Callback(doc = "function(value:number) -- Set what light level the printed block should have.")
     public Object[] setLightLevel(Context context, Arguments args) { data.lightLevel = Math.clamp(args.checkInteger(0), 0, Settings.get().maxPrintLightLevel); changed(true); return null; }
-    @Callback(doc = "function():number -- Get the printed block light level.")
+    @Callback(doc = "function():number -- Get which light level the printed block should have.")
     public Object[] getLightLevel(Context context, Arguments args) { return new Object[]{data.lightLevel}; }
-    @Callback(doc = "function(value:boolean or number) -- Set printed redstone emission.")
+    @Callback(doc = "function(value:boolean or number) -- Set whether the printed block should emit redstone when in its active state.")
     public Object[] setRedstoneEmitter(Context context, Arguments args) { data.redstoneLevel = args.isBoolean(0) ? args.checkBoolean(0) ? 15 : 0 : Math.clamp(args.checkInteger(0), 0, 15); changed(true); return null; }
-    @Callback(doc = "function():boolean,number -- Get printed redstone emission.")
+    @Callback(doc = "function():boolean, number -- Get whether the printed block should emit redstone when in its active state.")
     public Object[] isRedstoneEmitter(Context context, Arguments args) { return new Object[]{data.emitRedstone(), data.redstoneLevel}; }
-    @Callback(doc = "function(value:boolean) -- Enable automatic return to the off state.")
+    @Callback(doc = "function(value:boolean) -- Set whether the printed block should automatically return to its off state.")
     public Object[] setButtonMode(Context context, Arguments args) { data.isButtonMode = args.checkBoolean(0); changed(true); return null; }
-    @Callback(doc = "function():boolean -- Get automatic-return mode.")
+    @Callback(doc = "function():boolean -- Get whether the printed block should automatically return to its off state.")
     public Object[] isButtonMode(Context context, Arguments args) { return new Object[]{data.isButtonMode}; }
-    @Callback(doc = "function(collideOff:boolean,collideOn:boolean) -- Configure collision for each state.")
-    public Object[] setCollidable(Context context, Arguments args) { data.noclipOff = !args.checkBoolean(0); data.noclipOn = !args.checkBoolean(1); changed(false); return null; }
-    @Callback(doc = "function():boolean,boolean -- Get collision for each state.")
+    @Callback(doc = "function(collideOff:boolean, collideOn:boolean) -- Set whether the printed block should be collidable or not.")
+    public Object[] setCollidable(Context context, Arguments args) { boolean off = args.checkBoolean(0), on = args.checkBoolean(1); data.noclipOff = !off; data.noclipOn = !on; changed(false); return null; }
+    @Callback(doc = "function():boolean, boolean -- Get whether the printed block should be collidable or not.")
     public Object[] isCollidable(Context context, Arguments args) { return new Object[]{!data.noclipOff, !data.noclipOn}; }
-    @Callback(doc = "function(minX:number,minY:number,minZ:number,maxX:number,maxY:number,maxZ:number,texture:string[,state:boolean=false][,tint:number]):boolean -- Add a shape in 1/16 block coordinates.")
+    @Callback(doc = "function(minX:number, minY:number, minZ:number, maxX:number, maxY:number, maxZ:number, texture:string[, state:boolean=false][,tint:number]) -- Adds a shape to the printers configuration, optionally specifying whether it is for the off or on state.")
     public Object[] addShape(Context context, Arguments args) {
         if (data.stateOff.size() > Settings.get().maxPrintComplexity || data.stateOn.size() > Settings.get().maxPrintComplexity) return new Object[]{null, "model too complex"};
         double x0 = unit(args.checkInteger(0)), y0 = unit(args.checkInteger(1)), z0 = 1 - unit(args.checkInteger(2));
         double x1 = unit(args.checkInteger(3)), y1 = unit(args.checkInteger(4)), z1 = 1 - unit(args.checkInteger(5));
-        if (x0 == x1 || y0 == y1 || z0 == z1) throw new IllegalArgumentException("empty block");
         String texture = args.checkString(6); texture = texture.substring(0, Math.min(64, texture.length()));
         boolean state = args.count() > 7 && args.isBoolean(7) && args.checkBoolean(7);
         Optional<Integer> tint = args.count() > 7 && args.isInteger(7) ? Optional.of(args.checkInteger(7)) : args.count() > 8 && args.isInteger(8) ? Optional.of(args.checkInteger(8)) : Optional.empty();
+        if (x0 == x1 || y0 == y1 || z0 == z1) throw new IllegalArgumentException("empty block");
         (state ? data.stateOn : data.stateOff).add(new PrintData.Shape(new AABB(Math.min(x0, x1), Math.min(y0, y1), Math.min(z0, z1), Math.max(x0, x1), Math.max(y0, y1), Math.max(z0, z1)), texture, tint));
         changed(true); return new Object[]{true};
     }
     private static double unit(int value) { return Math.clamp(value, 0, 16) / 16d; }
-    @Callback(doc = "function():number,number -- Get off/on shape counts.")
+    @Callback(doc = "function():number -- Get the number of shapes in the current configuration.")
     public Object[] getShapeCount(Context context, Arguments args) { return new Object[]{data.stateOff.size(), data.stateOn.size()}; }
-    @Callback(doc = "function():number -- Get the maximum shapes per state.")
+    @Callback(doc = "function():number -- Get the maximum allowed number of shapes.")
     public Object[] getMaxShapeCount(Context context, Arguments args) { return new Object[]{Settings.get().maxPrintComplexity}; }
-    @Callback(doc = "function([count:number=1]):boolean -- Commit and print the configured model.")
+    @Callback(doc = "function([count:number]):boolean -- Commit and begin printing the current configuration.")
     public Object[] commit(Context context, Arguments args) {
         if (!canPrint()) return new Object[]{null, "model invalid"};
         limit = (int) Math.clamp(args.optDouble(0, 1), 0, Integer.MAX_VALUE); active = limit > 0; host.markChanged(); return new Object[]{true};
     }
-    @Callback(doc = "function():string,number or boolean -- Get busy/progress or idle/model-validity.")
+    @Callback(doc = "function(): string, number or boolean -- The current state of the printer, `busy' or `idle', followed by the progress or model validity, respectively.")
     public Object[] status(Context context, Arguments args) { return isPrinting() ? new Object[]{"busy", progress()} : new Object[]{"idle", canPrint()}; }
     @Override public boolean canUpdate() { return true; }
     @Override public void update() {
-        boolean dirty = false, wasWorking = working; working = false;
+        boolean dirty = false, wasWorking = working, started = false; working = false;
         if (active && output.isEmpty()) {
             ItemStack candidate = data.createItemStack(host.world().registryAccess());
             if (outputTypeMatches(candidate)) {
                 Optional<PrintData.Costs> costs = PrintData.computeCosts(data);
                 if (costs.isEmpty()) { active = false; data = new PrintData(); host.syncPreview(); dirty = true; }
-                else if (material >= costs.get().material() && ink >= costs.get().ink()) {
-                    material -= costs.get().material(); ink -= costs.get().ink();
+                else {
                     totalEnergy = remainingEnergy = Settings.get().printCost;
-                    output = candidate; if (--limit < 1) active = false; dirty = true;
+                    if (material >= costs.get().material() && ink >= costs.get().ink()) {
+                        material -= costs.get().material(); ink -= costs.get().ink();
+                        output = candidate; if (--limit < 1) active = false; dirty = true; started = true;
+                    }
                 }
             }
         }
         if (!output.isEmpty()) {
-            double want = Math.min(Math.max(0, remainingEnergy), Settings.get().printerTickAmount);
+            double want = started || remainingEnergy > 0 ? Math.max(1, Math.min(remainingEnergy, Settings.get().printerTickAmount)) : 0;
             double have = want > 0 ? want + (Settings.get().ignorePower ? 0 : node().changeBuffer(-want)) : 0;
             remainingEnergy = Math.max(0, remainingEnergy - have); working = have > .5;
             dirty |= have > 0;
@@ -146,6 +149,8 @@ public final class Printer extends AbstractManagedEnvironment implements DeviceI
     }
     private boolean outputTypeMatches(ItemStack candidate) { ItemStack present = host.getItem(2); return present.isEmpty() || ItemStack.isSameItemSameComponents(present, candidate); }
     private boolean canMerge(ItemStack candidate) { ItemStack present = host.getItem(2); return present.isEmpty() || ItemStack.isSameItemSameComponents(present, candidate) && present.getCount() + candidate.getCount() <= present.getMaxStackSize(); }
+    @Override public void load(CompoundTag tag) { load(tag, host.world().registryAccess()); }
+    @Override public void save(CompoundTag tag) { save(tag, host.world().registryAccess()); }
     @Override public void load(CompoundTag tag, HolderLookup.Provider registries) {
         super.load(tag); material = tag.getInt("oc:amountMaterial"); ink = tag.getInt("oc:amountInk");
         data.load(tag.getCompound("oc:data")); active = tag.getBoolean("oc:active"); limit = tag.getInt("oc:limit");

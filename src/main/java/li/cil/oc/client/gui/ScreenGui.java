@@ -126,6 +126,7 @@ public final class ScreenGui extends Screen {
         double[] point = coordinates(x, y);
         if (mousePressed) {
             if (point != null) send(ScreenNetworking.InputType.DROP, 0, 0, point[0], point[1], button, "");
+            else send(ScreenNetworking.InputType.DROP, 0, 0, -1, -1, button, "");
             mousePressed = false; return true;
         }
         return super.mouseReleased(x, y, button);

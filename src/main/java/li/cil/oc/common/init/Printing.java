@@ -34,7 +34,7 @@ public final class Printing {
     private static final DeferredRegister<BlockEntityType<?>> TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, "opencomputers");
     public static final Supplier<PrinterBlock> PRINTER = BLOCKS.register("printer", () -> new PrinterBlock(BlockBehaviour.Properties.of().strength(2, 5).sound(SoundType.METAL).noOcclusion(), () -> Printing.PRINTER_TYPE.get()));
     public static final Supplier<BlockEntityType<PrinterBlockEntity>> PRINTER_TYPE = TYPES.register("printer", () -> BlockEntityType.Builder.of((pos, state) -> new PrinterBlockEntity(Printing.PRINTER_TYPE.get(), pos, state), PRINTER.get()).build(null));
-    public static final Supplier<BlockItem> PRINTER_ITEM = ITEMS.register("printer", () -> new BlockItem(PRINTER.get(), new Item.Properties()));
+    public static final Supplier<BlockItem> PRINTER_ITEM = ITEMS.register("printer", () -> new li.cil.oc.common.item.MachineHostBlockItem(PRINTER.get(), new Item.Properties()));
     public static final Supplier<PrintBlock> PRINT = BLOCKS.register("print", () -> new PrintBlock(BlockBehaviour.Properties.of().strength(1).sound(SoundType.STONE).noOcclusion().dynamicShape(), () -> Printing.PRINT_TYPE.get()));
     public static final Supplier<BlockEntityType<PrintBlockEntity>> PRINT_TYPE = TYPES.register("print", () -> BlockEntityType.Builder.of((pos, state) -> new PrintBlockEntity(Printing.PRINT_TYPE.get(), pos, state), PRINT.get()).build(null));
     public static final Supplier<PrintBlockItem> PRINT_ITEM = ITEMS.register("print", () -> new PrintBlockItem(PRINT.get(), new Item.Properties()));

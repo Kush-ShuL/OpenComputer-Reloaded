@@ -68,6 +68,14 @@ public final class ScreenNetworking {
                 in -> new Input(in.readBlockPos(), in.readUUID(), in.readEnum(InputType.class), in.readVarInt(), in.readVarInt(), in.readDouble(), in.readDouble(), in.readVarInt(), in.readUtf(MAX_TEXT)));
         @Override public Type<Input> type() { return TYPE; }
     }
+    /** A physical screen click does not require an open screen GUI. */
+    public record WorldTouch(BlockPos position, double x, double y, int projectile) implements CustomPacketPayload {
+        public static final Type<WorldTouch> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(OpenComputers.ID,"screen_world_touch"));
+        public static final StreamCodec<RegistryFriendlyByteBuf,WorldTouch> CODEC=StreamCodec.of(
+            (out,p)->{out.writeBlockPos(p.position);out.writeDouble(p.x);out.writeDouble(p.y);out.writeVarInt(p.projectile);},
+            in->new WorldTouch(in.readBlockPos(),in.readDouble(),in.readDouble(),in.readVarInt()));
+        @Override public Type<WorldTouch> type(){return TYPE;}
+    }
     public static void register(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar("1");
         registrar.playToClient(Sync.TYPE, Sync.CODEC, (packet, context) -> context.enqueueWork(() -> ScreenClient.receive(packet)));
@@ -80,12 +88,16 @@ public final class ScreenNetworking {
         registrar.playToServer(Input.TYPE, Input.CODEC, (packet, context) -> context.enqueueWork(() -> {
             if (context.player() instanceof ServerPlayer player) handleInput(player, packet);
         }));
+        registrar.playToServer(WorldTouch.TYPE,WorldTouch.CODEC,(packet,context)->context.enqueueWork(()->{
+            if(context.player() instanceof ServerPlayer player)handleWorldTouch(player,packet);
+        }));
     }
     public static void open(ServerPlayer player, ScreenBlockEntity clicked) { open(player, clicked, clicked.getBlockPos()); }
     public static void open(ServerPlayer player, ScreenBlockEntity clicked, BlockPos interactionAnchor) {
         ScreenBlockEntity screen = clicked.origin();
-        if (player.isSpectator() || !canReach(player, interactionAnchor)) return;
+        if (player.isSpectator() || !screen.hasKeyboard() || !canReach(player, interactionAnchor)) return;
         screen.flushPendingCommands();
+        forget(player);
         UUID token = UUID.randomUUID();
         SESSIONS.put(player.getUUID(), new Session(token, screen, interactionAnchor, player.level().getGameTime()));
         PacketDistributor.sendToPlayer(player, new Open(screen.getBlockPos(), token, screen.revision(), screen.snapshot()));
@@ -93,12 +105,13 @@ public final class ScreenNetworking {
     @net.neoforged.bus.api.SubscribeEvent
     public static void logout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            Session session = SESSIONS.get(player.getUUID());
-            if (session != null && session.level.hasChunkAt(session.origin) && session.level.getBlockEntity(session.origin) instanceof ScreenBlockEntity screen) screen.releaseKeys(player);
             forget(player);
         }
     }
-    public static void forget(ServerPlayer player) { SESSIONS.remove(player.getUUID()); }
+    public static void forget(ServerPlayer player) {
+        Session session=SESSIONS.remove(player.getUUID());
+        if(session!=null&&session.level.hasChunkAt(session.origin)&&session.level.getBlockEntity(session.origin) instanceof ScreenBlockEntity screen)screen.releaseKeys(player);
+    }
     public static void sendSnapshot(ServerPlayer player, ScreenBlockEntity screen) {
         screen.flushPendingCommands();
         PacketDistributor.sendToPlayer(player, new Sync(screen.getBlockPos(), screen.revision(), true, screen.snapshot()));
@@ -122,15 +135,14 @@ public final class ScreenNetworking {
         Session session = SESSIONS.get(player.getUUID());
         if (session == null || !session.token.equals(input.session) || !session.origin.equals(input.position)) return;
         if (input.action == InputType.CLOSE) {
-            if (player.level().hasChunkAt(session.origin) && player.level().getBlockEntity(session.origin) instanceof ScreenBlockEntity screen) screen.releaseKeys(player);
-            SESSIONS.remove(player.getUUID()); return;
+            forget(player);return;
         }
         long tick = player.level().getGameTime();
         if (player.isSpectator() || player.serverLevel() != session.level ||
                 !player.level().hasChunkAt(session.anchor) || !canReach(player, session.anchor) ||
                 !(player.level().getBlockEntity(session.origin) instanceof ScreenBlockEntity entity) || !entity.isOrigin() ||
                 !sameScreenAnchor(player, session.anchor, entity)) {
-            SESSIONS.remove(player.getUUID()); return;
+            forget(player);return;
         }
         if (session.rateTick != tick) { session.rateTick = tick; session.actions = 0; }
         if (++session.actions > 128) return;
@@ -145,7 +157,9 @@ public final class ScreenNetworking {
             case CLIPBOARD -> { if (entity.hasKeyboard()) buffer.clipboard(input.text, player); }
             case COPY_LINE -> { if (input.value >= 0 && input.value < buffer.getViewportHeight()) buffer.copyToAnalyzer(input.value, player); }
             case TOUCH, DRAG, DROP, SCROLL -> {
-                if (!Double.isFinite(input.x) || !Double.isFinite(input.y) || input.x < 0 || input.y < 0 || input.x >= buffer.getViewportWidth() || input.y >= buffer.getViewportHeight()) return;
+                if(entity.tier==0)return;
+                boolean outsideDrop=input.action==InputType.DROP&&input.x==-1&&input.y==-1;
+                if (!Double.isFinite(input.x) || !Double.isFinite(input.y) || !outsideDrop&&(input.x < 0 || input.y < 0 || input.x >= buffer.getViewportWidth() || input.y >= buffer.getViewportHeight())) return;
                 if (input.action != InputType.SCROLL && (input.value < 0 || input.value > 2)) return;
                 switch (input.action) {
                     case TOUCH -> buffer.mouseDown(input.x, input.y, input.value, player);
@@ -157,6 +171,26 @@ public final class ScreenNetworking {
             }
             default -> { }
         }
+    }
+    private static void handleWorldTouch(ServerPlayer player,WorldTouch input){
+        ServerLevel level=player.serverLevel();
+        if(player.isSpectator()||!level.hasChunkAt(input.position)||!level.mayInteract(player,input.position)
+                ||!(level.getBlockEntity(input.position) instanceof ScreenBlockEntity screen)||screen.tier==0)return;
+        if(input.projectile<0){
+            if(screen.hasKeyboard()&&player.isShiftKeyDown()==screen.origin().invertTouchMode())return;
+            if(player.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(input.position))>64)return;
+            var hit=player.pick(8,0,false);
+            if(!(hit instanceof net.minecraft.world.phys.BlockHitResult block)||!block.getBlockPos().equals(input.position)
+                    ||block.getDirection()!=screen.facing()||!screen.withinDisplayBorder(block.getLocation()))return;
+        }else{
+            if(!(level.getEntity(input.projectile) instanceof net.minecraft.world.entity.projectile.AbstractArrow arrow)||arrow.getOwner()!=player)return;
+            var relative=arrow.position().subtract(net.minecraft.world.phys.Vec3.atCenterOf(input.position));
+            if(relative.lengthSqr()>4||relative.dot(net.minecraft.world.phys.Vec3.atLowerCornerOf(screen.facing().getNormal()))<.4)return;
+        }
+        var buffer=screen.origin().buffer();
+        if(!Double.isFinite(input.x)||!Double.isFinite(input.y)||input.x<0||input.y<0
+                ||input.x>=buffer.getViewportWidth()||input.y>=buffer.getViewportHeight())return;
+        buffer.mouseDown(input.x,input.y,0,player);
     }
     public static CompoundTag commands(java.util.List<TextBuffer.Command> commands) {
         CompoundTag tag = new CompoundTag(); ListTag list = new ListTag();

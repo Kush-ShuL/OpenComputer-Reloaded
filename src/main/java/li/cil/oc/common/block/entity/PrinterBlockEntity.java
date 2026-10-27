@@ -41,6 +41,7 @@ public final class PrinterBlockEntity extends AutomationBlockEntity implements W
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         if (level != null && level.isClientSide) { preview.load(tag.getCompound("oc:data")); clientRemaining = tag.getDouble("oc:remaining"); clientWorking = tag.getBoolean("oc:printing"); }
+        else if(tag.contains("oc:items")&&!tag.contains("Items"))li.cil.oc.common.inventory.ServerInventory.loadItems(tag,items,registries);
         else ContainerHelper.loadAllItems(tag, items, registries);
     }
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.saveAdditional(tag, registries); ContainerHelper.saveAllItems(tag, items, registries); }
@@ -53,14 +54,14 @@ public final class PrinterBlockEntity extends AutomationBlockEntity implements W
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
     @Override public int getContainerSize() { return 3; }
     @Override public boolean isEmpty() { return items.stream().allMatch(ItemStack::isEmpty); }
-    @Override public ItemStack getItem(int slot) { return items.get(slot); }
-    @Override public ItemStack removeItem(int slot, int amount) { ItemStack result = ContainerHelper.removeItem(items, slot, amount); if (!result.isEmpty()) setChanged(); return result; }
-    @Override public ItemStack removeItemNoUpdate(int slot) { return ContainerHelper.takeItem(items, slot); }
-    @Override public void setItem(int slot, ItemStack stack) { items.set(slot, stack); setChanged(); }
+    @Override public ItemStack getItem(int slot) { return slot>=0&&slot<items.size()?items.get(slot):ItemStack.EMPTY; }
+    @Override public ItemStack removeItem(int slot, int amount) { if(slot<0||slot>=items.size()||amount<=0)return ItemStack.EMPTY;ItemStack result = ContainerHelper.removeItem(items, slot, amount); if (!result.isEmpty()) setChanged(); return result; }
+    @Override public ItemStack removeItemNoUpdate(int slot) { return slot>=0&&slot<items.size()?ContainerHelper.takeItem(items, slot):ItemStack.EMPTY; }
+    @Override public void setItem(int slot, ItemStack stack) { if(slot<0||slot>=items.size()||items.get(slot)==stack||items.get(slot).isEmpty()&&stack.isEmpty())return;if(stack.getCount()>getMaxStackSize())stack.setCount(getMaxStackSize());items.set(slot, stack); setChanged(); }
     @Override public void clearContent() { items.clear(); setChanged(); }
     @Override public boolean canPlaceItem(int slot, ItemStack stack) { return slot == 0 ? PrintData.materialValue(stack) > 0 : slot == 1 && PrintData.inkValue(stack) > 0; }
     @Override public int[] getSlotsForFace(Direction side) { return new int[]{0, 1, 2}; }
-    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return slot != 2 && canPlaceItem(slot, stack); }
+    @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return slot>=0&&slot<2; }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return !canPlaceItem(slot, stack); }
     @Override public boolean stillValid(Player player) { return level != null && level.getBlockEntity(worldPosition) == this && player.distanceToSqr(xPosition(), yPosition(), zPosition()) <= 64; }
     @Override public Component getDisplayName() { return Component.translatable("block.opencomputers.printer"); }

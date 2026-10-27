@@ -51,13 +51,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 /** Persistent screen environment and the original deterministic rectangular grouping. */
-public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Environment, SidedEnvironment, li.cil.oc.api.network.Analyzable, li.cil.oc.api.internal.Colored {
+public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Environment, SidedEnvironment, li.cil.oc.api.network.Analyzable, li.cil.oc.api.internal.Colored, li.cil.oc.api.internal.Rotatable {
     public final int tier;
     private Screen buffer;
     private BlockPos origin;
     private final Set<ScreenBlockEntity> members = new LinkedHashSet<>();
     private int groupWidth = 1, groupHeight = 1, color = 0xFFFFFF;
-    private boolean groupDirty = true, hadRedstone;
+    private boolean groupDirty = true, hadRedstone, redstoneInitialized;
     private volatile boolean invertedTouch;
     private long revision;
     private final AtomicBoolean pendingSave = new AtomicBoolean();
@@ -67,7 +67,7 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
 
     public ScreenBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int tier) {
         super(type, pos, state); this.tier = tier; origin = pos; members.add(this);
-        color = new net.minecraft.world.item.DyeColor[]{net.minecraft.world.item.DyeColor.LIGHT_GRAY,net.minecraft.world.item.DyeColor.YELLOW,net.minecraft.world.item.DyeColor.CYAN}[Math.clamp(tier,0,2)].getTextureDiffuseColor();
+        color = new net.minecraft.world.item.DyeColor[]{net.minecraft.world.item.DyeColor.LIGHT_GRAY,net.minecraft.world.item.DyeColor.YELLOW,net.minecraft.world.item.DyeColor.CYAN}[Math.clamp(tier,0,2)].getTextureDiffuseColor() & 0xFFFFFF;
     }
     public synchronized Screen buffer() {
         if (buffer == null) {
@@ -100,6 +100,8 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
     }
     @OnlyIn(Dist.CLIENT) @Override public boolean canConnect(Direction side) { return side != facing(); }
     public Direction facing() { return ScreenBlock.facing(getBlockState()); }
+    @Override public Direction toGlobal(Direction side) { return ScreenBlock.toGlobal(getBlockState(), side); }
+    @Override public Direction toLocal(Direction side) { return ScreenBlock.toLocal(getBlockState(), side); }
     public Direction up() { return facing() == Direction.UP ? getBlockState().getValue(ScreenBlock.YAW).getOpposite() : facing() == Direction.DOWN ? getBlockState().getValue(ScreenBlock.YAW) : Direction.UP; }
     public Direction right() {
         Direction up = up(), front = facing();
@@ -125,11 +127,35 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
     public int color() { return color; }
     @Override public int getColor() { return color; }
     @Override public boolean controlsConnectivity() { return false; }
-    public void setColor(int value) { color = value & 0xFFFFFF; invalidateGroup(); setChanged(); }
+    public void setColor(int value) { int next=value&0xFFFFFF;if(color==next)return;color=next;resetGroup();setChanged(); }
     @Override public boolean invertTouchMode() { return invertedTouch; }
     @Override public void setInvertTouchMode(boolean value) { invertedTouch = value; setChanged(); }
     @Override public void synchronizeTouchMode(boolean value) { publishSnapshot(); }
     public void invalidateGroup() { for (ScreenBlockEntity member : List.copyOf(members)) member.groupDirty = true; groupDirty = true; }
+    private void resetGroup() { resetGroup(false); }
+    private void resetGroup(boolean disposing) {
+        for(ScreenBlockEntity member:List.copyOf(members)){
+            member.groupDirty=true;member.invertedTouch=false;
+            if((!disposing||member!=this)&&member.level!=null&&member.level.hasChunkAt(member.worldPosition)&&!member.isRemoved())member.setChanged();
+        }
+        groupDirty=true;
+    }
+    @Override public void setBlockState(BlockState state) {
+        BlockState previous=getBlockState();
+        boolean rotated=previous.hasProperty(ScreenBlock.PITCH)&&state.hasProperty(ScreenBlock.PITCH)
+                &&(previous.getValue(ScreenBlock.PITCH)!=state.getValue(ScreenBlock.PITCH)||previous.getValue(ScreenBlock.YAW)!=state.getValue(ScreenBlock.YAW));
+        super.setBlockState(state);
+        if(rotated){
+            resetGroup();
+            if(level!=null&&!level.isClientSide&&buffer!=null){
+                for(Direction side:Direction.values())if(sidedNode(side)==null){
+                    BlockPos neighbor=worldPosition.relative(side);
+                    if(level.hasChunkAt(neighbor)){Node remote=li.cil.oc.server.network.Network.getNetworkNode(level.getBlockEntity(neighbor),side.getOpposite());if(remote!=null)node().disconnect(remote);}
+                }
+                level.invalidateCapabilities(worldPosition);Network.joinOrCreateNetwork(this);
+            }
+        }
+    }
     private int project(BlockPos pos, Direction axis) { return pos.getX() * axis.getStepX() + pos.getY() * axis.getStepY() + pos.getZ() * axis.getStepZ(); }
     private boolean samePlane(ScreenBlockEntity other) {
         return other.getBlockState().getValue(ScreenBlock.PITCH) == getBlockState().getValue(ScreenBlock.PITCH) &&
@@ -190,21 +216,43 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
             for (Node neighbor : member.node().neighbors()) if (neighbor.host() instanceof li.cil.oc.api.internal.Keyboard) result.add(neighbor);
         return result;
     }
-    public boolean hasKeyboard() { return !keyboardNodes().isEmpty(); }
+    public boolean hasKeyboard() {
+        if(level==null)return false;
+        for(ScreenBlockEntity member:origin().members)for(Direction side:Direction.values()){
+            BlockPos neighbor=member.worldPosition.relative(side);
+            if(level.hasChunkAt(neighbor)&&level.getBlockEntity(neighbor) instanceof KeyboardBlockEntity keyboard&&keyboard.hasNodeOnSide(side.getOpposite()))return true;
+        }
+        return false;
+    }
     public void releaseKeys(Player player) { for (Node keyboard : keyboardNodes()) if (keyboard.host() instanceof Keyboard component) component.releasePressedKeys(player); }
-    public void touch(Vec3 point, Player player) {
+    private double[] faceCoordinates(Vec3 point) {
         ScreenBlockEntity screen = origin();
         Vec3 relative = point.subtract(Vec3.atCenterOf(screen.worldPosition));
         double x = relative.dot(Vec3.atLowerCornerOf(right().getNormal())) + 0.5;
         double y = screen.groupHeight - 0.5 - relative.dot(Vec3.atLowerCornerOf(up().getNormal()));
-        if (x >= 0 && y >= 0 && x < screen.groupWidth && y < screen.groupHeight)
-            screen.buffer().mouseDown(x * screen.buffer().getViewportWidth() / screen.groupWidth, y * screen.buffer().getViewportHeight() / screen.groupHeight, 0, player);
+        return new double[]{x,y};
+    }
+    public boolean withinDisplayBorder(Vec3 point) {
+        double[] face=faceCoordinates(point);ScreenBlockEntity screen=origin();double border=2.25/16;
+        return face[0]>border&&face[1]>border&&face[0]<screen.groupWidth-border&&face[1]<screen.groupHeight-border;
+    }
+    @OnlyIn(Dist.CLIENT) public double[] toScreenCoordinates(Vec3 point) {
+        if(!withinDisplayBorder(point))return null;
+        ScreenBlockEntity screen=origin();double[] face=faceCoordinates(point);double border=2.25/16;
+        double availableWidth=screen.groupWidth-2*border,availableHeight=screen.groupHeight-2*border;
+        double rx=(face[0]-border)/availableWidth,ry=(face[1]-border)/availableHeight;
+        double pixelWidth=screen.buffer().renderWidth()/availableWidth,pixelHeight=screen.buffer().renderHeight()/availableHeight;
+        if(pixelWidth>pixelHeight){double ratio=pixelHeight/pixelWidth;ry=(ry-(1-ratio)*.5)/ratio;}
+        else if(pixelHeight>pixelWidth){double ratio=pixelWidth/pixelHeight;rx=(rx-(1-ratio)*.5)/ratio;}
+        if(rx<0||ry<0||rx>=1||ry>=1)return null;
+        return new double[]{rx*screen.buffer().getViewportWidth(),ry*screen.buffer().getViewportHeight()};
     }
     public void walk(Entity entity) {
         ScreenBlockEntity screen = origin();
-        if (entity.blockPosition().equals(screen.lastWalked.put(entity, entity.blockPosition()))) return;
         int x = project(worldPosition, right()) - project(screen.worldPosition, right());
         int y = project(worldPosition, up()) - project(screen.worldPosition, up());
+        BlockPos cell=new BlockPos(x,y,0);
+        if(cell.equals(screen.lastWalked.put(entity,cell)))return;
         if (screen.node() != null) {
             if (Settings.get().inputUsername && entity instanceof Player player) screen.node().sendToReachable("computer.signal", "walk", x + 1, screen.groupHeight - y, player.getGameProfile().getName());
             else screen.node().sendToReachable("computer.signal", "walk", x + 1, screen.groupHeight - y);
@@ -219,7 +267,11 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
         if (!level.isClientSide && groupDirty) rebuildGroup();
         if (!level.isClientSide && isOrigin()) {
             boolean redstone = members.stream().anyMatch(member -> level.hasNeighborSignal(member.worldPosition));
-            if (redstone && !hadRedstone) buffer().setPowerState(!buffer().getPowerState()); hadRedstone = redstone;
+            if(redstoneInitialized&&redstone&&!hadRedstone)buffer().setPowerState(!buffer().getPowerState());
+            for(ScreenBlockEntity member:members){
+                if(member.hadRedstone!=redstone)member.setChanged();
+                member.hadRedstone=redstone;member.redstoneInitialized=true;
+            }
         }
         buffer().update();
         if (!level.isClientSide && pendingSnapshot.getAndSet(false)) publishSnapshotNow();
@@ -228,24 +280,30 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
         super.onLoad();
         if (level != null && !level.isClientSide) Network.joinOrCreateNetwork(this);
     }
-    @Override public void onChunkUnloaded() { if (node() != null) node().remove(); invalidateGroup(); super.onChunkUnloaded(); }
-    @Override public void setRemoved() { if (node() != null) node().remove(); invalidateGroup(); super.setRemoved(); }
+    @Override public void onChunkUnloaded() { if (node() != null) node().remove(); resetGroup(true); super.onChunkUnloaded(); }
+    @Override public void setRemoved() { if (node() != null) node().remove(); resetGroup(true); super.setRemoved(); }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         if (tag.contains("screenSync")) { applySnapshot(tag.getCompound("screenSync"), tag.getLong("revision")); return; }
-        buffer().load(tag.getCompound("oc:screen"), registries);
-        color = tag.contains("oc:color") ? tag.getInt("oc:color") : 0xFFFFFF;
+        buffer().load(tag.contains("oc:screen")?tag.getCompound("oc:screen"):tag, registries);
+        if(tag.contains("oc:renderColor"))color=net.minecraft.world.item.DyeColor.byId(tag.getInt("oc:renderColor")).getTextureDiffuseColor();
+        if(tag.contains("oc:renderColorRGB"))color=tag.getInt("oc:renderColorRGB");
+        if(tag.contains("oc:color"))color=tag.getInt("oc:color");
+        color&=0xFFFFFF;
+        hadRedstone=tag.getBoolean("oc:hadRedstoneInput");redstoneInitialized=tag.contains("oc:hadRedstoneInput");
         invertedTouch = tag.getBoolean("oc:invertTouchMode"); groupDirty = true;
     }
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries); CompoundTag screen = new CompoundTag(); buffer().save(screen, registries);
         tag.put("oc:screen", screen); tag.putInt("oc:color", color); tag.putBoolean("oc:invertTouchMode", invertedTouch);
+        tag.putByte("oc:tier",(byte)tier);tag.putInt("oc:renderColorRGB",color);tag.putBoolean("oc:hadRedstoneInput",hadRedstone);
     }
     public CompoundTag snapshot() {
         CompoundTag tag = new CompoundTag(); buffer().data().save(tag);
         tag.putLong("origin", origin.asLong()); tag.putInt("physicalWidth", groupWidth); tag.putInt("physicalHeight", groupHeight);
         tag.putBoolean("on", buffer().getPowerState()); tag.putBoolean("render", buffer().getPowerState() && buffer().hasPower());
         tag.putInt("viewportWidth", buffer().getViewportWidth()); tag.putInt("viewportHeight", buffer().getViewportHeight());
+        tag.putBoolean("precise",(Boolean)buffer().isPrecise(null,null)[0]);
         tag.putString("address", buffer().nodeAddress() == null ? "" : buffer().nodeAddress()); tag.putInt("color", color); tag.putBoolean("inverted", invertedTouch);
         tag.putBoolean("keyboard", hasKeyboard()); return tag;
     }
@@ -257,7 +315,8 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
         groupWidth = Math.max(1, tag.getInt("physicalWidth")); groupHeight = Math.max(1, tag.getInt("physicalHeight"));
         buffer().setViewport(Math.clamp(tag.getInt("viewportWidth"), 1, buffer().getWidth()), Math.clamp(tag.getInt("viewportHeight"), 1, buffer().getHeight()));
         buffer().setPowerState(tag.getBoolean("on")); buffer().setRenderingEnabled(tag.getBoolean("render"));
-        color = tag.getInt("color"); invertedTouch = tag.getBoolean("inverted"); clientHasKeyboard = tag.getBoolean("keyboard");
+        buffer().applyPrecisionMode(tag.getBoolean("precise"));
+        color = tag.getInt("color") & 0xFFFFFF; invertedTouch = tag.getBoolean("inverted"); clientHasKeyboard = tag.getBoolean("keyboard");
         revision = sequence; buffer().markInitialized(); buffer().dirty = true;
         if (level != null && level.isClientSide && (!origin.equals(previousOrigin) || groupWidth != previousWidth || groupHeight != previousHeight || color != previousColor)) {
             requestModelDataUpdate();
@@ -271,6 +330,7 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
             CompoundTag command = (CompoundTag) value; Object[] p = ScreenNetworking.commandValues(command);
             switch (command.getString("type")) {
                 case "power" -> buffer().applyPowerState((Boolean) p[0]);
+                case "precise" -> buffer().applyPrecisionMode((Boolean)p[0]);
                 case "maxResolution" -> buffer().setMaximumResolution((Integer) p[0], (Integer) p[1]);
                 case "resolution" -> buffer().setResolution((Integer) p[0], (Integer) p[1]);
                 case "viewport" -> buffer().setViewport((Integer) p[0], (Integer) p[1]);

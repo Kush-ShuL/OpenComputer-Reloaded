@@ -35,6 +35,9 @@ public class KeyboardBlock extends BaseEntityBlock {
         registerDefaultState(stateDefinition.any().setValue(ScreenBlock.PITCH, Direction.UP).setValue(ScreenBlock.YAW, Direction.NORTH));
     }
     @Override protected MapCodec<? extends BaseEntityBlock> codec() { return MapCodec.unit(this); }
+    @Override public void appendHoverText(net.minecraft.world.item.ItemStack stack,net.minecraft.world.item.Item.TooltipContext context,java.util.List<net.minecraft.network.chat.Component> tooltip,net.minecraft.world.item.TooltipFlag flag){
+        super.appendHoverText(stack,context,tooltip,flag);tooltip.add(net.minecraft.network.chat.Component.translatable("oc:tooltip.keyboard"));
+    }
     @Override protected RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(ScreenBlock.PITCH, ScreenBlock.YAW); }
     @Override public BlockState getStateForPlacement(BlockPlaceContext context) {
@@ -66,7 +69,7 @@ public class KeyboardBlock extends BaseEntityBlock {
         if (!level.isClientSide && !state.canSurvive(level, pos)) { level.destroyBlock(pos, true); return; }
         if (level.getBlockEntity(pos) instanceof KeyboardBlockEntity keyboard && !level.isClientSide) {
             Network.joinOrCreateNetwork(keyboard);
-            for (Direction side : Direction.values()) if (level.getBlockEntity(pos.relative(side)) instanceof ScreenBlockEntity screen) screen.invalidateGroup();
+            for (Direction side : Direction.values()) if (level.hasChunkAt(pos.relative(side))&&level.getBlockEntity(pos.relative(side)) instanceof ScreenBlockEntity screen) screen.origin().publishSnapshot();
         }
     }
     @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
