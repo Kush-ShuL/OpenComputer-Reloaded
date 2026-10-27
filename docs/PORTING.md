@@ -166,6 +166,20 @@ updates and an FML game-library manifest around unchanged upstream JNLua classes
 These findings should not be presented as acceptance of all rendering, boot,
 persistence or multiplayer behavior in the current tree.
 
+A live Windows robot-GUI profile then found repeated inventory-capacity driver
+scans in 940 of 1118 render-thread samples. Capacity now uses the existing direct
+calculation, and component slot offsets are computed once per component list.
+After a method-only hot update, the player confirmed the GUI recovered from
+about 15 FPS to about 60 FPS. The missing carpeted-capacitor manual path now
+falls back to the original capacitor page only when its exact page is absent,
+preserving language fallback and resource-pack overrides.
+
+HTTP redirects now retain the original HttpURLConnection boundaries: host/port
+changes discard destination credentials and protocol changes return the actual
+redirect response. LuaJ byte-string headers are decoded before applying the
+configured header gate. These source corrections pass the Windows build;
+end-to-end HTTP acceptance remains separate work.
+
 A later live client freeze exposed a concrete external-drive lock cycle: a Lua
 read held its filesystem lock while `BlockEntity.setChanged` waited for a server
 chunk task, and a server-side keyboard message waited for that same filesystem.
@@ -190,6 +204,10 @@ configuration parity; remaining optional integrations and configuration
 consumers; restoration on remaining host types; and full
 client/server behavior. Existing menus, payloads, rendering, energy, persistence
 and crafting also need functional acceptance.
+
+Concrete remaining print parity work includes persisting the six redstone input
+levels used by printed-block edge transitions, and retaining the original busy
+queue while a compatible output stack is full.
 
 A successful API build validates the SDK build. API compatibility checks cover
 the specific contracts they exercise; they do not establish computer boot, saved

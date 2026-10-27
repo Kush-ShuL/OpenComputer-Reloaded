@@ -155,6 +155,13 @@ public final class ManualRegistry implements ManualAPI {
         ResourceLocation location = ResourceLocation.tryBuild(OpenComputers.ID, resourcePath);
         if (location == null) return null;
         var resource = Minecraft.getInstance().getResourceManager().getResource(location);
+        if (resource.isEmpty() && resourcePath.endsWith("/block/carpetedcapacitor.md")) {
+            // Also repair direct links and a history entry created before this alias existed.
+            // A pack's explicit variant page still wins over this shared-page fallback.
+            resourcePath = resourcePath.substring(0, resourcePath.length() - "carpetedcapacitor.md".length()) + "capacitor.md";
+            location = ResourceLocation.fromNamespaceAndPath(OpenComputers.ID, resourcePath);
+            resource = Minecraft.getInstance().getResourceManager().getResource(location);
+        }
         if (resource.isEmpty()) return null;
         try (var reader = new BufferedReader(new InputStreamReader(resource.get().open(), StandardCharsets.UTF_8))) {
             return reader.lines().toList();

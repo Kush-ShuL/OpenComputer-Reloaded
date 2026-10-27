@@ -56,7 +56,11 @@ public final class InternetCard extends AbstractManagedEnvironment implements De
         String post=args.isString(1)?args.checkString(1):null,method=args.isString(3)?args.checkString(3):null;
         Map<String,String> headers=new LinkedHashMap<>();
         if(args.isTable(2))for(Object entryObject:args.checkTable(2).entrySet()) {
-            var entry=(Map.Entry<?,?>)entryObject;if(entry.getKey() instanceof String key)headers.put(key,String.valueOf(entry.getValue()));
+            var entry=(Map.Entry<?,?>)entryObject;
+            Object rawKey=entry.getKey(),rawValue=entry.getValue();
+            // LuaJ, like the native bridge, can represent Lua strings as bytes.
+            String key=rawKey instanceof String text?text:rawKey instanceof byte[] bytes?new String(bytes,StandardCharsets.UTF_8):null;
+            if(key!=null)headers.put(key,rawValue instanceof byte[] bytes?new String(bytes,StandardCharsets.UTF_8):String.valueOf(rawValue));
         }
         if(!Settings.get().httpHeadersEnabled&&!headers.isEmpty())return new Object[]{null,"http request headers are unavailable"};
         Proxy proxy=host!=null&&host.world()!=null&&host.world().getServer()!=null?host.world().getServer().getProxy():Proxy.NO_PROXY;
@@ -193,6 +197,7 @@ public final class InternetCard extends AbstractManagedEnvironment implements De
         private InputStream open(URL initial,String post,Map<String,String> headers,String method,Proxy proxy) throws IOException {
             try {
                 URL url=initial;String requestMethod=method!=null?method:post!=null?"POST":"GET";
+                Map<String,String> requestHeaders=new LinkedHashMap<>(headers);
                 int timeout=Math.max(0,Settings.get().config.getInt("internet.requestTimeout"));
                 int timeoutMillis=(int)Math.min(Integer.MAX_VALUE,timeout*1000L);
                 for(int redirects=0;redirects<=20;redirects++) {
@@ -205,13 +210,27 @@ public final class InternetCard extends AbstractManagedEnvironment implements De
                     http.setInstanceFollowRedirects(false);http.setConnectTimeout(timeoutMillis);http.setReadTimeout(timeoutMillis);
                     http.setDoInput(true);http.setDoOutput(post!=null);http.setRequestMethod(requestMethod);
                     http.setRequestProperty("User-Agent",Settings.get().httpUserAgent.replace("$version",OpenComputers.VERSION));
-                    headers.forEach(http::setRequestProperty);
+                    requestHeaders.forEach(http::setRequestProperty);
                     if(post!=null)try(var output=new BufferedWriter(new OutputStreamWriter(http.getOutputStream(),StandardCharsets.UTF_8))){output.write(post);}
                     int code=http.getResponseCode();String location=http.getHeaderField("Location");
                     if(location!=null&&(code==301||code==302||code==303||code==307||code==308)) {
-                        URL next=checkAddress(new URL(url,location).toString());http.disconnect();url=next;
-                        if(code==303||(code==301||code==302)&&requestMethod.equals("POST")){requestMethod="GET";post=null;}
-                        continue;
+                        URL next=new URL(url,location);
+                        // The original HttpURLConnection automatic redirect path
+                        // leaves cross-protocol responses for the caller to handle.
+                        if(url.getProtocol().equalsIgnoreCase(next.getProtocol())) {
+                            next=checkAddress(next.toString());
+                            int port=url.getPort()>=0?url.getPort():url.getDefaultPort();
+                            int nextPort=next.getPort()>=0?next.getPort():next.getDefaultPort();
+                            if(!url.getHost().equalsIgnoreCase(next.getHost())||port!=nextPort) {
+                                for(Iterator<String> names=requestHeaders.keySet().iterator();names.hasNext();) {
+                                    String name=names.next();
+                                    if(name.equalsIgnoreCase("Authorization")||name.equalsIgnoreCase("Cookie")||name.equalsIgnoreCase("Cookie2"))names.remove();
+                                }
+                            }
+                            http.disconnect();url=next;
+                            if(code==303||(code==301||code==302)&&requestMethod.equals("POST")){requestMethod="GET";post=null;}
+                            continue;
+                        }
                     }
                     response=new Response(code,http.getResponseMessage(),http.getHeaderFields());
                     // Match the original: unsuccessful responses expose metadata, but read throws.
