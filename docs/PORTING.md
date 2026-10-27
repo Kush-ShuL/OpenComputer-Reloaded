@@ -250,6 +250,15 @@ secondary packets used the saved selected bus in both directions. A second
 stopped blade witnessed bus isolation; no second running VM proof is claimed.
 The registered test player used a local mock transport, not a remote client.
 
+The trading upgrade now preserves the original two-pass payment matching:
+prefer exact item/component matches, then retry both inputs from an untouched
+inventory copy with item-type matching. Trade userdata retains the real host
+and merchant independently of the installed upgrade, persists their identities
+and resolves unloaded hosts later without forcing chunks. Older preview values
+can still migrate through their saved upgrade address. These source changes pass
+the Windows build; real villager interaction and Trade cold recovery still need
+their own acceptance.
+
 The external-addon fixture also passed an end-to-end IMC production contract:
 the real assembler validates and consumes addon inputs, applies energy over
 multiple work ticks and produces the requested item; the real disassembler
