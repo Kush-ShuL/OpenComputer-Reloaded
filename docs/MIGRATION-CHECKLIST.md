@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 36 项，剩余 84 项。**
+**总计 120 项，已闭合 45 项，剩余 75 项。**
 
-剩余包括：已有实现待核对/验收 76 项，有明确缺口 8 项。
+剩余包括：已有实现待核对/验收 67 项，有明确缺口 8 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -28,7 +28,7 @@
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
 | 基础与交付 | 24 | 13 | 11 |
-| 设备与组件 | 61 | 10 | 51 |
+| 设备与组件 | 61 | 19 | 42 |
 | 工具与附加玩法 | 16 | 7 | 9 |
 | 可选集成 | 19 | 6 | 13 |
 
@@ -697,25 +697,25 @@
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeAngel.java](../src/main/java/li/cil/oc/server/component/UpgradeAngel.java)
 
-### D42 · 条码读取升级 · 已有实现，待核对/验收
+### D42 · 条码读取升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeBarcodeReader.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeBarcodeReader.java](../src/main/java/li/cil/oc/server/component/UpgradeBarcodeReader.java)
 
-### D43 · 电池升级 · 已有实现，待核对/验收
+闭合依据：[docs/location-upgrades.md](../docs/location-upgrades.md)、[src/main/java/li/cil/oc/server/component/UpgradeBarcodeReader.java](../src/main/java/li/cil/oc/server/component/UpgradeBarcodeReader.java)、[src/main/java/li/cil/oc/server/component/TabletUseData.java](../src/main/java/li/cil/oc/server/component/TabletUseData.java)、[src/main/java/li/cil/oc/server/driver/item/BarcodeReader.java](../src/main/java/li/cil/oc/server/driver/item/BarcodeReader.java)
+
+### D43 · 电池升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeBattery.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeBattery.java](../src/main/java/li/cil/oc/server/component/UpgradeBattery.java)
+
+闭合依据：[docs/power-upgrades.md](../docs/power-upgrades.md)、[src/main/java/li/cil/oc/common/capabilities/BatteryEnergyStorage.java](../src/main/java/li/cil/oc/common/capabilities/BatteryEnergyStorage.java)、[src/main/java/li/cil/oc/server/component/UpgradeBattery.java](../src/main/java/li/cil/oc/server/component/UpgradeBattery.java)、[build/api-compat-addon/devices/upgrade-storage-20261027-a4/device-results.txt](../build/api-compat-addon/devices/upgrade-storage-20261027-a4/device-results.txt)
 
 ### D44 · 区块加载升级 · 已有实现，待核对/验收
 
@@ -737,15 +737,15 @@
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeCrafting.java](../src/main/java/li/cil/oc/server/component/UpgradeCrafting.java)
 
-### D46 · 数据库升级 · 已有实现，待核对/验收
+### D46 · 数据库升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeDatabase.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeDatabase.java](../src/main/java/li/cil/oc/server/component/UpgradeDatabase.java)
+
+闭合依据：[docs/database-upgrade.md](../docs/database-upgrade.md)、[src/main/java/li/cil/oc/server/component/UpgradeDatabase.java](../src/main/java/li/cil/oc/server/component/UpgradeDatabase.java)、[src/main/java/li/cil/oc/common/menu/DatabaseMenu.java](../src/main/java/li/cil/oc/common/menu/DatabaseMenu.java)、[tools/api-compat-addon/src/main/java/ocfixture/UpgradeStorageContract.java](../tools/api-compat-addon/src/main/java/ocfixture/UpgradeStorageContract.java)、[build/api-compat-addon/devices/upgrade-storage-20261027-a4/device-results.txt](../build/api-compat-addon/devices/upgrade-storage-20261027-a4/device-results.txt)
 
 ### D47 · 经验升级 · 已闭合
 
@@ -777,15 +777,15 @@
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeInventoryController.java](../src/main/java/li/cil/oc/server/component/UpgradeInventoryController.java)
 
-### D50 · 拴绳升级 · 已有实现，待核对/验收
+### D50 · 拴绳升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeLeash.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeLeash.java](../src/main/java/li/cil/oc/server/component/UpgradeLeash.java)
+
+闭合依据：[docs/interaction-upgrades.md](../docs/interaction-upgrades.md)、[src/main/java/li/cil/oc/server/component/UpgradeLeash.java](../src/main/java/li/cil/oc/server/component/UpgradeLeash.java)
 
 ### D51 · 多功能升级 · 已有实现，待核对/验收
 
@@ -797,45 +797,45 @@
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeMF.java](../src/main/java/li/cil/oc/server/component/UpgradeMF.java)
 
-### D52 · 导航升级 · 已有实现，待核对/验收
+### D52 · 导航升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeNavigation.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeNavigation.java](../src/main/java/li/cil/oc/server/component/UpgradeNavigation.java)
 
-### D53 · 普通及粘性活塞升级 · 已有实现，待核对/验收
+闭合依据：[docs/location-upgrades.md](../docs/location-upgrades.md)、[src/main/java/li/cil/oc/server/component/UpgradeNavigation.java](../src/main/java/li/cil/oc/server/component/UpgradeNavigation.java)、[src/main/java/li/cil/oc/common/item/data/NavigationUpgradeData.java](../src/main/java/li/cil/oc/common/item/data/NavigationUpgradeData.java)
+
+### D53 · 普通及粘性活塞升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradePiston.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradePiston.java](../src/main/java/li/cil/oc/server/component/UpgradePiston.java)
 
-### D54 · 告示牌升级 · 已有实现，待核对/验收
+闭合依据：[docs/interaction-upgrades.md](../docs/interaction-upgrades.md)、[src/main/java/li/cil/oc/server/component/UpgradePiston.java](../src/main/java/li/cil/oc/server/component/UpgradePiston.java)、[src/main/java/li/cil/oc/server/driver/item/FunctionalUpgrade.java](../src/main/java/li/cil/oc/server/driver/item/FunctionalUpgrade.java)
+
+### D54 · 告示牌升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeSign.scala`、`src/main/scala/li/cil/oc/server/component/UpgradeSignInAdapter.scala`、`src/main/scala/li/cil/oc/server/component/UpgradeSignInRotatable.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeSign.java](../src/main/java/li/cil/oc/server/component/UpgradeSign.java)
 
-### D55 · 太阳能升级 · 已有实现，待核对/验收
+闭合依据：[docs/location-upgrades.md](../docs/location-upgrades.md)、[src/main/java/li/cil/oc/server/component/UpgradeSign.java](../src/main/java/li/cil/oc/server/component/UpgradeSign.java)、[src/main/java/li/cil/oc/server/driver/item/FunctionalUpgrade.java](../src/main/java/li/cil/oc/server/driver/item/FunctionalUpgrade.java)
+
+### D55 · 太阳能升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeSolarGenerator.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeSolarGenerator.java](../src/main/java/li/cil/oc/server/component/UpgradeSolarGenerator.java)
+
+闭合依据：[docs/power-upgrades.md](../docs/power-upgrades.md)、[src/main/java/li/cil/oc/server/component/UpgradeSolarGenerator.java](../src/main/java/li/cil/oc/server/component/UpgradeSolarGenerator.java)
 
 ### D56 · 储罐升级 · 已闭合
 
@@ -857,15 +857,15 @@
 
 闭合依据：[build/api-compat-addon/devices/agent-fluid-20261027-112607/device-results.txt](../build/api-compat-addon/devices/agent-fluid-20261027-112607/device-results.txt)、[tools/api-compat-addon/src/main/java/ocfixture/AgentFluidContract.java](../tools/api-compat-addon/src/main/java/ocfixture/AgentFluidContract.java)、[src/main/java/li/cil/oc/server/component/UpgradeTankController.java](../src/main/java/li/cil/oc/server/component/UpgradeTankController.java)、[docs/PORTING.md](../docs/PORTING.md)
 
-### D58 · 牵引光束升级 · 已有实现，待核对/验收
+### D58 · 牵引光束升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeTractorBeam.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeTractorBeam.java](../src/main/java/li/cil/oc/server/component/UpgradeTractorBeam.java)
+
+闭合依据：[docs/interaction-upgrades.md](../docs/interaction-upgrades.md)、[src/main/java/li/cil/oc/server/component/UpgradeTractorBeam.java](../src/main/java/li/cil/oc/server/component/UpgradeTractorBeam.java)
 
 ### D59 · 交易升级 · 已有实现，待核对/验收
 
