@@ -214,6 +214,16 @@ does not spend additional energy, consume another piece's material or convert
 more input items. The Windows build covers these source changes; actual chunk
 reload and output-release gameplay acceptance remain outstanding.
 
+World-fluid transfers now reject already-full source blocks and unsuccessful
+placements instead of reporting fictitious capacity. The original zero-based
+source-tank fallback and strict explicit item-slot validation are restored.
+Agent item insertion starts at the selected slot before wrapping, keeping batch
+crafting outputs out of the recipe grid when a later slot is selected. Crafting
+also accepts smaller addon inventories, treating unavailable grid cells as empty.
+GPU bitblt errors distinguish the particular missing buffer from a missing
+screen. These corrections pass the Windows build; their representative fluid,
+small-inventory and batch-crafting gameplay checks remain outstanding.
+
 A successful API build validates the SDK build. API compatibility checks cover
 the specific contracts they exercise; they do not establish computer boot, saved
 VM restoration, all host devices, automation, multiplayer synchronization,

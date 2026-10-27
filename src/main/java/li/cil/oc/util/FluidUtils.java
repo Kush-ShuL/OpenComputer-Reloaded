@@ -21,9 +21,10 @@ public final class FluidUtils {
     }
     public static IFluidHandlerItem fluidHandlerOf(ItemStack stack){return stack==null||stack.isEmpty()?null:FluidUtil.getFluidHandler(stack).orElse(null);}
     public static int transferBetweenFluidHandlers(IFluidHandler source,IFluidHandler sink,int limit,int sourceTank){
-        if(source==sink||limit<=0)return 0;FluidStack drained;
-        if(sourceTank>=0){if(sourceTank>=source.getTanks())return 0;FluidStack selected=source.getFluidInTank(sourceTank);if(selected.isEmpty())return 0;selected=selected.copyWithAmount(Math.min(limit,selected.getAmount()));drained=source.drain(selected,IFluidHandler.FluidAction.SIMULATE);}
-        else drained=source.drain(limit,IFluidHandler.FluidAction.SIMULATE);
+        if(source==sink||limit<=0)return 0;
+        FluidStack selected=sourceTank>=0&&sourceTank<source.getTanks()?source.getFluidInTank(sourceTank):FluidStack.EMPTY;
+        // The original zero-based selector falls back to automatic draining for an empty or absent tank.
+        FluidStack drained=selected.isEmpty()?source.drain(limit,IFluidHandler.FluidAction.SIMULATE):source.drain(selected.copyWithAmount(Math.min(limit,selected.getAmount())),IFluidHandler.FluidAction.SIMULATE);
         if(drained.isEmpty())return 0;int accepted=sink.fill(drained,IFluidHandler.FluidAction.SIMULATE);if(accepted<=0)return 0;FluidStack actual=source.drain(drained.copyWithAmount(accepted),IFluidHandler.FluidAction.EXECUTE);if(actual.isEmpty())return 0;
         int filled=sink.fill(actual,IFluidHandler.FluidAction.EXECUTE);if(filled<actual.getAmount())source.fill(actual.copyWithAmount(actual.getAmount()-filled),IFluidHandler.FluidAction.EXECUTE);return filled;
     }
@@ -38,13 +39,15 @@ public final class FluidUtils {
         public FluidStack drain(FluidStack fluid,FluidAction action){IFluidHandler source=source();return source==null?FluidStack.EMPTY:source.drain(fluid,action);}
         public FluidStack drain(int amount,FluidAction action){IFluidHandler source=source();return source==null?FluidStack.EMPTY:source.drain(amount,action);}
         public int fill(FluidStack fluid,FluidAction action){
-            if(fluid.isEmpty()||fluid.getAmount()<FluidType.BUCKET_VOLUME||!fluid.getFluidType().canBePlacedInLevel(level,pos,fluid))return 0;BlockState state=level.getBlockState(pos);
+            if(fluid.isEmpty()||fluid.getAmount()<FluidType.BUCKET_VOLUME||!level.isInWorldBounds(pos)||!level.hasChunkAt(pos)||!fluid.getFluidType().canBePlacedInLevel(level,pos,fluid))return 0;BlockState state=level.getBlockState(pos);
+            // Source liquids are replaceable blocks, but their one-bucket capacity is already full.
+            if(!state.getFluidState().isEmpty()&&state.getFluidState().isSource())return 0;
             boolean container=state.getBlock() instanceof LiquidBlockContainer block&&block.canPlaceLiquid(null,level,pos,state,fluid.getFluid());
             if(!container&&!state.isAir()&&!state.canBeReplaced())return 0;
             if(action.execute()){
                 if(fluid.getFluidType().isVaporizedOnPlacement(level,pos,fluid))fluid.getFluidType().onVaporize(null,level,pos,fluid.copyWithAmount(FluidType.BUCKET_VOLUME));
-                else if(container)((LiquidBlockContainer)state.getBlock()).placeLiquid(level,pos,state,fluid.getFluidType().getStateForPlacement(level,pos,fluid));
-                else {FluidUtil.destroyBlockOnFluidPlacement(level,pos);level.setBlock(pos,fluid.getFluidType().getBlockForFluidState(level,pos,fluid.getFluid().defaultFluidState()),3);}
+                else if(container){if(!((LiquidBlockContainer)state.getBlock()).placeLiquid(level,pos,state,fluid.getFluidType().getStateForPlacement(level,pos,fluid)))return 0;}
+                else {FluidUtil.destroyBlockOnFluidPlacement(level,pos);if(!level.setBlock(pos,fluid.getFluidType().getBlockForFluidState(level,pos,fluid.getFluid().defaultFluidState()),3))return 0;}
             }return FluidType.BUCKET_VOLUME;
         }
     }

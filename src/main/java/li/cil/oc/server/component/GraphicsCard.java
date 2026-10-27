@@ -122,7 +122,8 @@ public class GraphicsCard extends AbstractManagedEnvironment implements DeviceIn
     public synchronized Object[] bitblt(Context context,Arguments args)throws LimitReachedException {
         int destinationIndex=args.optInteger(0,0),sourceIndex=args.optInteger(5,active);
         TextBuffer destination=buffer(destinationIndex),source=buffer(sourceIndex);
-        if(destination==null||source==null)return new Object[]{null,destinationIndex==0||sourceIndex==0?"no screen":"invalid buffer index"};
+        if(destination==null)return new Object[]{null,destinationIndex==0?"no screen":"invalid buffer index"};
+        if(source==null)return new Object[]{null,sourceIndex==0?"no screen":"invalid buffer index"};
         int col=args.optInteger(1,1),row=args.optInteger(2,1),width=args.optInteger(3,destination.getWidth()),height=args.optInteger(4,destination.getHeight()),fromCol=args.optInteger(6,1),fromRow=args.optInteger(7,1);
         double budget=source instanceof GpuTextBuffer page && !(destination instanceof GpuTextBuffer)
                 ? page.dirty ? Settings.get().bitbltCost*Math.pow(2,tier)*(double)source.getWidth()*source.getHeight()/(maxWidth*maxHeight):.001:0;
