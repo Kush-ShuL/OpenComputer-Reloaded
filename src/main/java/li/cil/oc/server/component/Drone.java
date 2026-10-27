@@ -12,7 +12,7 @@ public final class Drone extends AgentComponent {
     @Callback public Object[] getStatusText(Context context,Arguments args){return new Object[]{drone().statusText()};}
     @Callback public Object[] setStatusText(Context context,Arguments args){drone().setStatusText(args.checkString(0));context.pause(.1);return new Object[]{drone().statusText()};}
     @Callback public Object[] getLightColor(Context context,Arguments args){return new Object[]{drone().lightColor()};}
-    @Callback public Object[] setLightColor(Context context,Arguments args){drone().setLightColor(args.checkInteger(0)&0xFFFFFF);context.pause(.1);return new Object[]{drone().lightColor()};}
+    @Callback public Object[] setLightColor(Context context,Arguments args){drone().setLightColor(args.checkInteger(0));context.pause(.1);return new Object[]{drone().lightColor()};}
     @Callback public Object[] move(Context context,Arguments args){drone().setTarget(drone().getTarget().add((float)args.checkDouble(0),(float)args.checkDouble(1),(float)args.checkDouble(2)));return null;}
     @Callback public Object[] getOffset(Context context,Arguments args){return new Object[]{drone().position().distanceTo(drone().getTarget())};}
     @Callback public Object[] getVelocity(Context context,Arguments args){return new Object[]{drone().getVelocity().length()*20};}

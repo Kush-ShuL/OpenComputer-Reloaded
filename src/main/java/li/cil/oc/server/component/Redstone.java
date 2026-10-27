@@ -41,14 +41,14 @@ public class Redstone extends AbstractManagedEnvironment implements DeviceInfo {
         return new Object[]{args.count() == 1 ? host.redstoneState().output(side(args, 0)) : values(host.redstoneState().outputs())};
     }
     @Callback(doc = "function([side:number, ]value:number or table):number or table -- Set output and return the previous value.")
-    public Object[] setOutput(Context context, Arguments args) {
+    public Object[] setOutput(Context context, Arguments args) throws Exception {
         Object old; boolean changed;
         if (args.count() == 2) {
             Direction side = side(args, 0); old = host.redstoneState().output(side);
             changed = host.redstoneState().setOutput(side, args.checkInteger(1));
         } else if (args.count() == 1) {
             old = values(host.redstoneState().outputs()); changed = host.redstoneState().setOutput(args.checkTable(0));
-        } else throw new IllegalArgumentException("invalid number of arguments, expected 1 or 2");
+        } else throw new Exception("invalid number of arguments, expected 1 or 2");
         if (changed && Settings.get().redstoneDelay > 0) context.pause(Settings.get().redstoneDelay);
         return new Object[]{old};
     }

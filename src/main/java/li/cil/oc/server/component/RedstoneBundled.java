@@ -18,26 +18,27 @@ public final class RedstoneBundled extends Redstone {
                 "product", "Rb800-M", "capacity", "65536", "width", "16");
     }
     @Callback(direct = true, doc = "function([side:number[, color:number]]):number or table -- Get bundled input, a side's colors, or all sides.")
-    public Object[] getBundledInput(Context context, Arguments args) { return new Object[]{get(args, false)}; }
+    public Object[] getBundledInput(Context context, Arguments args) throws Exception { return new Object[]{get(args, false)}; }
     @Callback(direct = true, doc = "function([side:number[, color:number]]):number or table -- Get bundled output, a side's colors, or all sides.")
-    public Object[] getBundledOutput(Context context, Arguments args) { return new Object[]{get(args, true)}; }
-    private Object get(Arguments args, boolean output) {
+    public Object[] getBundledOutput(Context context, Arguments args) throws Exception { return new Object[]{get(args, true)}; }
+    private Object get(Arguments args, boolean output) throws Exception {
         var state = host.redstoneState();
         return switch (args.count()) {
-            case 0 -> sides(output ? state.bundledOutputs() : state.bundledInputs());
+            // The pinned no-side getter exposes the uncombined input matrix.
+            case 0 -> sides(output ? state.bundledInputSnapshot() : state.bundledInputs());
             case 1 -> colors(output ? state.bundledOutput(side(args, 0)) : state.bundledInput(side(args, 0)));
             case 2 -> output ? state.bundledOutput(side(args, 0), color(args, 1)) : state.bundledInput(side(args, 0), color(args, 1));
-            default -> throw new IllegalArgumentException("too many arguments, expected 0, 1, or 2");
+            default -> throw new Exception("too many arguments, expected 0, 1, or 2");
         };
     }
     @Callback(doc = "function([side:number[, color:number,]] value:number or table):number or table -- Set bundled output and return previous values.")
-    public Object[] setBundledOutput(Context context, Arguments args) {
+    public Object[] setBundledOutput(Context context, Arguments args) throws Exception {
         var state = host.redstoneState(); Object previous; boolean changed;
         switch (args.count()) {
             case 3 -> { Direction side = side(args, 0); int color = color(args, 1); previous = state.bundledOutput(side, color); changed = state.setBundledOutput(side, color, args.checkInteger(2)); }
             case 2 -> { Direction side = side(args, 0); previous = state.bundledOutput(side); changed = state.setBundledOutput(side, args.checkTable(1)); }
-            case 1 -> { previous = state.bundledOutputs(); changed = state.setBundledOutput(args.checkTable(0)); }
-            default -> throw new IllegalArgumentException("invalid number of arguments, expected 1, 2, or 3");
+            case 1 -> { previous = state.bundledInputSnapshot(); changed = state.setBundledOutput(args.checkTable(0)); }
+            default -> throw new Exception("invalid number of arguments, expected 1, 2, or 3");
         }
         if (changed && Settings.get().redstoneDelay > 0) context.pause(Settings.get().redstoneDelay);
         return new Object[]{previous};

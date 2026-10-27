@@ -39,6 +39,14 @@ public final class AgentPlayer extends FakePlayer {
         host.inventoryChanged();
     }
     private ItemStack selected() { int slot=materialSlot>=0?materialSlot:host.selectedSlot();return slot>=0&&slot<host.mainInventory().getContainerSize()?host.mainInventory().getItem(slot):ItemStack.EMPTY; }
+    @Override public boolean hasCorrectToolForDrops(net.minecraft.world.level.block.state.BlockState state){
+        return !state.requiresCorrectToolForDrops()||getMainHandItem().isCorrectToolForDrops(state);
+    }
+    @Override public float getDigSpeed(net.minecraft.world.level.block.state.BlockState state,net.minecraft.core.BlockPos pos){
+        // Vanilla reads its own inventory field here instead of our routed getInventory().
+        var vanilla=super.getInventory();vanilla.items.set(vanilla.selected,getMainHandItem());
+        return super.getDigSpeed(state,pos);
+    }
     public AgentPlayer orient(Direction facing, boolean sneak) {
         ItemStack tool=getMainHandItem();
         if(!ItemStack.isSameItemSameComponents(previousTool,tool)){

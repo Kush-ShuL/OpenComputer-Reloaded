@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -81,16 +82,19 @@ public final class RackNetworking {
     public static void registerTerminal(TerminalServer terminal){if(terminal.world() instanceof ServerLevel level){if(!level.getServer().isSameThread()){level.getServer().execute(()->registerTerminal(terminal));return;}if(terminal.node()!=null&&terminal.node().address()!=null)TERMINALS.put(new TerminalKey(level,terminal.node().address()),terminal);}}
     public static void unregisterTerminal(TerminalServer terminal){if(terminal.world() instanceof ServerLevel level&&!level.getServer().isSameThread()){level.getServer().execute(()->unregisterTerminal(terminal));return;}TERMINALS.values().removeIf(value->value==terminal);REVISIONS.remove(terminal);for(Session session:List.copyOf(SESSIONS.values()))if(session.terminal==terminal)close(session,true);}
     public static void openTerminal(ServerPlayer player,InteractionHand hand){
-        ItemStack held=player.getItemInHand(hand);if(!held.is(Racks.TERMINAL.get())||player.isSpectator())return;CompoundTag data=held.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();TerminalServer terminal=TERMINALS.get(new TerminalKey(player.serverLevel(),data.getString("oc:server")));if(terminal==null||!valid(player,terminal,hand))return;
+        ItemStack held=player.getItemInHand(hand);if(hand!=InteractionHand.MAIN_HAND||!held.is(Racks.TERMINAL.get()))return;CompoundTag data=held.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();TerminalServer terminal=TERMINALS.get(new TerminalKey(player.serverLevel(),data.getString("oc:server")));
+        if(terminal==null||!inRange(player,terminal)){player.displayClientMessage(Component.translatable("oc:gui.Terminal.OutOfRange"),false);return;}
+        if(!valid(player,terminal,hand)){player.displayClientMessage(Component.translatable("oc:gui.Terminal.InvalidKey"),false);return;}
         Session previous=SESSIONS.remove(player.getUUID());if(previous!=null)release(previous);((TextBuffer)terminal.buffer()).flushCommands();
         Session session=new Session(UUID.randomUUID(),terminal,hand,player);SESSIONS.put(player.getUUID(),session);
         BlockPos pos=BlockPos.containing(terminal.xPosition(),terminal.yPosition(),terminal.zPosition());PacketDistributor.sendToPlayer(player,new TerminalOpen(session.token,player.level().dimension().location(),pos,terminal.slot,terminal.node().address(),REVISIONS.getOrDefault(terminal,0L),snapshot(terminal)));
     }
     private static boolean valid(ServerPlayer player,TerminalServer terminal,InteractionHand hand){
-        if(player.isRemoved()||player.isSpectator()||terminal.world()!=player.level()||terminal.rack.getMountable(terminal.slot)!=terminal||terminal.node()==null||terminal.node().network()==null)return false;
+        if(hand!=InteractionHand.MAIN_HAND||!inRange(player,terminal))return false;
         ItemStack held=player.getItemInHand(hand);if(!held.is(Racks.TERMINAL.get()))return false;CompoundTag tag=held.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();
-        return terminal.node().address()!=null&&terminal.node().address().equals(tag.getString("oc:server"))&&terminal.keys.contains(tag.getString("oc:key"))&&player.distanceToSqr(terminal.xPosition(),terminal.yPosition(),terminal.zPosition())<=terminal.range*terminal.range;
+        return terminal.node().address()!=null&&terminal.node().address().equals(tag.getString("oc:server"))&&terminal.keys.contains(tag.getString("oc:key"));
     }
+    private static boolean inRange(ServerPlayer player,TerminalServer terminal){return player.isAlive()&&!player.isRemoved()&&terminal.world()==player.level()&&terminal.rack.getMountable(terminal.slot)==terminal&&terminal.node()!=null&&terminal.node().network()!=null&&player.distanceToSqr(terminal.xPosition(),terminal.yPosition(),terminal.zPosition())<terminal.range*terminal.range;}
     private static Session session(ServerPlayer player,UUID token){Session value=SESSIONS.get(player.getUUID());if(value==null||!value.token.equals(token))return null;if(!valid(player,value.terminal,value.hand)){close(value,true);return null;}return value;}
     private static CompoundTag snapshot(TerminalServer terminal){TextBuffer buffer=(TextBuffer)terminal.buffer();if(buffer.node()!=null&&buffer.node().network()!=null)for(var node:buffer.node().network().nodes())if(node.host() instanceof li.cil.oc.api.machine.Machine machine&&!machine.isPaused())machine.pause(.05);CompoundTag tag=new CompoundTag();buffer.data().save(tag);net.minecraft.nbt.ListTag pages=new net.minecraft.nbt.ListTag();for(var device:buffer.videoDevices().values())for(var ram:device.videoBuffers().values()){CompoundTag page=new CompoundTag();ram.save(page);page.putString("owner",ram.owner);page.putInt("id",ram.id);pages.add(page);}tag.put("vram",pages);tag.putInt("viewportWidth",buffer.getViewportWidth());tag.putInt("viewportHeight",buffer.getViewportHeight());tag.putBoolean("on",buffer.getPowerState());tag.putBoolean("render",buffer.getPowerState()&&buffer.hasPower());tag.putString("address",buffer.nodeAddress()==null?"":buffer.nodeAddress());return tag;}
     private static void sendSnapshot(Session session){((TextBuffer)session.terminal.buffer()).flushCommands();PacketDistributor.sendToPlayer(session.player,new TerminalUpdate(session.token,REVISIONS.getOrDefault(session.terminal,0L),true,snapshot(session.terminal)));}
@@ -101,7 +105,7 @@ public final class RackNetworking {
         switch(packet.action){
             case KEY_DOWN,KEY_UP->{if(packet.character<0||packet.character>65535||packet.code<0||packet.code>255)return;if(packet.action==ScreenNetworking.InputType.KEY_DOWN)buffer.keyDown((char)packet.character,packet.code,player);else buffer.keyUp((char)packet.character,packet.code,player);}
             case CLIPBOARD->buffer.clipboard(packet.text,player);
-            case TOUCH,DRAG,DROP,SCROLL->{if(!Double.isFinite(packet.x)||!Double.isFinite(packet.y)||packet.x<0||packet.y<0||packet.x>=buffer.getViewportWidth()||packet.y>=buffer.getViewportHeight())return;if(packet.action==ScreenNetworking.InputType.SCROLL){if(packet.value!=1&&packet.value!=-1)return;buffer.mouseScroll(packet.x,packet.y,packet.value,player);}else if(packet.value>=0&&packet.value<2){if(packet.action==ScreenNetworking.InputType.TOUCH)buffer.mouseDown(packet.x,packet.y,packet.value,player);else if(packet.action==ScreenNetworking.InputType.DRAG)buffer.mouseDrag(packet.x,packet.y,packet.value,player);else buffer.mouseUp(packet.x,packet.y,packet.value,player);}}
+            case TOUCH,DRAG,DROP,SCROLL->{boolean outsideDrop=packet.action==ScreenNetworking.InputType.DROP&&packet.x==-1&&packet.y==-1;if(!outsideDrop&&(!Double.isFinite(packet.x)||!Double.isFinite(packet.y)||packet.x<0||packet.y<0||packet.x>=buffer.getViewportWidth()||packet.y>=buffer.getViewportHeight()))return;if(packet.action==ScreenNetworking.InputType.SCROLL){if(packet.value!=1&&packet.value!=-1)return;buffer.mouseScroll(packet.x,packet.y,packet.value,player);}else if(packet.value>=0&&packet.value<2){if(packet.action==ScreenNetworking.InputType.TOUCH)buffer.mouseDown(packet.x,packet.y,packet.value,player);else if(packet.action==ScreenNetworking.InputType.DRAG)buffer.mouseDrag(packet.x,packet.y,packet.value,player);else buffer.mouseUp(packet.x,packet.y,packet.value,player);}}
             default->{}
         }
     }

@@ -24,8 +24,8 @@ public final class Agents {
     public static final Supplier<RobotBlock> ROBOT=BLOCKS.register("robot",()->new RobotBlock(BlockBehaviour.Properties.of().strength(2,10).sound(SoundType.METAL).noOcclusion()));
     public static final Supplier<RobotAfterimageBlock> AFTERIMAGE=BLOCKS.register("robotafterimage",()->new RobotAfterimageBlock(BlockBehaviour.Properties.of().strength(-1).noOcclusion().noLootTable().replaceable()));
     public static final Supplier<BlockEntityType<RobotBlockEntity>> ROBOT_TYPE=TYPES.register("robot",()->BlockEntityType.Builder.of((pos,state)->new RobotBlockEntity(Agents.ROBOT_TYPE.get(),pos,state),ROBOT.get()).build(null));
-    public static final Supplier<BlockItem> ROBOT_ITEM=ITEMS.register("robot",()->new BlockItem(ROBOT.get(),new Item.Properties().stacksTo(1)));
-    public static final Supplier<EntityType<DroneEntity>> DRONE_TYPE=ENTITIES.register("drone",()->EntityType.Builder.<DroneEntity>of(DroneEntity::new,MobCategory.MISC).sized(.8f,.4f).clientTrackingRange(8).updateInterval(3).build("opencomputers:drone"));
+    public static final Supplier<BlockItem> ROBOT_ITEM=ITEMS.register("robot",()->new li.cil.oc.common.item.RobotItem(ROBOT.get(),new Item.Properties()));
+    public static final Supplier<EntityType<DroneEntity>> DRONE_TYPE=ENTITIES.register("drone",()->EntityType.Builder.<DroneEntity>of(DroneEntity::new,MobCategory.MISC).sized(.75f,.375f).fireImmune().clientTrackingRange(8).updateInterval(3).build("opencomputers:drone"));
     public static final Supplier<DroneItem> DRONE=ITEMS.register("drone",()->new DroneItem(new Item.Properties()));
     static {
         Items.INSTANCE.registerBlock("robot",ROBOT,ROBOT_ITEM);Items.INSTANCE.registerItem("drone",DRONE);

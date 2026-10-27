@@ -41,16 +41,25 @@ public abstract class AgentComponent extends AbstractManagedEnvironment implemen
         return agent.toGlobal(Direction.from3DDataValue(side));
     }
     protected int slot(Arguments args,int index) { int slot=args.checkInteger(index)-1;if(slot<0||slot>=agent.mainInventory().getContainerSize())throw new IllegalArgumentException("invalid slot");return slot; }
-    protected int selected(Arguments args,int index) { return args.count()>index?slot(args,index):agent.selectedSlot(); }
+    protected int selected(Arguments args,int index) { return args.count()>index&&args.checkAny(index)!=null?slot(args,index):agent.selectedSlot(); }
     protected ItemStack selectedStack() { return agent.selectedSlot()>=0&&agent.selectedSlot()<agent.mainInventory().getContainerSize()?agent.mainInventory().getItem(agent.selectedSlot()):ItemStack.EMPTY; }
-    protected void delay(Context context,String action) { context.pause(agent.delay(action)*(agent.robot()?1:2));agent.animate(agent.delay(action),1); }
+    protected void delay(Context context,String action) { context.pause(agent.delay(action)*(agent.robot()?1:2));if(agent.equipmentInventory().getContainerSize()>0&&!agent.equipmentInventory().getItem(0).isEmpty())agent.animate(agent.delay(action),1); }
     @Callback public Object[] name(Context context,Arguments args){return new Object[]{agent.name()};}
     @Callback public Object[] inventorySize(Context context,Arguments args){return new Object[]{agent.mainInventory().getContainerSize()};}
-    @Callback public Object[] select(Context context,Arguments args){if(args.count()>0)agent.setSelectedSlot(slot(args,0));return new Object[]{agent.selectedSlot()+1};}
+    @Callback public Object[] select(Context context,Arguments args){if(args.count()>0&&args.checkAny(0)!=null)agent.setSelectedSlot(slot(args,0));return new Object[]{Math.max(0,agent.selectedSlot())+1};}
     @Callback(direct=true) public Object[] count(Context context,Arguments args){int slot=selected(args,0);return new Object[]{slot<0?0:agent.mainInventory().getItem(slot).getCount()};}
     @Callback(direct=true) public Object[] space(Context context,Arguments args){int slot=selected(args,0);ItemStack stack=slot<0?ItemStack.EMPTY:agent.mainInventory().getItem(slot);return new Object[]{stack.isEmpty()?64:Math.min(stack.getMaxStackSize(),agent.mainInventory().getMaxStackSize())-stack.getCount()};}
     @Callback public Object[] compareTo(Context context,Arguments args){ItemStack a=selectedStack(),b=agent.mainInventory().getItem(slot(args,0));return new Object[]{a.isEmpty()&&b.isEmpty()||InventoryUtils.haveSameItemType(a,b,args.optBoolean(1,false))};}
-    @Callback public Object[] transferTo(Context context,Arguments args){int to=slot(args,0);if(to==agent.selectedSlot())return new Object[]{true};int moved=InventoryUtils.transferBetweenInventoriesSlots(InventoryUtils.asItemHandler(agent.mainInventory()),agent.selectedSlot(),InventoryUtils.asItemHandler(agent.mainInventory()),to,Math.max(0,args.optInteger(1,64)));agent.inventoryChanged();return new Object[]{moved>0};}
+    @Callback public Object[] transferTo(Context context,Arguments args){
+        int to=slot(args,0),count=Math.clamp(args.optInteger(1,64),0,64);
+        if(to==agent.selectedSlot()||count==0)return new Object[]{true};
+        ItemStack from=selectedStack(),target=agent.mainInventory().getItem(to);
+        if(!from.isEmpty()&&!target.isEmpty()&&!InventoryUtils.haveSameItemType(from,target,true)){
+            if(count<from.getCount())return new Object[]{false};
+            agent.mainInventory().setItem(to,from);agent.mainInventory().setItem(agent.selectedSlot(),target);agent.inventoryChanged();return new Object[]{true};
+        }
+        int moved=InventoryUtils.transferBetweenInventoriesSlots(InventoryUtils.asItemHandler(agent.mainInventory()),agent.selectedSlot(),InventoryUtils.asItemHandler(agent.mainInventory()),to,count);agent.inventoryChanged();return new Object[]{moved>0};
+    }
     @Callback public Object[] detect(Context context,Arguments args){return blockContent(side(args,0));}
     public Object[] blockContent(Direction side){
         var level=agent.world();BlockPos pos=agent.blockPosition().relative(side);
@@ -65,46 +74,91 @@ public abstract class AgentComponent extends AbstractManagedEnvironment implemen
     }
     @Callback public Object[] compare(Context context,Arguments args){var state=agent.world().getBlockState(agent.blockPosition().relative(side(args,0)));ItemStack stack=selectedStack();return new Object[]{stack.getItem() instanceof BlockItem item&&item.getBlock()==state.getBlock()};}
     @Callback public Object[] drop(Context context,Arguments args){
-        Direction facing=side(args,0);ItemStack stack=selectedStack();if(stack.isEmpty())return new Object[]{false};int count=Math.max(0,Math.min(stack.getCount(),args.optInteger(1,64)));if(count==0)return new Object[]{false};
-        var target=InventoryUtils.inventoryAt(agent.world(),agent.blockPosition().relative(facing),facing.getOpposite());
-        int moved;
-        if(target.isPresent())moved=InventoryUtils.transferBetweenInventoriesSlots(InventoryUtils.asItemHandler(agent.mainInventory()),agent.selectedSlot(),target.get(),null,count);
-        else{ItemStack drop=agent.mainInventory().removeItem(agent.selectedSlot(),count);moved=drop.getCount();InventoryUtils.spawnStackInWorld(agent.world(),agent.blockPosition(),drop,facing);}
-        if(moved>0)delay(context,"drop");agent.inventoryChanged();return new Object[]{moved>0};
+        Direction facing=side(args,0);int count=Math.clamp(args.optInteger(1,64),0,64);ItemStack stack=selectedStack();if(stack.isEmpty())return new Object[]{false};
+        BlockPos position=agent.blockPosition().relative(facing);AgentPlayer player=agent.runtime().player();
+        var target=InventoryUtils.inventoryAt(agent.world(),position,facing.getOpposite());
+        if(target.isPresent()&&rightClickAllowed(player,interactionFace(position,facing.getOpposite()))){
+            int moved=InventoryUtils.transferBetweenInventoriesSlots(InventoryUtils.asItemHandler(agent.mainInventory()),agent.selectedSlot(),target.get(),null,count);
+            if(moved==0)return new Object[]{false,"inventory full"};
+        }else{
+            ItemStack dropped=agent.mainInventory().removeItem(agent.selectedSlot(),count);
+            if(!dropped.isEmpty()&&InventoryUtils.spawnStackInWorld(agent.world(),agent.blockPosition(),dropped,facing,
+                    entity->!NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.item.ItemTossEvent(entity,player)).isCanceled())==null)
+                player.getInventory().add(dropped);
+        }
+        context.pause(Settings.get().dropDelay);agent.inventoryChanged();return new Object[]{true};
     }
     @Callback public Object[] suck(Context context,Arguments args){
-        Direction facing=side(args,0);int limit=Math.max(0,args.optInteger(1,64)),moved=0;var inventory=InventoryUtils.inventoryAt(agent.world(),agent.blockPosition().relative(facing),facing.getOpposite());
-        if(inventory.isPresent())moved=InventoryUtils.transferBetweenInventories(inventory.get(),InventoryUtils.asItemHandler(agent.mainInventory()),limit);
-        else for(ItemEntity entity:agent.world().getEntitiesOfClass(ItemEntity.class,new AABB(agent.blockPosition().relative(facing)).inflate(agent.robot()?0:.5),Entity::isAlive)){
-            ItemStack stack=entity.getItem();int before=stack.getCount();InventoryUtils.insertIntoInventory(stack,InventoryUtils.asItemHandler(agent.mainInventory()),limit-moved,false);moved+=before-stack.getCount();if(stack.isEmpty())entity.discard();if(moved>=limit)break;
+        Direction facing=side(args,0);int limit=Math.clamp(args.optInteger(1,64),0,64),moved=0;BlockPos position=agent.blockPosition().relative(facing);AgentPlayer player=agent.runtime().player();
+        var inventory=InventoryUtils.inventoryAt(agent.world(),position,facing.getOpposite());
+        if(inventory.isPresent()&&rightClickAllowed(player,interactionFace(position,facing.getOpposite())))moved=InventoryUtils.transferBetweenInventories(inventory.get(),InventoryUtils.asItemHandler(agent.mainInventory()),limit);
+        if(moved==0){
+            List<ItemEntity> items=new ArrayList<>();
+            if(!agent.robot())items.addAll(agent.world().getEntitiesOfClass(ItemEntity.class,new AABB(agent.blockPosition()),Entity::isAlive));
+            items.addAll(agent.world().getEntitiesOfClass(ItemEntity.class,new AABB(position),Entity::isAlive));
+            for(ItemEntity entity:items)if(!entity.hasPickUpDelay()){
+                ItemStack stack=entity.getItem();int before=stack.getCount();
+                if(agent.robot())entity.playerTouch(player);
+                else if(player.getInventory().add(stack))agent.world().playSound(null,agent.xPosition(),agent.yPosition(),agent.zPosition(),net.minecraft.sounds.SoundEvents.ITEM_PICKUP,net.minecraft.sounds.SoundSource.NEUTRAL,.2f,((agent.world().random.nextFloat()-agent.world().random.nextFloat())*.7f+1)*2);
+                moved=before-stack.getCount();if(stack.isEmpty())entity.discard();if(moved>0||entity.isRemoved()){if(moved==0)moved=before;break;}
+            }
         }
-        if(moved>0)delay(context,"suck");agent.inventoryChanged();return new Object[]{moved>0};
+        if(moved>0)context.pause(Settings.get().suckDelay);agent.inventoryChanged();return moved>0?new Object[]{moved}:new Object[]{false};
     }
     @Callback public Object[] swing(Context context,Arguments args){
-        Direction facing=side(args,0);AgentPlayer player=agent.runtime().player().orient(facing,args.optBoolean(2,false));var level=(ServerLevel)agent.world();BlockPos target=agent.blockPosition().relative(facing);
-        Vec3 start=player.getEyePosition(),end=start.add(Vec3.atLowerCornerOf(facing.getNormal()).scale(Settings.get().swingRange));
-        var obstruction=level.clip(new net.minecraft.world.level.ClipContext(start,end,net.minecraft.world.level.ClipContext.Block.COLLIDER,net.minecraft.world.level.ClipContext.Fluid.NONE,player));
-        double reachSquared=obstruction.getType()==HitResult.Type.MISS?start.distanceToSqr(end):start.distanceToSqr(obstruction.getLocation());
-        var targets=level.getEntities(player,new AABB(start,end).inflate(.35),entity->entity!=agent&&entity.isAlive()&&entity.isPickable()&&!(entity instanceof ItemEntity)&&entity.getBoundingBox().inflate(entity.getPickRadius()).clip(start,end).filter(hit->start.distanceToSqr(hit)<=reachSquared).isPresent());
-        if(!targets.isEmpty()){
-            Entity hit=targets.stream().min(Comparator.comparingDouble(player::distanceToSqr)).orElseThrow();
-            if(hit instanceof Player&&!Settings.get().canAttackPlayers)return new Object[]{false,"entity"};
-            var event=new RobotAttackEntityEvent.Pre(agent,hit);NeoForge.EVENT_BUS.post(event);if(event.isCanceled())return new Object[]{false,"entity"};
-            Set<Integer> old=new HashSet<>();for(ItemEntity entity:level.getEntitiesOfClass(ItemEntity.class,hit.getBoundingBox().inflate(2)))old.add(entity.getId());
-            ItemStack before=player.getMainHandItem().copy();player.attack(hit);NeoForge.EVENT_BUS.post(new RobotAttackEntityEvent.Post(agent,hit));toolUsed(before,player.getMainHandItem());delay(context,"swing");collectDrops(hit.blockPosition(),old);return new Object[]{true,"entity"};
+        Direction facing=side(args,0);List<Direction> faces=new ArrayList<>();
+        if(args.isInteger(1)){int face=args.checkInteger(1);if(face<0||face>5)throw new IllegalArgumentException("invalid side");Direction side=agent.toGlobal(Direction.from3DDataValue(face));if(side==facing.getOpposite())throw new IllegalArgumentException("unsupported side");faces.add(side);}
+        else{faces.add(facing);for(Direction side:Direction.values())if(side!=facing&&side!=facing.getOpposite())faces.add(side);}
+        boolean sneaky=args.isBoolean(2)&&args.checkBoolean(2);AgentPlayer player=agent.runtime().player();ServerLevel level=(ServerLevel)agent.world();BlockPos target=agent.blockPosition().relative(facing);
+        try(var drops=li.cil.oc.server.agent.AgentActionDrops.begin(agent,new AABB(agent.blockPosition()).inflate(Settings.get().swingRange+2))){
+            try{
+                String reason=null;
+                for(Direction face:faces){
+                    orientForInteraction(player,facing,face,sneaky);
+                    Vec3 center=new Vec3(agent.xPosition(),agent.yPosition(),agent.zPosition()),offset=Vec3.atLowerCornerOf(facing.getNormal());
+                    // The configured range extends from the adjacent block's center, not the agent's eye.
+                    Vec3 start=center.add(offset.scale(.50001)),end=center.add(offset.scale(1.01)).add(Vec3.atLowerCornerOf(face.getNormal()).scale(Settings.get().swingRange));
+                    BlockHitResult obstruction=level.clip(new net.minecraft.world.level.ClipContext(start,end,net.minecraft.world.level.ClipContext.Block.OUTLINE,net.minecraft.world.level.ClipContext.Fluid.NONE,player));
+                    double reachSquared=obstruction.getType()==HitResult.Type.MISS?start.distanceToSqr(end):start.distanceToSqr(obstruction.getLocation());
+                    var targets=level.getEntities(player,new AABB(start,end).inflate(.35),entity->entity!=agent&&entity.isAlive()&&entity.isPickable()&&!(entity instanceof ItemEntity)&&entity.getBoundingBox().inflate(entity.getPickRadius()).clip(start,end).filter(hit->start.distanceToSqr(hit)<=reachSquared).isPresent());
+                    Entity hit=targets.stream().min(Comparator.comparingDouble(entity->start.distanceToSqr(entity.position()))).orElse(null);
+                    if(hit==null&&obstruction.getType()==HitResult.Type.MISS)hit=level.getEntitiesOfClass(LivingEntity.class,new AABB(target),Entity::isAlive).stream().filter(entity->entity!=agent&&entity!=player).min(Comparator.comparingDouble(player::distanceToSqr)).orElse(null);
+                    Object[] result;
+                    if(hit!=null)result=swingEntity(context,player,hit);
+                    else if(obstruction.getType()==HitResult.Type.BLOCK)result=swingBlock(context,player,obstruction.getBlockPos(),drops);
+                    else{
+                        var state=level.getBlockState(target);
+                        if(state.is(Blocks.FIRE)||state.is(Blocks.SOUL_FIRE)){level.removeBlock(target,false);delay(context,"swing");return new Object[]{true,"fire"};}
+                        result=new Object[]{false,"air"};
+                    }
+                    if(Boolean.TRUE.equals(result[0]))return result;
+                    if(reason==null)reason=(String)result[1];
+                }
+                if(Boolean.TRUE.equals(blockContent(facing)[0]))return swingBlock(context,player,target,drops);
+                return new Object[]{false,reason};
+            }finally{player.setShiftKeyDown(false);}
         }
-        if(!level.hasChunkAt(target)||!level.mayInteract(player,target))return new Object[]{false,"block"};var state=level.getBlockState(target);
-        if(state.is(net.minecraft.world.level.block.Blocks.FIRE)||state.is(net.minecraft.world.level.block.Blocks.SOUL_FIRE)){level.removeBlock(target,false);delay(context,"swing");return new Object[]{true,"fire"};}
-        if(state.isAir())return new Object[]{false,"air"};boolean cobwebOverride=state.is(net.minecraft.world.level.block.Blocks.COBWEB)&&Settings.get().screwCobwebs;float progress=state.getDestroyProgress(player,level,target);if(progress<=0&&!cobwebOverride)return new Object[]{false,"block"};
-        double breakTime=cobwebOverride?Math.max(.05,Settings.get().swingDelay*Settings.get().harvestRatio):Math.max(agent.delay("swing"),1d/progress/20*Settings.get().harvestRatio);
-        var event=new RobotBreakBlockEvent.Pre(agent,level,target,breakTime);NeoForge.EVENT_BUS.post(event);if(event.isCanceled())return new Object[]{false,"block"};
-        Set<Integer> old=new HashSet<>(),oldExperience=new HashSet<>();for(ItemEntity entity:level.getEntitiesOfClass(ItemEntity.class,new AABB(target).inflate(2)))old.add(entity.getId());for(ExperienceOrb orb:level.getEntitiesOfClass(ExperienceOrb.class,new AABB(target).inflate(2)))oldExperience.add(orb.getId());
-        ItemStack before=player.getMainHandItem().copy();boolean result=player.gameMode.destroyBlock(target);toolUsed(before,player.getMainHandItem());
-        if(result){collectDrops(target,old);int experience=level.getEntitiesOfClass(ExperienceOrb.class,new AABB(target).inflate(2),orb->!oldExperience.contains(orb.getId())).stream().mapToInt(ExperienceOrb::getValue).sum();NeoForge.EVENT_BUS.post(new RobotBreakBlockEvent.Post(agent,experience));context.pause(event.getBreakTime());agent.animate(event.getBreakTime(),1);}
-        player.setShiftKeyDown(false);return new Object[]{result,"block"};
     }
-    private void collectDrops(BlockPos position,Set<Integer> existing){for(ItemEntity entity:agent.world().getEntitiesOfClass(ItemEntity.class,new AABB(position).inflate(2),entity->!existing.contains(entity.getId()))){ItemStack stack=entity.getItem();InventoryUtils.insertIntoInventory(stack,InventoryUtils.asItemHandler(agent.mainInventory()),stack.getCount(),false);if(stack.isEmpty())entity.discard();}agent.inventoryChanged();}
-    private void toolUsed(ItemStack before,ItemStack after){var event=new RobotUsedToolEvent.ComputeDamageRate(agent,before,after,Settings.get().itemDamageRate);NeoForge.EVENT_BUS.post(event);if(event.getDamageRate()<1){if(!after.isEmpty()&&ItemStack.isSameItem(before,after)&&after.isDamageableItem()){int damage=Math.max(0,after.getDamageValue()-before.getDamageValue());int keep=(int)Math.floor(damage*event.getDamageRate()+agent.world().random.nextDouble());after.setDamageValue(before.getDamageValue()+keep);}NeoForge.EVENT_BUS.post(new RobotUsedToolEvent.ApplyDamageRate(agent,before,after,event.getDamageRate()));}agent.inventoryChanged();}
+    private Object[] swingEntity(Context context,AgentPlayer player,Entity hit){
+        if(hit instanceof Player&&!Settings.get().canAttackPlayers){delay(context,"swing");return new Object[]{true,"entity"};}
+        int attempts=hit instanceof net.minecraft.world.entity.vehicle.AbstractMinecart?11:1;
+        for(int i=0;i<attempts&&hit.isAlive();i++){
+            var event=new RobotAttackEntityEvent.Pre(agent,hit);NeoForge.EVENT_BUS.post(event);if(event.isCanceled())continue;
+            ItemStack before=player.getMainHandItem().copy();player.attack(hit);NeoForge.EVENT_BUS.post(new RobotAttackEntityEvent.Post(agent,hit));toolUsed(before,player.getMainHandItem());
+        }
+        delay(context,"swing");return new Object[]{true,"entity"};
+    }
+    private Object[] swingBlock(Context context,AgentPlayer player,BlockPos target,li.cil.oc.server.agent.AgentActionDrops drops){
+        ServerLevel level=(ServerLevel)agent.world();if(!level.hasChunkAt(target)||!level.mayInteract(player,target))return new Object[]{false,"block"};var state=level.getBlockState(target);
+        if(state.isAir())return new Object[]{false,"air"};if(!state.canHarvestBlock(level,target,player))return new Object[]{false,"block"};
+        boolean cobweb=state.is(Blocks.COBWEB)&&Settings.get().screwCobwebs;float progress=state.getDestroyProgress(player,level,target);if(progress<=0&&!cobweb)return new Object[]{false,"block"};
+        double breakTime=(cobweb?Settings.get().swingDelay:1d/progress/20)*Settings.get().harvestRatio;
+        var event=new RobotBreakBlockEvent.Pre(agent,level,target,breakTime);NeoForge.EVENT_BUS.post(event);if(event.isCanceled())return new Object[]{false,"block"};
+        int experience=drops.experience();ItemStack before=player.getMainHandItem().copy();boolean result=player.gameMode.destroyBlock(target);toolUsed(before,player.getMainHandItem());
+        if(result){NeoForge.EVENT_BUS.post(new RobotBreakBlockEvent.Post(agent,drops.experience()-experience));double duration=Math.max(.05,event.getBreakTime());context.pause(duration*(agent.robot()?1:2));if(agent.equipmentInventory().getContainerSize()>0&&!agent.equipmentInventory().getItem(0).isEmpty())agent.animate(duration,1);}
+        return new Object[]{result,"block"};
+    }
+    private void toolUsed(ItemStack before,ItemStack after){var event=new RobotUsedToolEvent.ComputeDamageRate(agent,before,after,Settings.get().itemDamageRate);NeoForge.EVENT_BUS.post(event);if(event.getDamageRate()<1)NeoForge.EVENT_BUS.post(new RobotUsedToolEvent.ApplyDamageRate(agent,before,after,event.getDamageRate()));agent.inventoryChanged();}
     @Callback(doc="function(side:number[, face:number=side[, sneaky:boolean=false[, duration:number=0]]]):boolean, string -- Perform a 'right click' towards the specified side. The `face' allows a more precise click calibration, and is relative to the targeted blockspace.")
     public Object[] use(Context context,Arguments args){return interact(context,args,false);}
     @Callback(doc="function(side:number[, face:number=side[, sneaky:boolean=false]]):boolean -- Place a block towards the specified side. The `face' allows a more precise click calibration, and is relative to the targeted blockspace.")
@@ -135,7 +189,7 @@ public abstract class AgentComponent extends AbstractManagedEnvironment implemen
         boolean previous=player.usingSelectedMaterial;
         int previousSlot=player.materialSlot;
         player.usingSelectedMaterial=false;
-        try{
+        try(var drops=li.cil.oc.server.agent.AgentActionDrops.begin(agent,new AABB(agent.blockPosition()).inflate(Settings.get().useAndPlaceRange+2))){
             if(place&&selectedStack().isEmpty())return new Object[]{null,"nothing selected"};
             for(Direction side:sides){
                 orientForInteraction(player,facing,side,sneaky);
@@ -157,10 +211,7 @@ public abstract class AgentComponent extends AbstractManagedEnvironment implemen
                     if(hit instanceof EntityHitResult entityHit){
                         usedEquipment=true;
                         Entity entity=entityHit.getEntity();
-                        Set<Integer> old=new HashSet<>();
-                        for(ItemEntity item:level.getEntitiesOfClass(ItemEntity.class,entity.getBoundingBox().inflate(2)))old.add(item.getId());
                         if(isEquippedItemAllowed(player)&&player.interactOn(entity,InteractionHand.MAIN_HAND).consumesAction()){
-                            collectDrops(entity.blockPosition(),old);
                             action="item_interacted";
                         }
                     }

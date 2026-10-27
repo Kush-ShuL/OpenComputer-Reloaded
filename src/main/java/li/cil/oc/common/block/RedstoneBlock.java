@@ -18,6 +18,7 @@ public final class RedstoneBlock extends Block implements EntityBlock {
     public RedstoneBlock(Properties properties, Supplier<BlockEntityType<RedstoneBlockEntity>> type) { super(properties); this.type = type; }
     @Override public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
+        for(String line:net.minecraft.network.chat.Component.translatable("oc:tooltip.redstone").getString().split("\\[nl\\]"))tooltip.add(net.minecraft.network.chat.Component.literal(line));
         if (li.cil.oc.common.integration.projectred.ProjectRedIntegration.available()) {
             tooltip.add(net.minecraft.network.chat.Component.translatable("oc:tooltip.redstonecard.ProjectRed"));
         }

@@ -14,8 +14,9 @@ public final class Robot extends AgentComponent {
     private final ManagedEnvironment rom;
     public Robot(AgentHost host){super(host,"robot",Settings.get().bufferRobot);rom=li.cil.oc.api.FileSystem.asManagedEnvironment(li.cil.oc.api.FileSystem.fromClass(OpenComputers.class,"opencomputers","lua/component/robot"),"robot");}
     private RobotController robot(){return (RobotController)agent;}
+    @Override public java.util.Map<String,String> getDeviceInfo(){var info=new java.util.LinkedHashMap<>(super.getDeviceInfo());info.put("capacity",Integer.toString(robot().getContainerSize()));return info;}
     @Callback public Object[] getLightColor(Context context,Arguments args){return new Object[]{robot().info.lightColor};}
-    @Callback public Object[] setLightColor(Context context,Arguments args){robot().info.lightColor=args.checkInteger(0)&0xFFFFFF;agent.synchronize();context.pause(.1);return new Object[]{robot().info.lightColor};}
+    @Callback public Object[] setLightColor(Context context,Arguments args){robot().info.lightColor=args.checkInteger(0);agent.synchronize();context.pause(.1);return new Object[]{robot().info.lightColor};}
     @Callback public Object[] durability(Context context,Arguments args){var stack=agent.equipmentInventory().getItem(0);if(stack.isEmpty())return new Object[]{null,"no tool equipped"};var value=li.cil.oc.common.ToolDurabilityProviders.getDurability(stack);return value.isPresent()?new Object[]{value.getAsDouble()}:new Object[]{null,"tool cannot be damaged"};}
     @Callback public Object[] move(Context context,Arguments args){
         int local=args.checkInteger(0);if(local<0||local>3)throw new IllegalArgumentException("invalid side");Direction direction=agent.toGlobal(Direction.from3DDataValue(local));
@@ -25,7 +26,7 @@ public final class Robot extends AgentComponent {
         if(robot().move(direction)){context.pause(agent.delay("move"));return new Object[]{true};}
         node().changeBuffer(Settings.get().robotMoveCost);context.pause(.4);return new Object[]{null,"impossible move"};
     }
-    @Callback public Object[] turn(Context context,Arguments args){if(!node().tryChangeBuffer(-Settings.get().robotTurnCost))return new Object[]{null,"not enough energy"};robot().turn(args.checkBoolean(0));context.pause(agent.delay("turn"));return new Object[]{true};}
+    @Callback public Object[] turn(Context context,Arguments args){boolean clockwise=args.checkBoolean(0);if(!node().tryChangeBuffer(-Settings.get().robotTurnCost))return new Object[]{null,"not enough energy"};robot().turn(clockwise);context.pause(agent.delay("turn"));return new Object[]{true};}
     @Override public void onConnect(Node connected){if(connected==node()&&rom!=null&&rom.node()!=null){if(rom.node() instanceof Component component)component.setVisibility(Visibility.Network);node().connect(rom.node());}}
     @Override public void onMessage(Message message){if(message.name().equals("network.message")&&message.source()!=agent.node()&&message.data().length==1&&message.data()[0] instanceof Packet packet&&robot().proxy.externalNode()!=null)robot().proxy.externalNode().sendToReachable("network.message",packet);}
     @Override public void load(CompoundTag tag,HolderLookup.Provider registries){super.load(tag);if(rom!=null)rom.load(tag.getCompound("romRobot"),registries);}

@@ -22,7 +22,7 @@ public final class TabletManager {
     private static String assignId(ItemStack stack){String id=id(stack);if(id.isEmpty()){id=UUID.randomUUID().toString();var tag=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();tag.putString("oc:tablet",id);stack.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));}return id;}
     public static TabletHost get(ItemStack stack,Player holder){if(holder.level().isClientSide)throw new IllegalStateException("Tablet VMs live on the server");String id=assignId(stack);TabletHost host=HOSTS.get(id);
         if(host!=null&&host.stack()!=stack&&isInInventory(host.player(),host.stack())){var tag=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();tag.remove("oc:tablet");stack.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));id=assignId(stack);host=null;}
-        if(host!=null&&(host.world()!=holder.level()||host.player()!=holder)){ItemStack previous=host.stack();host.close(true);if(previous!=stack&&previous.has(DataComponents.CUSTOM_DATA))stack.set(DataComponents.CUSTOM_DATA,previous.get(DataComponents.CUSTOM_DATA));HOSTS.remove(id);host=null;}
+        if(host!=null&&host.world()!=holder.level()){ItemStack previous=host.stack();host.close(true);if(previous!=stack&&previous.has(DataComponents.CUSTOM_DATA))stack.set(DataComponents.CUSTOM_DATA,previous.get(DataComponents.CUSTOM_DATA));HOSTS.remove(id);host=null;}
         if(host==null){host=new TabletHost(id,stack,holder);HOSTS.put(id,host);}else host.touch(stack,holder);return host;
     }
     public static TabletHost peek(ItemStack stack){if(!li.cil.oc.util.SideTracker.isServer())return null;String id=id(stack);return id.isEmpty()?null:HOSTS.get(id);}

@@ -14,6 +14,7 @@ import net.minecraft.network.syncher.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -23,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
 /** Original free-flying machine, with quarter-block targets and bounded acceleration. */
-public final class DroneEntity extends Entity implements li.cil.oc.api.internal.Drone,AgentHost,MenuProvider,Analyzable {
+public final class DroneEntity extends Entity implements li.cil.oc.api.internal.Drone,AgentHost,MenuProvider,Analyzable,li.cil.oc.api.machine.Context {
     private static final EntityDataAccessor<Boolean> RUNNING=SynchedEntityData.defineId(DroneEntity.class,EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Float> TX=SynchedEntityData.defineId(DroneEntity.class,EntityDataSerializers.FLOAT),TY=SynchedEntityData.defineId(DroneEntity.class,EntityDataSerializers.FLOAT),TZ=SynchedEntityData.defineId(DroneEntity.class,EntityDataSerializers.FLOAT),ACCELERATION=SynchedEntityData.defineId(DroneEntity.class,EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Integer> LIGHT=SynchedEntityData.defineId(DroneEntity.class,EntityDataSerializers.INT),ENERGY=SynchedEntityData.defineId(DroneEntity.class,EntityDataSerializers.INT),MAX_ENERGY=SynchedEntityData.defineId(DroneEntity.class,EntityDataSerializers.INT),CAPACITY=SynchedEntityData.defineId(DroneEntity.class,EntityDataSerializers.INT),SELECTED=SynchedEntityData.defineId(DroneEntity.class,EntityDataSerializers.INT);
@@ -42,15 +43,23 @@ public final class DroneEntity extends Entity implements li.cil.oc.api.internal.
     private float angularVelocity;
     public DroneEntity(EntityType<? extends DroneEntity> type,Level level){super(type,level);blocksBuilding=true;}
     @Override protected void defineSynchedData(SynchedEntityData.Builder builder){builder.define(RUNNING,false);builder.define(TX,0f);builder.define(TY,0f);builder.define(TZ,0f);builder.define(ACCELERATION,0f);builder.define(LIGHT,0x66DD55);builder.define(ENERGY,0);builder.define(MAX_ENERGY,100);builder.define(CAPACITY,0);builder.define(SELECTED,0);builder.define(STATUS,"");}
-    public void initializeAfterPlacement(ItemStack stack,Player player,Vec3 position){setPos(position);info.load(stack,level().registryAccess());owner=player instanceof AgentPlayer agent?agent.agent().ownerName():player.getGameProfile().getName();ownerId=player instanceof AgentPlayer agent?agent.agent().ownerUUID():AgentPlayer.determineUUID(player.getUUID());updateCapacity();runtime.initialize();if(runtime.control()!=null)runtime.control().node().changeBuffer(info.storedEnergy-runtime.control().node().localBuffer());setTarget(position);loaded=true;}
+    public void initializeAfterPlacement(ItemStack stack,Player player,Vec3 position){setPos(position);info.load(stack,level().registryAccess());owner=player instanceof AgentPlayer agent?agent.agent().ownerName():player.getGameProfile().getName();ownerId=player instanceof AgentPlayer agent?agent.agent().ownerUUID():player.getUUID();updateCapacity();runtime.initialize();if(runtime.control()!=null)runtime.control().node().changeBuffer(info.storedEnergy-runtime.control().node().localBuffer());setTarget(position);loaded=true;}
     public void preparePowerUp(){setTarget(new Vec3(Math.floor(getX())+.5,Math.round(getY())+.5,Math.floor(getZ())+.5));setAcceleration(.1f);runtime.initialize();}
     public boolean running(){return entityData.get(RUNNING);}
+    @Override public boolean isRunning(){return running();}
+    @Override public boolean canInteract(String name){return machine().canInteract(name);}
+    @Override public boolean isPaused(){return machine().isPaused();}
+    @Override public boolean start(){if(level().isClientSide||machine().isRunning())return false;preparePowerUp();return machine().start();}
+    @Override public boolean pause(double seconds){return machine().pause(seconds);}
+    @Override public boolean stop(){return machine().stop();}
+    @Override public void consumeCallBudget(double cost){machine().consumeCallBudget(cost);}
+    @Override public boolean signal(String name,Object... args){return machine().signal(name,args);}
     public int energy(){return entityData.get(ENERGY);}
     public int energyCapacity(){return entityData.get(MAX_ENERGY);}
     public int inventoryCapacity(){return entityData.get(CAPACITY);}
     private void updateCapacity(){int capacity=0;for(ItemStack stack:info.components){var driver=Driver.driverFor(stack,getClass());if(driver instanceof li.cil.oc.api.driver.item.Inventory inventory)capacity+=Math.max(1,inventory.inventoryCapacity(stack)/4);}entityData.set(CAPACITY,Math.min(8,capacity));}
     public String statusText(){return entityData.get(STATUS);}
-    public void setStatusText(String text){entityData.set(STATUS,text.lines().limit(2).map(line->line.substring(0,Math.min(10,line.length()))).reduce((a,b)->a+"\n"+b).orElse(""));}
+    public void setStatusText(String text){entityData.set(STATUS,text==null?"":text.lines().limit(2).map(line->line.substring(0,Math.min(10,line.length()))).reduce((a,b)->a+"\n"+b).orElse(""));}
     public int lightColor(){return entityData.get(LIGHT);}
     public void setLightColor(int color){entityData.set(LIGHT,color);}
     public float acceleration(){return entityData.get(ACCELERATION);}
@@ -58,6 +67,10 @@ public final class DroneEntity extends Entity implements li.cil.oc.api.internal.
     @Override public Vec3 getTarget(){return new Vec3(entityData.get(TX),entityData.get(TY),entityData.get(TZ));}
     @Override public void setTarget(Vec3 value){entityData.set(TX,Math.round((float)value.x*4)/4f);entityData.set(TY,Math.round((float)value.y*4)/4f);entityData.set(TZ,Math.round((float)value.z*4)/4f);}
     @Override public Vec3 getVelocity(){return getDeltaMovement();}
+    @Override public void lerpTo(double x,double y,double z,float yaw,float pitch,int steps){
+        if(!running()||distanceToSqr(x,y,z)>1)super.lerpTo(x,y,z,yaw,pitch,steps);
+        else setTarget(new Vec3(x,y,z));
+    }
     @Override public void tick(){
         super.tick();
         if(!level().isClientSide){runtime.initialize();if(isInWaterOrBubble()||isInLava())machine().stop();runtime.tick();entityData.set(RUNNING,machine().isRunning());if(runtime.control()!=null){entityData.set(ENERGY,(int)Math.round(runtime.control().node().globalBuffer()));entityData.set(MAX_ENERGY,(int)runtime.control().node().globalBufferSize());}if(tier()==3&&runtime.control()!=null)runtime.control().node().changeBuffer(Double.POSITIVE_INFINITY);}
@@ -66,13 +79,16 @@ public final class DroneEntity extends Entity implements li.cil.oc.api.internal.
             if(--nextAngularChange<0){if(angularVelocity!=0){angularVelocity=0;nextAngularChange=20;}else{angularVelocity=random.nextBoolean()?.1f:-.1f;nextAngularChange=100;}}
             for(int i=0;i<4;i++)for(int j=0;j<2;j++)flapAngles[i][j]=flapAngles[i][j]*.7f+targetFlapAngles[i][j]*.3f;bodyAngle+=angularVelocity;
         }
+        var middle=BlockPos.containing(getX(),(getBoundingBox().minY+getBoundingBox().maxY)/2,getZ());
+        noPhysics=level().getBlockState(middle).isCollisionShapeFullBlock(level(),middle);
+        if(noPhysics)moveTowardsClosestSpace(getX(),(getBoundingBox().minY+getBoundingBox().maxY)/2,getZ());
         Vec3 velocity=getDeltaMovement();
         if(running()){
             Vec3 offset=getTarget().subtract(position());double distance=offset.length();
             if(distance>0&&(distance>.005||velocity.lengthSqr()>.005)){Vec3 accelerated=velocity.add(offset.scale(Math.min(acceleration(),distance)/distance));velocity=new Vec3(Math.max(-.4,Math.min(.4,accelerated.x)),Math.max(-.4,Math.min(.4,accelerated.y)),Math.max(-.4,Math.min(.4,accelerated.z)));}
             else{velocity=Vec3.ZERO;setPos(getTarget());}
         }else velocity=velocity.add(0,-.05,0);
-        setDeltaMovement(velocity);move(MoverType.SELF,velocity);
+        setDeltaMovement(velocity);move(MoverType.SELF,velocity);velocity=getDeltaMovement();
         double groundDrag=running()?.8:level().getBlockState(blockPosition().below()).getBlock().getFriction()*.8;
         setDeltaMovement(velocity.multiply(groundDrag,onGround()&&!running()?-.4:.8,groundDrag));
     }
@@ -81,7 +97,7 @@ public final class DroneEntity extends Entity implements li.cil.oc.api.internal.
     @Override public boolean hurt(net.minecraft.world.damagesource.DamageSource source,float damage){if(source.getEntity()!=null&&running()){Vec3 direction=source.getEntity().getEyePosition().subtract(position()).normalize();if(!level().isClientSide){if(Settings.get().inputUsername)machine().signal("hit",direction.x,direction.z,direction.y,source.getEntity().getName().getString());else machine().signal("hit",direction.x,direction.z,direction.y);}setDeltaMovement(getDeltaMovement().subtract(direction).scale(.5));}return false;}
     @Override public InteractionResult interact(Player player,InteractionHand hand){if(isRemoved())return InteractionResult.PASS;if(!level().isClientSide&&canInteract(player)){if(player.isShiftKeyDown()){if(li.cil.oc.common.integration.WrenchTools.isWrench(player.getItemInHand(hand)))dropAndRemove();else if(!machine().isRunning()){preparePowerUp();machine().start();}}else player.openMenu(this,buffer->AgentMenu.writeOpen(this,buffer));}return InteractionResult.sidedSuccess(level().isClientSide);}
     public boolean canInteract(Player player){return !isRemoved()&&player.level()==level()&&player.distanceToSqr(this)<64&&(machine()==null||machine().canInteract(player.getGameProfile().getName()));}
-    public void dropAndRemove(){if(level().isClientSide)return;runtime.close();info.storedEnergy=energy();var stack=info.createItemStack(level().registryAccess());spawnAtLocation(stack);for(int i=0;i<inventory.getContainerSize();i++){ItemStack held=inventory.removeItemNoUpdate(i);if(!held.isEmpty())spawnAtLocation(held);}discard();}
+    public void dropAndRemove(){if(level().isClientSide||isRemoved())return;int stored=runtime.control()==null?0:(int)runtime.control().node().localBuffer();runtime.close();info.storedEnergy=stored;var stack=info.createItemStack(level().registryAccess());ItemEntity dropped=spawnAtLocation(stack);if(dropped!=null)dropped.setPickUpDelay(15);for(int i=0;i<inventory.getContainerSize();i++){ItemStack held=inventory.removeItemNoUpdate(i);if(!held.isEmpty())spawnAtLocation(held);}discard();}
     @Override public void remove(RemovalReason reason){if(!level().isClientSide&&reason!=RemovalReason.CHANGED_DIMENSION)runtime.close();super.remove(reason);}
     @Override public Entity changeDimension(net.minecraft.world.level.portal.DimensionTransition transition){
         Vec3 offset=getTarget().subtract(position());

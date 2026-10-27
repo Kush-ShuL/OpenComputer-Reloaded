@@ -2,10 +2,12 @@ package li.cil.oc.common.item.data;
 
 import li.cil.oc.Constants;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import java.util.Arrays;
 
 public class TabletData extends ItemData {
@@ -16,6 +18,8 @@ public class TabletData extends ItemData {
     public ItemStack container = ItemStack.EMPTY;
     public TabletData() { super(Constants.ItemName.Tablet); Arrays.fill(items, ItemStack.EMPTY); }
     public TabletData(ItemStack stack, HolderLookup.Provider registries) { this(); load(stack, registries); }
+    public void applyItemProperties(ItemStack stack){stack.set(DataComponents.RARITY,tier==0?Rarity.COMMON:tier==1?Rarity.UNCOMMON:tier==2?Rarity.RARE:Rarity.EPIC);}
+    @Override public void save(ItemStack stack,HolderLookup.Provider registries){super.save(stack,registries);applyItemProperties(stack);}
     @Override public void load(CompoundTag tag, HolderLookup.Provider registries) {
         Arrays.fill(items, ItemStack.EMPTY);
         for (Tag value : tag.getList("oc:items", Tag.TAG_COMPOUND)) {

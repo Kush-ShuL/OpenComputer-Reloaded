@@ -12,13 +12,13 @@ import java.util.*;
 public final class PotionProvider extends AbstractProvider {
     public static final PotionProvider INSTANCE=new PotionProvider();
     private PotionProvider(){super("c29e4eec-5a46-479a-9b3d-ad0f06da784a");}
-    public Iterable<Behavior> createBehaviors(Player player){List<Behavior> result=new ArrayList<>();for(String name:Settings.get().nanomachinePotionWhitelist){ResourceLocation id=ResourceLocation.tryParse(name);if(id!=null)BuiltInRegistries.MOB_EFFECT.getHolder(id).ifPresent(effect->result.add(new PotionBehavior(effect,player)));}return result;}
+    public Iterable<Behavior> createBehaviors(Player player){Set<Holder<MobEffect>> eligible=new LinkedHashSet<>();for(String name:Settings.get().nanomachinePotionWhitelist){ResourceLocation id=ResourceLocation.tryParse(name);if(id!=null)BuiltInRegistries.MOB_EFFECT.getHolder(id).ifPresent(eligible::add);}return BuiltInRegistries.MOB_EFFECT.holders().filter(eligible::contains).map(effect->(Behavior)new PotionBehavior(effect,player)).toList();}
     protected void writeBehaviorToNBT(Behavior behavior,CompoundTag nbt){nbt.putString("potionId",BuiltInRegistries.MOB_EFFECT.getKey(((PotionBehavior)behavior).effect.value()).toString());}
     protected Behavior readBehaviorFromNBT(Player player,CompoundTag nbt){ResourceLocation id=ResourceLocation.tryParse(nbt.getString("potionId"));return id==null?null:BuiltInRegistries.MOB_EFFECT.getHolder(id).map(effect->(Behavior)new PotionBehavior(effect,player)).orElse(null);}
     public static final class PotionBehavior extends AbstractBehavior {
         final Holder<MobEffect> effect;PotionBehavior(Holder<MobEffect> effect,Player player){super(player);this.effect=effect;}
-        public String getNameHint(){String name=effect.value().getDescriptionId();return name.startsWith("effect.minecraft.")?name.substring(17):name;}
+        public String getNameHint(){ResourceLocation key=BuiltInRegistries.MOB_EFFECT.getKey(effect.value());if(key.getNamespace().equals("minecraft"))return switch(key.getPath()){case "speed"->"moveSpeed";case "slowness"->"moveSlowdown";case "haste"->"digSpeed";case "mining_fatigue"->"digSlowDown";case "strength"->"damageBoost";case "instant_health"->"heal";case "instant_damage"->"harm";case "jump_boost"->"jump";case "nausea"->"confusion";case "fire_resistance"->"fireResistance";case "water_breathing"->"waterBreathing";case "night_vision"->"nightVision";case "health_boost"->"healthBoost";case "bad_luck","unluck"->"unluck";default->key.getPath();};String name=effect.value().getDescriptionId();return name.startsWith("potion.")?name.substring(7):name;}
         public void onDisable(DisableReason reason){player.removeEffect(effect);}
-        public void update(){if(!player.level().isClientSide){Controller controller=li.cil.oc.api.Nanomachines.getController(player);if(controller!=null)player.addEffect(new MobEffectInstance(effect,600,Math.max(0,controller.getInputCount(this)-1),true,Settings.get().enableNanomachinePfx));}}
+        public void update(){Controller controller=li.cil.oc.api.Nanomachines.getController(player);if(controller!=null)player.addEffect(new MobEffectInstance(effect,600,controller.getInputCount(this)-1,true,Settings.get().enableNanomachinePfx));}
     }
 }

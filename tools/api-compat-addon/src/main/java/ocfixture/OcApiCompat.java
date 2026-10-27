@@ -46,7 +46,7 @@ public final class OcApiCompat {
         bus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(() -> {
             if (Boolean.getBoolean("ocfixture.manualClient")) return;
             if (HostPersistenceContract.enabled()) { HostPersistenceContract.register(); return; }
-            if (DeviceContract.enabled()) { if (Boolean.getBoolean("ocfixture.hostBatchOnly")) MachineHostsContract.registerDrivers(); if (Boolean.getBoolean("ocfixture.advancedBatchOnly")) { SchedulerContract.registerDrivers(); CheckpointContract.register(); } return; }
+            if (DeviceContract.enabled()) { if (Boolean.getBoolean("ocfixture.hostBatchOnly")) MachineHostsContract.registerDrivers(); if (Boolean.getBoolean("ocfixture.advancedBatchOnly")) { SchedulerContract.registerDrivers(); CheckpointContract.register(); } if(Boolean.getBoolean("ocfixture.platformBatchOnly"))TerminalNanoContract.register(); return; }
             if (MekanismContract.enabled()) return;
             if (ae2Scenario()) return;
             if (EnderStorageContract.enabled()) return;

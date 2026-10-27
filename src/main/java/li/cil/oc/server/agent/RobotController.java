@@ -89,10 +89,11 @@ public final class RobotController implements li.cil.oc.api.internal.Robot,Agent
     private void beforeEquipmentChange(int slot){if(slot>0&&!loading&&runtime.initialized()){equipmentMutation=true;runtime.removeComponent(slot);}}
     private void equipmentChanged(){boolean componentsChanged=equipmentMutation;equipmentMutation=false;for(int slot=1;slot<4;slot++){ItemStack current=equipment.items.get(slot);if(installedEquipment[slot-1]!=current){componentsChanged=true;installedEquipment[slot-1]=current;}}if(componentsChanged&&!loading&&runtime.initialized())runtime.rebuild();InventoryUpgradeCapacity.reconcileRobot(this);inventoryChanged();synchronize();}
     @Override public void synchronize(){markChanged();if(world()!=null&&!world().isClientSide)proxy.synchronize();}
-    @Override public void animate(double seconds,int kind){animationTotal=animationTicks=Math.max(1,(int)Math.ceil(seconds*20));animationKind=kind;synchronize();}
+    @Override public void animate(double seconds,int kind){animationTotal=animationTicks=Math.max(1,(int)(seconds*20));animationKind=kind;synchronize();}
     public void tick(){
         if(animationTicks>0&&--animationTicks==0){animationKind=0;moveFrom=null;}
-        if(world()==null||world().isClientSide)return;
+        if(world()==null)return;
+        if(world().isClientSide){tickItems();return;}
         if(dirty.getAndSet(false))proxy.setChanged();runtime.tick();redstone.tick();
         InventoryUpgradeCapacity.reconcileRobot(this);
         boolean running=machine().isRunning();proxy.clientRunning=running;
@@ -100,6 +101,13 @@ public final class RobotController implements li.cil.oc.api.internal.Robot,Agent
         if(tier()==3&&runtime.control()!=null)runtime.control().node().changeBuffer(Double.POSITIVE_INFINITY);
         if(runtime.control()!=null){info.totalEnergy=(int)runtime.control().node().globalBuffer();info.robotEnergy=(int)runtime.control().node().localBuffer();}
         if(world().getGameTime()%20==0)synchronize();
+        tickItems();
+    }
+    private void tickItems(){
+        for(int slot=0;slot<4+inventory.getContainerSize();slot++){
+            ItemStack stack=slot<4?equipment.getItem(slot):inventory.getItem(slot-4);
+            if(!stack.isEmpty())try{stack.inventoryTick(world(),world().isClientSide?null:runtime.player(),slot,slot==0);}catch(NullPointerException error){if(!world().isClientSide)throw error;}
+        }
     }
     public boolean move(Direction direction){
         var level=(ServerLevel)world();BlockPos old=blockPosition(),target=old.relative(direction);
@@ -111,11 +119,12 @@ public final class RobotController implements li.cil.oc.api.internal.Robot,Agent
             li.cil.oc.common.block.RobotBlock.MOVING.set(this);
             if(!level.setBlock(target,previous.getBlockState(),3)||!(level.getBlockEntity(target) instanceof RobotBlockEntity next)||next.controller()!=this){proxy=previous;level.setBlock(target,before,3);return false;}
             previous.movingAway=true;level.setBlock(old,Agents.AFTERIMAGE.get().defaultBlockState(),3);level.scheduleTick(old,Agents.AFTERIMAGE.get(),Math.max(1,(int)(delay("move")*20)+2));
-            moveFrom=old;animate(delay("move")+0.1,2);redstone.rescan();li.cil.oc.api.Network.joinOrCreateNetwork(next);NeoForge.EVENT_BUS.post(new RobotMoveEvent.Post(this,direction));return true;
+            moveFrom=old;animate(delay("move"),2);redstone.rescan();li.cil.oc.api.Network.joinOrCreateNetwork(next);NeoForge.EVENT_BUS.post(new RobotMoveEvent.Post(this,direction));return true;
         }finally{li.cil.oc.common.block.RobotBlock.MOVING.remove();}
     }
     public boolean turn(boolean clockwise){var state=proxy.getBlockState();Direction facing=clockwise?facing().getClockWise():facing().getCounterClockWise();world().setBlock(blockPosition(),state.setValue(li.cil.oc.common.block.RobotBlock.FACING,facing),3);animate(delay("turn"),clockwise?3:4);redstone.rescan();return true;}
-    public ItemStack dropStack(){runtime.saveComponents();if(runtime.control()!=null){info.totalEnergy=(int)runtime.control().node().globalBuffer();info.robotEnergy=(int)runtime.control().node().localBuffer();}return info.createItemStack(world().registryAccess());}
+    public void prepareDrop(){if(runtime.control()!=null){info.totalEnergy=(int)runtime.control().node().globalBuffer();info.robotEnergy=(int)runtime.control().node().localBuffer();}runtime.close();}
+    public ItemStack dropStack(){runtime.saveComponents();if(runtime.control()!=null){if(runtime.control().node().network()!=null)info.totalEnergy=(int)runtime.control().node().globalBuffer();info.robotEnergy=(int)runtime.control().node().localBuffer();}return info.createItemStack(world().registryAccess());}
     public void load(CompoundTag tag,HolderLookup.Provider registries){loading=true;try{info.load(tag,registries);CompoundTag equipmentTag=tag.getCompound("oc:equipment"),inventoryTag=tag.getCompound("oc:inventory");equipment.load(equipmentTag,registries);inventory.load(inventoryTag,registries);owner=tag.contains("oc:owner")?tag.getString("oc:owner"):owner;if(tag.hasUUID("oc:ownerUuid"))ownerId=tag.getUUID("oc:ownerUuid");selected=tag.getInt("oc:selectedSlot");tank=tag.getInt("oc:selectedTank");animationTicks=tag.getInt("oc:animationTicksLeft");animationTotal=tag.getInt("oc:animationTicksTotal");animationKind=tag.getInt("oc:animationKind");moveFrom=tag.contains("oc:moveFrom")?BlockPos.of(tag.getLong("oc:moveFrom")):null;redstone.load(tag);runtime.load(tag);}finally{for(int slot=1;slot<4;slot++)installedEquipment[slot-1]=equipment.items.get(slot);loading=false;}}
     public void save(CompoundTag tag,HolderLookup.Provider registries){runtime.save(tag,registries);info.save(tag,registries);CompoundTag equip=new CompoundTag(),main=new CompoundTag();equipment.save(equip,registries);inventory.save(main,registries);tag.put("oc:equipment",equip);tag.put("oc:inventory",main);tag.putString("oc:owner",owner);tag.putUUID("oc:ownerUuid",ownerId);tag.putInt("oc:selectedSlot",selected);tag.putInt("oc:selectedTank",tank);tag.putInt("oc:animationTicksLeft",animationTicks);tag.putInt("oc:animationTicksTotal",animationTotal);tag.putInt("oc:animationKind",animationKind);if(moveFrom!=null)tag.putLong("oc:moveFrom",moveFrom.asLong());redstone.save(tag);}
     public void writeClient(CompoundTag tag,HolderLookup.Provider registries){info.save(tag,registries);CompoundTag equip=new CompoundTag(),main=new CompoundTag();equipment.save(equip,registries);inventory.save(main,registries);tag.put("oc:equipment",equip);tag.put("oc:inventory",main);tag.putString("oc:owner",owner);tag.putUUID("oc:ownerUuid",ownerId);tag.putInt("oc:selectedSlot",selected);tag.putInt("oc:animationTicksLeft",animationTicks);tag.putInt("oc:animationTicksTotal",animationTotal);tag.putInt("oc:animationKind",animationKind);if(moveFrom!=null)tag.putLong("oc:moveFrom",moveFrom.asLong());tag.putBoolean("oc:isRunning",machine()!=null&&machine().isRunning());if(node()!=null)tag.putString("oc:address",node().address());redstone.saveClient(tag);li.cil.oc.common.network.AgentNetworking.writeScreen(runtime.screen(),tag);}

@@ -68,10 +68,9 @@ public class TerminalServer implements EnvironmentHost, Analyzable, RackMountabl
         if (keyboard == null) {
             keyboard = new li.cil.oc.server.component.Keyboard(this);
             keyboard.setUsableOverride((ignored, player) -> {
-                for (ItemStack held : List.of(player.getMainHandItem(), player.getOffhandItem()))
-                    if (Items.get(held) != null && Items.get(held) == Items.get(Constants.ItemName.Terminal) &&
-                        sidedKeys().contains(held.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getString("oc:key"))) return true;
-                return false;
+                ItemStack held=player.getMainHandItem();
+                return Items.get(held) != null && Items.get(held) == Items.get(Constants.ItemName.Terminal) &&
+                    sidedKeys().contains(held.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().getString("oc:key"));
             });
         }
         return keyboard;

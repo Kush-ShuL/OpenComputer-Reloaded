@@ -61,6 +61,9 @@ public final class PacketSender {
         if(pattern==null||pattern.length()>64)throw new IllegalArgumentException("invalid beep pattern");
         send(world,x,y,z,new Speaker(world.dimension().location(),x,y,z,1000,0,pattern));
     }
+    public static void playLocalSound(Level world,double x,double y,double z,String pattern){
+        if(FMLEnvironment.dist==Dist.CLIENT&&world.isClientSide)ClientSpeaker.receive(new Speaker(world.dimension().location(),x,y,z,1000,0,pattern));
+    }
     private static void send(Level world,double x,double y,double z,Speaker message){
         if(world instanceof ServerLevel level)sendToPlayersNear(level,x,y,z,Settings.get().maxNetworkClientSoundPacketDistance,message);
     }

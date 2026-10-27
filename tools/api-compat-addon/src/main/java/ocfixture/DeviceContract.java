@@ -127,6 +127,13 @@ public final class DeviceContract {
                 if(focus.equals("all")||focus.equals("debug"))DebugCardContract.start(level,origin.south(84),results);
                 if(focus.equals("all")||focus.equals("os"))OperatingSystemContract.start(level,origin.south(128),results);return;
             }
+            if(Boolean.getBoolean("ocfixture.platformBatchOnly")){
+                robotDone=rackDone=true;List<String> focus=List.of(System.getProperty("ocfixture.platformFocus","all").split(","));require(List.of("all","agents","portable","terminal","redstone").containsAll(focus),"Unknown platform fixture focus");
+                if(focus.contains("all")||focus.contains("agents"))RobotDroneContract.start(level,origin.south(12),results);
+                if(focus.contains("all")||focus.contains("portable"))PortableDevicesContract.start(level,origin.south(64),results);
+                if(focus.contains("all")||focus.contains("terminal"))TerminalNanoContract.start(level,origin.south(128),results);
+                if(focus.contains("all")||focus.contains("redstone"))RedstoneComputerCraftContract.start(level,origin.south(192),results);return;
+            }
             if(Boolean.getBoolean("ocfixture.vanillaOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;VanillaContract.start(level,origin.south(12),results);return;}
             if(Boolean.getBoolean("ocfixture.forgeEnergyOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;ForgeEnergyContract.start(level,origin.south(12),results);return;}
             require(CreativeTab.instance!=null,"OC did not publish its creative tab");
@@ -229,7 +236,8 @@ public final class DeviceContract {
             PrintingContract.tick();
             DebugCardContract.tick();
             OperatingSystemContract.tick();
-            if(robotDone&&rackDone&&!DiskConcurrencyContract.isRunning()&&!AgentFluidContract.isRunning()&&!ForgeEnergyContract.isRunning()&&!ExperienceContract.isRunning()&&!GeneratorContract.isRunning()&&!VanillaContract.isRunning()&&!RecipeConfigContract.isRunning()&&!EnderIOContract.isRunning()&&!Tis3dContract.isRunning()&&!UpgradeStorageContract.isRunning()&&!FlightUpgradeContract.isRunning()&&!CraftingTradingContract.isRunning()&&!ChunkloaderContract.isRunning()&&!InventoryControlContract.isRunning()&&!PowerDevicesContract.isRunning()&&!WorldSensorsContract.isRunning()&&!NetworkDevicesContract.isRunning()&&!RemoteAdapterContract.isRunning()&&!StorageFileSystemContract.isRunning()&&!ProductionDevicesContract.isRunning()&&!PlayerToolsContract.isRunning()&&!MachineHostsContract.isRunning()&&!GraphicsCardContract.isRunning()&&!HologramContract.isRunning()&&!InternetCardContract.isRunning()&&!SchedulerContract.isRunning()&&!CheckpointContract.isRunning()&&!ScreenKeyboardContract.isRunning()&&!PrintingContract.isRunning()&&!DebugCardContract.isRunning()&&!OperatingSystemContract.isRunning())finish();
+            RobotDroneContract.tick();PortableDevicesContract.tick();TerminalNanoContract.tick();RedstoneComputerCraftContract.tick();
+            if(robotDone&&rackDone&&!DiskConcurrencyContract.isRunning()&&!AgentFluidContract.isRunning()&&!ForgeEnergyContract.isRunning()&&!ExperienceContract.isRunning()&&!GeneratorContract.isRunning()&&!VanillaContract.isRunning()&&!RecipeConfigContract.isRunning()&&!EnderIOContract.isRunning()&&!Tis3dContract.isRunning()&&!UpgradeStorageContract.isRunning()&&!FlightUpgradeContract.isRunning()&&!CraftingTradingContract.isRunning()&&!ChunkloaderContract.isRunning()&&!InventoryControlContract.isRunning()&&!PowerDevicesContract.isRunning()&&!WorldSensorsContract.isRunning()&&!NetworkDevicesContract.isRunning()&&!RemoteAdapterContract.isRunning()&&!StorageFileSystemContract.isRunning()&&!ProductionDevicesContract.isRunning()&&!PlayerToolsContract.isRunning()&&!MachineHostsContract.isRunning()&&!GraphicsCardContract.isRunning()&&!HologramContract.isRunning()&&!InternetCardContract.isRunning()&&!SchedulerContract.isRunning()&&!CheckpointContract.isRunning()&&!ScreenKeyboardContract.isRunning()&&!PrintingContract.isRunning()&&!DebugCardContract.isRunning()&&!OperatingSystemContract.isRunning()&&!RobotDroneContract.isRunning()&&!PortableDevicesContract.isRunning()&&!TerminalNanoContract.isRunning()&&!RedstoneComputerCraftContract.isRunning())finish();
         }
         void tickRobot(){
             Machine machine=robot.machine();
@@ -331,6 +339,7 @@ public final class DeviceContract {
             PrintingContract.close();
             DebugCardContract.close();
             OperatingSystemContract.close();
+            RobotDroneContract.close();PortableDevicesContract.close();TerminalNanoContract.close();RedstoneComputerCraftContract.close();
             if(player!=null)player.closeFixtureMenu();if(robot!=null){robot.machine().stop();robot.equipmentInventory().clearContent();robot.mainInventory().clearContent();}if(tablet!=null){tablet.machine().stop();tablet.machine().node().remove();}
             for(Probe probe:probes)probe.node().remove();probes.clear();
             var entries=new ArrayList<>(restored.entrySet());Collections.reverse(entries);for(var entry:entries){if(level.getBlockEntity(entry.getKey()) instanceof Rack existing)existing.clearContent();level.setBlock(entry.getKey(),entry.getValue(),3);}restored.clear();

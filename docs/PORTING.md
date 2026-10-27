@@ -67,8 +67,8 @@ have been connected to registration. These additions require interactive
 acceptance; compilation does not establish their rendering or world behavior.
 The bundled-redstone core retains all sixteen channels, provider aggregation,
 per-color events and NBT. The opt-in CC:Tweaked bridge registers both input and
-output providers against that same state; its full sixteen-channel gameplay
-acceptance is outstanding. ProjectRed now uses the same state through its modern
+output providers against that same state; its real sixteen-channel CC Lua
+exchange passed the platform batch below. ProjectRed uses the same state through its modern
 optional public API, with a real framed-wire scenario described below. Other
 bundled and wireless redstone bridges still need migration or acceptance for
 supported modern runtimes.
@@ -272,7 +272,7 @@ no matching integration blacklist entry. It is disabled by default. Windows
 dedicated-server contracts passed with CC installed but compatibility disabled,
 and with compatibility enabled: real relay packets and modem events, Adapter
 computer calls, and two-way disk mount I/O, labels and remount identity. See
-[the integration details](computercraft-integration.md) for public-API limitations.
+[the integration details](computercraft-integration.md) for task, persistence and version compatibility.
 
 Earlier Windows testing exposed texture/layout problems, fractional energy
 accounting errors, host-thread deadlocks and native-library class-loader issues.
@@ -494,8 +494,8 @@ lowercase packaged diagram paths resolve, while inline code uses the OC font.
 See [player manual](player-manual.md). These runs do not change the shared
 multiplayer, visual, translation or final release checklist items.
 
-The systems/device batch closes C13, C14, D10, D21, D30, D31 and D37. The fixed
-checklist is now 93/120 complete with 27 remaining. Windows NeoForge 21.1.224
+The systems/device batch closed C13, C14, D10, D21, D30, D31 and D37, bringing the
+fixed checklist to 93/120 complete with 27 remaining at that point. Windows NeoForge 21.1.224
 `systems-20261027-f4` passed the complete Debug Card and printer/print contracts,
 plus original OpenOS and Plan9k installation through physical keyboard input,
 normal shutdown, installation-disk removal, independent HDD boot, actual file
@@ -510,6 +510,28 @@ See [operating systems](operating-systems.md), [Debug Card](debug-card.md),
 New source fixes include RGB normalization for default/loaded screen colors so
 recolored screens merge, and tank-only Debug Card fluid access. Shared client
 appearance, remote packets and full menus remain in their existing C items.
+
+The subsequent parallel platform batch closes D15, D24, D34, D36, D39, T12, T13
+and I04. The fixed checklist is now **101/120 complete, with 19 remaining**.
+Windows NeoForge 21.1.224 `platform-20261027-g4` passed the individual portable,
+terminal and nanomachine contracts; its overall failure came from the separate
+agent and CC fixture paths. Focused `platform-20261027-g5` passed redstone, a
+real CC generic inventory and disk-booted CC Lua exchanging all sixteen bundled
+channels in both directions. Focused `platform-20261027-g8` passed robot motion,
+actual harvesting/drop pickup/tool events and drone placement, callbacks, NBT
+and dismantling. It fixes the original swing endpoint calculation and modern
+vanilla's direct reads of the fake player's native tool inventory. Unchanged
+native/upgrade/fluid/cold-host proofs remain applicable; shared C19/C20/C23
+player transport, visuals and menus retain their acceptance scope. See
+[robots/drones](robot-and-drone.md), [portable hosts](microcontroller-and-tablet.md),
+[redstone](redstone.md), [terminals/nanomachines](terminal-and-nanomachines.md)
+and [CC compatibility](computercraft-integration.md).
+
+The eight unfinished legacy integrations now have a concrete
+[official-target inventory](legacy-integration-targets.md): six have no confirmed
+official usable 1.21.1 NeoForge target, Forestry CE has a modern target, and
+Railcraft Reborn has a modern target with changed WorldSpike behavior. All eight
+remain on the fixed checklist; target research does not count as migration.
 
 The standalone SDK has successfully compiled and published to Maven Local.
 A separately compiled addon has passed on a Windows dedicated server: legacy

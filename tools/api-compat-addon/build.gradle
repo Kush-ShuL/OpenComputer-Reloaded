@@ -137,6 +137,8 @@ neoForge {
             systemProperty 'ocfixture.advancedBatchOnly', providers.gradleProperty('ocAdvancedBatchOnly').getOrElse('false')
             systemProperty 'ocfixture.systemsBatchOnly', providers.gradleProperty('ocSystemsBatchOnly').getOrElse('false')
             systemProperty 'ocfixture.systemsFocus', providers.gradleProperty('ocSystemsFocus').getOrElse('all')
+            systemProperty 'ocfixture.platformBatchOnly', providers.gradleProperty('ocPlatformBatchOnly').getOrElse('false')
+            systemProperty 'ocfixture.platformFocus', providers.gradleProperty('ocPlatformFocus').getOrElse('all')
             systemProperty 'ocfixture.vanillaOnly', providers.gradleProperty('ocVanillaOnly').getOrElse('false')
         }
         hostPersistenceServer {
@@ -584,6 +586,9 @@ opencomputers.internet.maxTcpConnections = 4
         }
         if (providers.gradleProperty('ocSystemsBatchOnly').getOrElse('false') == 'true') {
             settings.append('\nopencomputers.debug.debugCardAccess = "whitelist"\n', 'UTF-8')
+        }
+        if (providers.gradleProperty('ocPlatformBatchOnly').getOrElse('false') == 'true') {
+            settings.append('\nopencomputers.nanomachines.commandRange = 2\n', 'UTF-8')
         }
         if (providers.gradleProperty('ocRecipeConfigOnly').getOrElse('false') == 'true') {
             new File(settings.parentFile, 'user.recipes').text = 'include file("default.recipes")\ninclude file("fixture.recipes")\n'

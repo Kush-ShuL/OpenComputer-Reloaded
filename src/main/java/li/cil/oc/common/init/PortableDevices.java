@@ -23,9 +23,7 @@ public final class PortableDevices {
     private static final DeferredRegister<BlockEntityType<?>> TYPES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE,"opencomputers");
     public static final Supplier<MicrocontrollerBlock> MICROCONTROLLER=BLOCKS.register("microcontroller",()->new MicrocontrollerBlock(BlockBehaviour.Properties.of().strength(2,5).sound(SoundType.METAL)));
     public static final Supplier<BlockEntityType<MicrocontrollerBlockEntity>> MICROCONTROLLER_TYPE=TYPES.register("microcontroller",()->BlockEntityType.Builder.of((pos,state)->new MicrocontrollerBlockEntity(PortableDevices.MICROCONTROLLER_TYPE.get(),pos,state),MICROCONTROLLER.get()).build(null));
-    public static final Supplier<BlockItem> MICROCONTROLLER_ITEM=ITEMS.register("microcontroller",()->new BlockItem(MICROCONTROLLER.get(),new Item.Properties().stacksTo(1)){
-        @Override public void appendHoverText(ItemStack stack,Item.TooltipContext context,List<Component> tooltip,TooltipFlag flag){super.appendHoverText(stack,context,tooltip,flag);for(String line:Component.translatable("oc:tooltip.microcontroller").getString().split("\\[nl\\]"))tooltip.add(Component.literal(line));if(flag.isAdvanced()&&context.registries()!=null)for(ItemStack part:new MicrocontrollerData(stack,context.registries()).components)if(!part.isEmpty())tooltip.add(Component.literal("- ").append(part.getHoverName()));}
-    });
+    public static final Supplier<BlockItem> MICROCONTROLLER_ITEM=ITEMS.register("microcontroller",()->new li.cil.oc.common.item.MicrocontrollerBlockItem(MICROCONTROLLER.get(),new Item.Properties()));
     public static final Supplier<TabletItem> TABLET=ITEMS.register("tablet",()->new TabletItem(new Item.Properties()));
     public static final Supplier<TabletCaseItem> TABLET_CASE_1=tabletCase("tabletcase1",0),TABLET_CASE_2=tabletCase("tabletcase2",1),TABLET_CASE_CREATIVE=tabletCase("tabletcasecreative",3);
     public static final Supplier<MicrocontrollerCaseItem> MICROCONTROLLER_CASE_1=microCase("microcontrollercase1",0),MICROCONTROLLER_CASE_2=microCase("microcontrollercase2",1),MICROCONTROLLER_CASE_CREATIVE=microCase("microcontrollercasecreative",3);

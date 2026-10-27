@@ -24,6 +24,7 @@ public class RobotData extends ItemData {
     public int lightColor = 0xF23030;
     public RobotData() { super(Constants.BlockName.Robot); }
     public RobotData(ItemStack stack, HolderLookup.Provider registries) { this(); load(stack, registries); }
+    @Override public void save(ItemStack stack,HolderLookup.Provider registries){super.save(stack,registries);stack.set(net.minecraft.core.component.DataComponents.RARITY,tier<=0?net.minecraft.world.item.Rarity.COMMON:tier==1?net.minecraft.world.item.Rarity.UNCOMMON:tier==2?net.minecraft.world.item.Rarity.RARE:net.minecraft.world.item.Rarity.EPIC);}
     public static String randomName() { return NAMES.isEmpty() ? "Robot" : NAMES.get(ThreadLocalRandom.current().nextInt(NAMES.size())); }
     private static List<String> loadNames() {
         try (InputStream stream = RobotData.class.getResourceAsStream("/assets/opencomputers/robot.names")) {

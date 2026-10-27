@@ -11,6 +11,20 @@ import net.minecraft.server.level.ServerLevel;
 /** Binds the documented public LuaFunction contract without accessing CC internals. */
 final class LuaMethods {
     static final ILuaContext UNSUPPORTED_CONTEXT=task->{throw new LuaException("ComputerCraft Lua context tasks are not supported by OpenComputers");};
+    /** Completes actual CC tasks inline while OC already owns the server-thread callback. */
+    private static final class InlineContext implements ILuaContext {
+        private long nextId;
+        private final ArrayDeque<Object[]> completed=new ArrayDeque<>();
+        @Override public long issueMainThreadTask(LuaTask task){
+            long id=++nextId;
+            try{
+                Object[] values=task.execute();Object[] event=new Object[3+(values==null?0:values.length)];
+                event[0]="task_complete";event[1]=id;event[2]=true;if(values!=null)System.arraycopy(values,0,event,3,values.length);completed.add(event);
+            }catch(LuaException error){completed.add(new Object[]{"task_complete",id,false,error.getMessage()});}
+            return id;
+        }
+        @Override public MethodResult executeMainThreadTask(LuaTask task)throws LuaException{return MethodResult.of(task.execute());}
+    }
     private final Object target;
     private final Map<String,Method> annotated=new TreeMap<>();
     private final Map<String,Integer> dynamic=new LinkedHashMap<>();
@@ -27,15 +41,16 @@ final class LuaMethods {
     boolean empty(){return annotated.isEmpty()&&dynamic.isEmpty();}
     static ObjectArguments arguments(li.cil.oc.api.machine.Arguments args){Object[] converted=new Object[args.count()];for(int i=0;i<converted.length;i++){Object value=args.checkAny(i);converted[i]=value instanceof byte[] bytes?new String(bytes,StandardCharsets.UTF_8):value;}return new ObjectArguments(converted);}
     Object[] invoke(String name,IComputerAccess computer,IArguments args,ServerLevel level)throws Exception{
+        ILuaContext context=level!=null&&level.getServer().isSameThread()?new InlineContext():UNSUPPORTED_CONTEXT;
         if(dynamic.containsKey(name)){
-            int index=dynamic.get(name);MethodResult result=target instanceof IDynamicPeripheral peripheral?peripheral.callMethod(computer,UNSUPPORTED_CONTEXT,index,args):((IDynamicLuaObject)target).callMethod(UNSUPPORTED_CONTEXT,index,args);
-            return immediate(result);
+            int index=dynamic.get(name);MethodResult result=target instanceof IDynamicPeripheral peripheral?peripheral.callMethod(computer,context,index,args):((IDynamicLuaObject)target).callMethod(context,index,args);
+            return immediate(result,context);
         }
         Method method=annotated.get(name);if(method==null)throw new NoSuchMethodException(name);
         if(method.getAnnotation(LuaFunction.class).mainThread()&&(level==null||!level.getServer().isSameThread()))throw new LuaException("ComputerCraft method requires a synchronized server-thread callback");
         Object[] parameters=new Object[method.getParameterCount()];Type[] types=method.getGenericParameterTypes();int index=0;
         for(int i=0;i<types.length;i++){
-            if(types[i]==ILuaContext.class)parameters[i]=UNSUPPORTED_CONTEXT;
+            if(types[i]==ILuaContext.class)parameters[i]=context;
             else if(types[i]==IComputerAccess.class){if(computer==null)throw new LuaException("ComputerCraft method requires a computer attachment");parameters[i]=computer;}
             else if(types[i]==IArguments.class)parameters[i]=args.drop(index);
             else parameters[i]=argument(args,index++,types[i]);
@@ -43,11 +58,16 @@ final class LuaMethods {
         Object result;
         try{result=method.invoke(target,parameters);}catch(InvocationTargetException error){if(error.getCause() instanceof Exception cause)throw cause;throw new RuntimeException(error.getCause());}
         if(method.getReturnType()==void.class)return null;
-        if(result instanceof MethodResult methodResult)return immediate(methodResult);
+        if(result instanceof MethodResult methodResult)return immediate(methodResult,context);
         return result instanceof Object[] array?array:new Object[]{result};
     }
-    private static Object[] immediate(MethodResult result)throws LuaException{
-        if(result==null)return null;if(result.getCallback()!=null)throw new LuaException("ComputerCraft yielding callbacks are not supported by OpenComputers");return result.getResult();
+    private static Object[] immediate(MethodResult result,ILuaContext context)throws LuaException{
+        while(result!=null&&result.getCallback()!=null){
+            Object[] filter=result.getResult();
+            if(!(context instanceof InlineContext inline)||filter==null||filter.length!=1||!"task_complete".equals(filter[0])||inline.completed.isEmpty())throw new LuaException("ComputerCraft yielding callbacks are not supported by OpenComputers");
+            result=result.getCallback().resume(inline.completed.remove());
+        }
+        return result==null?null:result.getResult();
     }
     @SuppressWarnings({"rawtypes","unchecked"})
     private static Object argument(IArguments args,int index,Type type)throws LuaException{

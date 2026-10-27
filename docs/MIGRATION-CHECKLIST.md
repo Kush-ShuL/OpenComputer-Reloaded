@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 93 项，剩余 27 项。**
+**总计 120 项，已闭合 101 项，剩余 19 项。**
 
-剩余包括：已有实现待核对/验收 19 项，有明确缺口 8 项。
+剩余包括：已有实现待核对/验收 11 项，有明确缺口 8 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -28,9 +28,9 @@
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
 | 基础与交付 | 24 | 17 | 7 |
-| 设备与组件 | 61 | 56 | 5 |
-| 工具与附加玩法 | 16 | 14 | 2 |
-| 可选集成 | 19 | 6 | 13 |
+| 设备与组件 | 61 | 61 | 0 |
+| 工具与附加玩法 | 16 | 16 | 0 |
+| 可选集成 | 19 | 7 | 12 |
 
 ## 范围归属
 
@@ -427,15 +427,15 @@
 
 闭合依据：[docs/storage-filesystems.md](../docs/storage-filesystems.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)、[build/api-compat-addon/persistence/storage-cold-20261027-d1/resume-results.txt](../build/api-compat-addon/persistence/storage-cold-20261027-d1/resume-results.txt)
 
-### D15 · 无人机 · 已有实现，待核对/验收
+### D15 · 无人机 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：共享流体控制缺口已修，Robot原生路径通过；仍需本族其他公开飞行/动作与行为核对，未宣称Drone流体或整族验收完成。
-
 原版范围：`src/main/scala/li/cil/oc/common/entity/Drone.scala`、`src/main/scala/li/cil/oc/server/component/Drone.scala`
 
-当前接入：[src/main/java/li/cil/oc/common/entity/DroneEntity.java](../src/main/java/li/cil/oc/common/entity/DroneEntity.java)、[src/main/java/li/cil/oc/server/component/Drone.java](../src/main/java/li/cil/oc/server/component/Drone.java)
+当前接入：[src/main/java/li/cil/oc/common/entity/DroneEntity.java](../src/main/java/li/cil/oc/common/entity/DroneEntity.java)、[src/main/java/li/cil/oc/server/component/Drone.java](../src/main/java/li/cil/oc/server/component/Drone.java)、[docs/robot-and-drone.md](../docs/robot-and-drone.md)、[tools/api-compat-addon/src/main/java/ocfixture/RobotDroneContract.java](../tools/api-compat-addon/src/main/java/ocfixture/RobotDroneContract.java)
+
+闭合依据：[docs/robot-and-drone.md](../docs/robot-and-drone.md)、[Windows platform-20261027-g8：D15.actions PASS；真实物品放置/取消spawn释放、Context、公开移动/加速/状态/灯色、NBT和扳手拆卸本地能量/库存；复用原生飞行/流体/升级及独立进程存档证明。](../Windows platform-20261027-g8：D15.actions PASS；真实物品放置/取消spawn释放、Context、公开移动/加速/状态/灯色、NBT和扳手拆卸本地能量/库存；复用原生飞行/流体/升级及独立进程存档证明。)
 
 ### D16 · EEPROM · 已闭合
 
@@ -517,15 +517,15 @@
 
 闭合依据：[docs/memory.md](../docs/memory.md)、[src/main/java/li/cil/oc/server/driver/item/Memory.java](../src/main/java/li/cil/oc/server/driver/item/Memory.java)、[src/main/java/li/cil/oc/common/init/Items.java](../src/main/java/li/cil/oc/common/init/Items.java)、[src/main/java/li/cil/oc/server/machine/luac/NativeLuaArchitecture.java](../src/main/java/li/cil/oc/server/machine/luac/NativeLuaArchitecture.java)、[src/main/java/li/cil/oc/server/machine/luaj/LuaJLuaArchitecture.java](../src/main/java/li/cil/oc/server/machine/luaj/LuaJLuaArchitecture.java)
 
-### D24 · 微控制器 · 已有实现，待核对/验收
+### D24 · 微控制器 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
-
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Microcontroller.scala`
 
-当前接入：[src/main/java/li/cil/oc/common/block/entity/MicrocontrollerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/MicrocontrollerBlockEntity.java)
+当前接入：[src/main/java/li/cil/oc/common/block/entity/MicrocontrollerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/MicrocontrollerBlockEntity.java)、[docs/microcontroller-and-tablet.md](../docs/microcontroller-and-tablet.md)、[tools/api-compat-addon/src/main/java/ocfixture/PortableDevicesContract.java](../tools/api-compat-addon/src/main/java/ocfixture/PortableDevicesContract.java)
+
+闭合依据：[docs/microcontroller-and-tablet.md](../docs/microcontroller-and-tablet.md)、[Windows platform-20261027-g4：portable.microcontroller PASS；真实面向/错误、EEPROM双次交换保存并保留无关节点、保留FE接口在旋转后拒绝正面；复用既有原生冷恢复与网络证明。](../Windows platform-20261027-g4：portable.microcontroller PASS；真实面向/错误、EEPROM双次交换保存并保留无关节点、保留FE接口在旋转后拒绝正面；复用既有原生冷恢复与网络证明。)
 
 ### D25 · 运动传感器 · 已闭合
 
@@ -617,15 +617,15 @@
 
 闭合依据：[docs/production-devices.md](../docs/production-devices.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
 
-### D34 · 普通及集束红石 · 已有实现，待核对/验收
+### D34 · 普通及集束红石 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
-
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Redstone.scala`、`src/main/scala/li/cil/oc/server/component/Redstone.scala`、`src/main/scala/li/cil/oc/server/component/RedstoneBundled.scala`、`src/main/scala/li/cil/oc/server/component/RedstoneSignaller.scala`、`src/main/scala/li/cil/oc/server/component/RedstoneVanilla.scala`、`src/main/scala/li/cil/oc/server/component/RedstoneWireless.scala`
 
-当前接入：[src/main/java/li/cil/oc/common/block/entity/RedstoneBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RedstoneBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Redstone.java](../src/main/java/li/cil/oc/server/component/Redstone.java)、[src/main/java/li/cil/oc/server/component/RedstoneBundled.java](../src/main/java/li/cil/oc/server/component/RedstoneBundled.java)
+当前接入：[src/main/java/li/cil/oc/common/block/entity/RedstoneBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RedstoneBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Redstone.java](../src/main/java/li/cil/oc/server/component/Redstone.java)、[src/main/java/li/cil/oc/server/component/RedstoneBundled.java](../src/main/java/li/cil/oc/server/component/RedstoneBundled.java)、[docs/redstone.md](../docs/redstone.md)、[tools/api-compat-addon/src/main/java/ocfixture/RedstoneComputerCraftContract.java](../tools/api-compat-addon/src/main/java/ocfixture/RedstoneComputerCraftContract.java)
+
+闭合依据：[docs/redstone.md](../docs/redstone.md)、[Windows platform-20261027-g5 PASS31ticks；真实I/O与两tier卡、旋转侧向/世界表、比较器箱子、物理信号、错误/原始矩阵、保存地址/阈值、非相邻网络唤醒，以及真实CC Lua双向16通道和事件。](../Windows platform-20261027-g5 PASS31ticks；真实I/O与两tier卡、旋转侧向/世界表、比较器箱子、物理信号、错误/原始矩阵、保存地址/阈值、非相邻网络唤醒，以及真实CC Lua双向16通道和事件。)
 
 ### D35 · 中继器 · 已闭合
 
@@ -637,15 +637,15 @@
 
 闭合依据：[docs/network-devices.md](../docs/network-devices.md)、[src/main/java/li/cil/oc/common/block/entity/RelayBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RelayBlockEntity.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
-### D36 · 机器人 · 已有实现，待核对/验收
+### D36 · 机器人 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：跨罐交换、空罐和世界流体控制已由真实Robot原生Lua通过；其余机器人动作、交互与原版差异核对仍待闭合。
-
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Robot.scala`、`src/main/scala/li/cil/oc/common/tileentity/RobotProxy.scala`、`src/main/scala/li/cil/oc/server/component/Robot.scala`
 
-当前接入：[src/main/java/li/cil/oc/common/block/entity/RobotBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RobotBlockEntity.java)、[src/main/java/li/cil/oc/server/agent/RobotController.java](../src/main/java/li/cil/oc/server/agent/RobotController.java)、[src/main/java/li/cil/oc/server/component/Robot.java](../src/main/java/li/cil/oc/server/component/Robot.java)
+当前接入：[src/main/java/li/cil/oc/common/block/entity/RobotBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RobotBlockEntity.java)、[src/main/java/li/cil/oc/server/agent/RobotController.java](../src/main/java/li/cil/oc/server/agent/RobotController.java)、[src/main/java/li/cil/oc/server/component/Robot.java](../src/main/java/li/cil/oc/server/component/Robot.java)、[docs/robot-and-drone.md](../docs/robot-and-drone.md)、[tools/api-compat-addon/src/main/java/ocfixture/RobotDroneContract.java](../tools/api-compat-addon/src/main/java/ocfixture/RobotDroneContract.java)
+
+闭合依据：[docs/robot-and-drone.md](../docs/robot-and-drone.md)、[Windows platform-20261027-g8：D36.motion/actions PASS；真实转向/移动费用与取消退款、机器稳定、库存交换/取消丢弃、采掘/掉落实体拾取与公开工具损耗修复事件；修正原射线终点和现代原生背包工具判定。](../Windows platform-20261027-g8：D36.motion/actions PASS；真实转向/移动费用与取消退款、机器稳定、库存交换/取消丢弃、采掘/掉落实体拾取与公开工具损耗修复事件；修正原射线终点和现代原生背包工具判定。)
 
 ### D37 · 屏幕 · 已闭合
 
@@ -667,15 +667,15 @@
 
 闭合依据：[docs/machine-hosts.md](../docs/machine-hosts.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
 
-### D39 · 平板电脑 · 已有实现，待核对/验收
+### D39 · 平板电脑 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
-
 原版范围：`src/main/scala/li/cil/oc/server/component/Tablet.scala`
 
-当前接入：[src/main/java/li/cil/oc/server/portable/TabletHost.java](../src/main/java/li/cil/oc/server/portable/TabletHost.java)
+当前接入：[src/main/java/li/cil/oc/server/portable/TabletHost.java](../src/main/java/li/cil/oc/server/portable/TabletHost.java)、[docs/microcontroller-and-tablet.md](../docs/microcontroller-and-tablet.md)、[tools/api-compat-addon/src/main/java/ocfixture/PortableDevicesContract.java](../tools/api-compat-addon/src/main/java/ocfixture/PortableDevicesContract.java)
+
+闭合依据：[docs/microcontroller-and-tablet.md](../docs/microcontroller-and-tablet.md)、[Windows platform-20261027-g4：portable.tablet/expiry PASS；真实菜单换盘保留原HDD写句柄与屏幕/键盘节点、旧软盘句柄关闭、同世界换持有人保留VM、充电SIM/EXEC及自然过期后保存重建；复用独立JVM与charger证明。](../Windows platform-20261027-g4：portable.tablet/expiry PASS；真实菜单换盘保留原HDD写句柄与屏幕/键盘节点、旧软盘句柄关闭、同世界换持有人保留VM、充电SIM/EXEC及自然过期后保存重建；复用独立JVM与charger证明。)
 
 ### D40 · 转运器 · 已闭合
 
@@ -1010,25 +1010,25 @@
 
 闭合依据：[docs/capacity-upgrades.md](../docs/capacity-upgrades.md)、[src/main/java/li/cil/oc/server/driver/item/ComponentBus.java](../src/main/java/li/cil/oc/server/driver/item/ComponentBus.java)、[src/main/java/li/cil/oc/server/machine/Machine.java](../src/main/java/li/cil/oc/server/machine/Machine.java)
 
-### T12 · 无线终端及终端服务器 · 已有实现，待核对/验收
+### T12 · 无线终端及终端服务器 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：绑定、距离、访问权、屏幕输入与断连/重连待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/Terminal.scala`、`src/main/scala/li/cil/oc/common/item/TerminalServer.scala`、`src/main/scala/li/cil/oc/common/item/Interweb.scala`、`src/main/scala/li/cil/oc/common/component/TerminalServer.scala`
 
-当前接入：[src/main/java/li/cil/oc/common/item/TerminalItem.java](../src/main/java/li/cil/oc/common/item/TerminalItem.java)
+当前接入：[src/main/java/li/cil/oc/common/item/TerminalItem.java](../src/main/java/li/cil/oc/common/item/TerminalItem.java)、[docs/terminal-and-nanomachines.md](../docs/terminal-and-nanomachines.md)、[tools/api-compat-addon/src/main/java/ocfixture/TerminalNanoContract.java](../tools/api-compat-addon/src/main/java/ocfixture/TerminalNanoContract.java)
 
-### T13 · 纳米机器与行为提供器 · 已有实现，待核对/验收
+闭合依据：[docs/terminal-and-nanomachines.md](../docs/terminal-and-nanomachines.md)、[Windows platform-20261027-g4：terminal.rack PASS；真实机架挂载/密钥淘汰、主手鉴权、快照、键盘/粘贴/触摸/越界释放、严格距离关闭，经已注册NeoForge编解码；远程客户端仍归C19。](../Windows platform-20261027-g4：terminal.rack PASS；真实机架挂载/密钥淘汰、主手鉴权、快照、键盘/粘贴/触摸/越界释放、严格距离关闭，经已注册NeoForge编解码；远程客户端仍归C19。)
+
+### T13 · 纳米机器与行为提供器 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
 
-剩余：安装/卸载、网络命令、输入限制、效果/能耗/保存和公开Provider API待闭合。
-
 原版范围：`src/main/scala/li/cil/oc/common/item/Nanomachines.scala`、`src/main/scala/li/cil/oc/common/item/Acid.scala`、`src/main/scala/li/cil/oc/common/nanomachines/`
 
-当前接入：[src/main/java/li/cil/oc/common/nanomachines/](../src/main/java/li/cil/oc/common/nanomachines/)
+当前接入：[src/main/java/li/cil/oc/common/nanomachines/](../src/main/java/li/cil/oc/common/nanomachines/)、[docs/terminal-and-nanomachines.md](../docs/terminal-and-nanomachines.md)、[tools/api-compat-addon/src/main/java/ocfixture/TerminalNanoContract.java](../tools/api-compat-addon/src/main/java/ocfixture/TerminalNanoContract.java)
+
+闭合依据：[docs/terminal-and-nanomachines.md](../docs/terminal-and-nanomachines.md)、[Windows platform-20261027-g4：nanomachines.lifecycle/protocol/uninstall PASS；真实32tick食用、公开addon行为图/输入限制、自然玩家tick耗能失电复电、实际SDK无线命令/配置物品重装、酸卸载回调与停止回复。](../Windows platform-20261027-g4：nanomachines.lifecycle/protocol/uninstall PASS；真实32tick食用、公开addon行为图/输入限制、自然玩家tick耗能失电复电、实际SDK无线命令/配置物品重装、酸卸载回调与停止回复。)
 
 ### T14 · 季节礼物 · 已闭合
 
@@ -1077,35 +1077,41 @@
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。
+剩余：官方 Charset 仍为1.12.2 capability协议，未发现官方可用1.21.1 NeoForge目标；普通/集束发射、接收重采样及输出capability桥接仍缺，保持未完成。
 
 原版范围：`src/main/scala/li/cil/oc/integration/charset/`
+
+闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
 
 ### I03 · cofh · 有明确缺口
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。
+剩余：官方 CoFHCore 现有1.20.4/NeoForge20.4分支，未发现官方1.21.1目标；锤子与能量/红石控制/安全/蒸汽四驱动仍缺，保持未完成。
 
 原版范围：`src/main/scala/li/cil/oc/integration/cofh/`
 
-### I04 · computercraft · 已有实现，待核对/验收
+闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
+
+### I04 · computercraft · 已闭合
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：显式启用/禁用、外设/介质已验；集束红石及余下原桥接路径待闭合。
-
 原版范围：`src/main/scala/li/cil/oc/integration/computercraft/`
 
-当前接入：[src/main/java/li/cil/oc/common/integration/computercraft/](../src/main/java/li/cil/oc/common/integration/computercraft/)
+当前接入：[src/main/java/li/cil/oc/common/integration/computercraft/](../src/main/java/li/cil/oc/common/integration/computercraft/)、[docs/computercraft-integration.md](../docs/computercraft-integration.md)、[tools/api-compat-addon/src/main/java/ocfixture/RedstoneComputerCraftContract.java](../tools/api-compat-addon/src/main/java/ocfixture/RedstoneComputerCraftContract.java)
+
+闭合依据：[docs/computercraft-integration.md](../docs/computercraft-integration.md)、[Windows platform-20261027-g5 PASS31ticks；实际Adapter读取CC通用箱子list/size及真实同步任务回执，物理磁盘启动原CC运行时Lua程序后双向16通道传输/事件；保留先前显式禁用、Relay/外设/介质证明，默认禁用门控未改。](../Windows platform-20261027-g5 PASS31ticks；实际Adapter读取CC通用箱子list/size及真实同步任务回执，物理磁盘启动原CC运行时Lua程序后双向16通道传输/事件；保留先前显式禁用、Relay/外设/介质证明，默认禁用门控未改。)
 
 ### I05 · ec · 有明确缺口
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。
+剩余：原ec是ExtraCells；官方目标停留1.12.2/AE2 rv6，实际getGasesInNetwork气体存储桥接仍缺，保持未完成。
 
 原版范围：`src/main/scala/li/cil/oc/integration/ec/`
+
+闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
 
 ### I06 · enderio · 已闭合
 
@@ -1131,17 +1137,21 @@
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。
+剩余：已确认官方Forestry CE 1.21.1-3.0.0-alpha8/NeoForge21.1.230目标；分析机/蜂房与新版遗传、个体、物品/电路转换尚待Java接入。
 
 原版范围：`src/main/scala/li/cil/oc/integration/forestry/`
+
+闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
 
 ### I09 · ic2 · 有明确缺口
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。
+剩余：原IC² EU工具/充电与六种机器驱动仍缺；未确认原项目官方可用1.21.1 NeoForge目标，保持未完成。
 
 原版范围：`src/main/scala/li/cil/oc/integration/ic2/`
+
+闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
 
 ### I10 · jei · 已有实现，待核对/验收
 
@@ -1199,17 +1209,21 @@
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。
+剩余：已确认Railcraft Reborn 1.21.1目标及公开Crowbar接口；工具和Worldspike驱动未接入，现代WorldSpike已移除燃料库存/红石停用，与原三回调有语义差异待解决。
 
 原版范围：`src/main/scala/li/cil/oc/integration/railcraft/`
+
+闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
 
 ### I16 · thaumcraft · 有明确缺口
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。
+剩余：原Thaumcraft四物品Aspects/AspectFilter转换器尚待Java迁移；官方公开目标仍1.12.2，未发现官方可用现代物品/API，保持未完成。
 
 原版范围：`src/main/scala/li/cil/oc/integration/thaumcraft/`
+
+闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
 
 ### I17 · tis3d · 已闭合
 
@@ -1235,6 +1249,8 @@
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。
+剩余：官方WRCBE仍1.12.2，未发现可用现代Ether/收发设备API；原频率、发送/接收、事件与生命周期桥接仍缺，保持未完成。
 
 原版范围：`src/main/scala/li/cil/oc/integration/wrcbe/`
+
+闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)

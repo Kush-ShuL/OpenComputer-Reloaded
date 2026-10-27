@@ -17,7 +17,7 @@ import net.minecraft.core.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
-/** Original low-priority Adapter driver, now using the optional NeoForge peripheral capability. */
+/** Original low-priority Adapter driver, including CC's generic capability peripherals. */
 public final class PeripheralDriver implements DriverBlock {
     private final Map<String,Optional<Class<?>>> blacklistClasses=new ConcurrentHashMap<>();
     private boolean blacklisted(Object target){
@@ -31,8 +31,26 @@ public final class PeripheralDriver implements DriverBlock {
         return false;
     }
     private IPeripheral peripheral(Level level,BlockPos pos,Direction side){
-        try{IPeripheral peripheral=level.getCapability(PeripheralCapability.get(),pos,side);return blacklisted(peripheral)?null:peripheral;}
+        try{
+            IPeripheral peripheral=level.getCapability(PeripheralCapability.get(),pos,side);
+            if(peripheral==null&&level instanceof ServerLevel server)peripheral=GenericLookup.get(server,pos,side);
+            return blacklisted(peripheral)?null:peripheral;
+        }
         catch(RuntimeException error){OpenComputers.LOGGER.warn("Error accessing ComputerCraft peripheral at {}",pos,error);return null;}
+    }
+    // Like the original getPeripheralAt bridge, generic discovery needs CC's implementation
+    // lookup. Keep its version-specific public entry point behind this optional integration.
+    private static final class GenericLookup {
+        private static final java.lang.reflect.Method LOOKUP=lookup();
+        private static java.lang.reflect.Method lookup(){
+            try{return Class.forName("dan200.computercraft.impl.Peripherals").getMethod("getGenericPeripheral",ServerLevel.class,BlockPos.class,Direction.class,net.minecraft.world.level.block.entity.BlockEntity.class);}
+            catch(ReflectiveOperationException|LinkageError error){OpenComputers.LOGGER.warn("ComputerCraft generic peripheral lookup is unavailable",error);return null;}
+        }
+        static IPeripheral get(ServerLevel level,BlockPos pos,Direction side){
+            if(LOOKUP==null)return null;
+            try{return (IPeripheral)LOOKUP.invoke(null,level,pos,side,level.getBlockEntity(pos));}
+            catch(ReflectiveOperationException error){throw new IllegalStateException("ComputerCraft generic peripheral lookup failed",error);}
+        }
     }
     @Override public boolean worksWith(Level level,BlockPos pos,Direction side){
         if(level==null||level.isClientSide||!level.hasChunkAt(pos))return false;var target=level.getBlockEntity(pos);
@@ -82,7 +100,7 @@ public final class PeripheralDriver implements DriverBlock {
         @Override public String mount(String path,Mount mount,String driveName){return mountFilesystem(path,mount,driveName);}
         @Override public String mountWritable(String path,WritableMount mount,String driveName){return mountFilesystem(path,mount,driveName);}
         @Override public void unmount(String path){check();ManagedEnvironment filesystem=mounts.remove(path);if(filesystem!=null&&filesystem.node()!=null)filesystem.node().remove();}
-        @Override public int getID(){check();return context.node().address().hashCode()&Integer.MAX_VALUE;}
+        @Override public int getID(){check();return context.node().address().hashCode();}
         @Override public void queueEvent(String event,Object...args){check();context.signal(event,args);}
         @Override public String getAttachmentName(){check();return owner.node().address();}
         @Override public Map<String,IPeripheral> getAvailablePeripherals(){

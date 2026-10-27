@@ -45,6 +45,8 @@ public final class RedstoneState {
         for (Direction side : Direction.values()) values[side.get3DDataValue()] = bundledInput(side);
         return values;
     }
+    /** Raw input rows used by the pinned no-side output/assignment return values. */
+    public int[][] bundledInputSnapshot() { return Arrays.stream(bundledInput).map(int[]::clone).toArray(int[][]::new); }
     public int bundledOutput(Direction side, int color) { checkColor(color); return bundledOutput[host.toLocal(side).get3DDataValue()][color]; }
     public int[] bundledOutput(Direction side) { return bundledOutput[host.toLocal(side).get3DDataValue()].clone(); }
     public int[][] bundledOutputs() {

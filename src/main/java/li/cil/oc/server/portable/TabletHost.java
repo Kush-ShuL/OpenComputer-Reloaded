@@ -38,7 +38,7 @@ public final class TabletHost implements li.cil.oc.api.internal.Tablet, Containe
         control=new TabletControl();CompoundTag root=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();control.load(root.getCompound("oc:component"),world.registryAccess());runtime.load(root.getCompound("oc:data"));runtime.initialize(control.node());
         control.node().changeBuffer(Math.max(0,data.energy-control.node().globalBuffer()));lastRunning=machine().isRunning();touch(stack,holder);save(false);
     }
-    public void touch(ItemStack stack,Player holder){this.stack=stack;this.holder=holder;lastAccess=holder.getServer()==null?0:holder.getServer().getTickCount();}
+    public void touch(ItemStack stack,Player holder){if(this.holder!=holder){li.cil.oc.common.network.PortableNetworking.close(this);displayDirty.set(true);}this.stack=stack;this.holder=holder;lastAccess=holder.getServer()==null?0:holder.getServer().getTickCount();}
     public ItemStack stack(){return stack;}
     public boolean closed(){return closed;}
     @Override public Player player(){return holder;}
@@ -53,8 +53,8 @@ public final class TabletHost implements li.cil.oc.api.internal.Tablet, Containe
     @Override public void onMachineConnect(Node node){if(node==machine().node())runtime.connect();}
     @Override public void onMachineDisconnect(Node node){if(node==machine().node())runtime.saveComponents();}
     @Override public Direction facing(){return holder.getDirection();}
-    @Override public Direction toGlobal(Direction side){if(side.getAxis()==Direction.Axis.Y)return side;for(int i=0;i<facing().get2DDataValue();i++)side=side.getClockWise();return side;}
-    @Override public Direction toLocal(Direction side){if(side.getAxis()==Direction.Axis.Y)return side;for(int i=0;i<facing().get2DDataValue();i++)side=side.getCounterClockWise();return side;}
+    @Override public Direction toGlobal(Direction side){if(side==null||side.getAxis()==Direction.Axis.Y)return side;for(int i=0;i<facing().get2DDataValue();i++)side=side.getClockWise();return side;}
+    @Override public Direction toLocal(Direction side){if(side==null||side.getAxis()==Direction.Axis.Y)return side;for(int i=0;i<facing().get2DDataValue();i++)side=side.getCounterClockWise();return side;}
     public Connector connector(){return control.node();}
     public void displayChanged(){displayDirty.set(true);markChanged();}
     public void tick(){if(closed||lastTick==world.getGameTime())return;lastTick=world.getGameTime();if(data.tier==3&&world.getGameTime()%Math.max(1,(int)Settings.get().tickFrequency)==0)connector().changeBuffer(Double.POSITIVE_INFINITY);runtime.tick();
@@ -66,17 +66,17 @@ public final class TabletHost implements li.cil.oc.api.internal.Tablet, Containe
     }
     public void save(boolean stopState){if(closed)return;CompoundTag root=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag();
         CompoundTag state=runtime.save(world.registryAccess());if(stopState)state.remove("state");root.put("oc:data",state);CompoundTag node=new CompoundTag();control.save(node,world.registryAccess());root.put("oc:component",node);
-        data.energy=connector().globalBuffer();data.maxEnergy=connector().globalBufferSize();data.isRunning=!stopState&&machine().isRunning();data.save(root,world.registryAccess());root.putString("oc:tablet",id);stack.set(DataComponents.CUSTOM_DATA,CustomData.of(root));
+        data.energy=connector().globalBuffer();data.maxEnergy=connector().globalBufferSize();data.isRunning=!stopState&&machine().isRunning();data.save(root,world.registryAccess());root.putString("oc:tablet",id);stack.set(DataComponents.CUSTOM_DATA,CustomData.of(root));data.applyItemProperties(stack);
     }
-    public void close(boolean preserveState){if(closed)return;li.cil.oc.common.network.PortableNetworking.close(this);save(!preserveState);closed=true;runtime.close();}
+    public void close(boolean preserveState){if(closed)return;li.cil.oc.common.network.PortableNetworking.close(this);save(!preserveState);closed=true;runtime.close();if(!preserveState){runtime.saveComponents();data.save(stack,world.registryAccess());}}
     public double charge(double amount,boolean simulate){if(amount<=0)return amount;double accepted=Math.min(amount,Math.max(0,connector().globalBufferSize()-connector().globalBuffer()));if(!simulate&&accepted>0){connector().changeBuffer(accepted);markChanged();displayDirty.set(true);}return amount-accepted;}
     @Override public int getContainerSize(){return 1;}
     @Override public boolean isEmpty(){return data.items[31].isEmpty();}
     @Override public ItemStack getItem(int slot){return slot==0?data.items[31]:ItemStack.EMPTY;}
-    @Override public ItemStack removeItem(int slot,int count){if(slot!=0)return ItemStack.EMPTY;runtime.saveComponents();ItemStack removed=data.items[31].split(count);if(!removed.isEmpty())changedInventory();return removed;}
+    @Override public ItemStack removeItem(int slot,int count){if(slot!=0||count<=0||data.items[31].isEmpty())return ItemStack.EMPTY;runtime.remove(31);ItemStack removed=data.items[31].split(count);if(!removed.isEmpty())changedInventory();return removed;}
     @Override public ItemStack removeItemNoUpdate(int slot){return removeItem(slot,1);}
-    @Override public void setItem(int slot,ItemStack value){if(slot!=0||(!value.isEmpty()&&!canPlaceItem(slot,value)))return;runtime.saveComponents();data.items[31]=value;changedInventory();}
-    private void changedInventory(){runtime.rebuild();save(false);holder.getInventory().setChanged();displayDirty.set(true);}
+    @Override public void setItem(int slot,ItemStack value){if(slot!=0||data.items[31]==value||data.items[31].isEmpty()&&value.isEmpty()||(!value.isEmpty()&&!canPlaceItem(slot,value)))return;runtime.remove(31);data.items[31]=value.isEmpty()?ItemStack.EMPTY:value.copyWithCount(1);changedInventory();}
+    private void changedInventory(){runtime.install(31);save(false);holder.getInventory().setChanged();displayDirty.set(true);}
     @Override public void setChanged(){markChanged();}
     @Override public boolean stillValid(Player player){return !closed&&player==holder&&player.level()==world&&TabletManager.isInInventory(player,stack)&&machine().canInteract(player.getGameProfile().getName());}
     @Override public boolean canPlaceItem(int slot,ItemStack candidate){if(slot!=0||data.tier==0||candidate.isEmpty()||data.container.isEmpty())return false;var bay=Driver.driverFor(data.container,getClass());var driver=Driver.driverFor(candidate,getClass());return bay instanceof li.cil.oc.api.driver.item.Container container&&driver!=null&&!(candidate.getItem() instanceof net.minecraft.world.item.BlockItem block&&block.getBlock() instanceof li.cil.oc.common.block.ScreenBlock)&&driver.slot(candidate).equals(container.providedSlot(data.container))&&driver.tier(candidate)<=container.providedTier(data.container);}
@@ -86,8 +86,8 @@ public final class TabletHost implements li.cil.oc.api.internal.Tablet, Containe
         private final ComponentConnector node=li.cil.oc.api.Network.newNode(this,Visibility.Network).withComponent("tablet").withConnector(Settings.get().bufferTablet).create();
         private TabletControl(){setNode(node);}
         @Override public ComponentConnector node(){return node;}
-        @Callback(direct=true) public Object[] getPitch(Context context,Arguments args){return new Object[]{holder.getXRot()};}
-        @Callback(direct=true) public Object[] getYaw(Context context,Arguments args){return new Object[]{holder.getYRot()};}
+        @Callback(doc="function():number -- Gets the pitch of the player holding the tablet.") public Object[] getPitch(Context context,Arguments args){return new Object[]{holder.getXRot()};}
+        @Callback(doc="function():number -- Gets the yaw of the player holding the tablet.") public Object[] getYaw(Context context,Arguments args){return new Object[]{holder.getYRot()};}
         @Override public java.util.Map<String,String> getDeviceInfo(){return java.util.Map.of(DeviceAttribute.Class,DeviceClass.System,DeviceAttribute.Description,"Tablet",DeviceAttribute.Vendor,li.cil.oc.Constants.DeviceInfo.DefaultVendor,DeviceAttribute.Product,"Jogger",DeviceAttribute.Capacity,Integer.toString(data.items.length));}
     }
 }
