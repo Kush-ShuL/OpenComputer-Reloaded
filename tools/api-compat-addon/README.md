@@ -123,7 +123,11 @@ Use `runDeviceServer -PocDriveConcurrencyOnly=true -PocDeviceRunId=NEW_ID` for t
 
 ## Moving robot cold restart
 
-`runHostPersistenceServer` begins the separate real-host cold-restart matrix with `-PocHost=robot`. Other hosts are deliberately rejected until their own executable scenarios exist. It does not run the Case or older API suites. The addon still compiles only against the published SDK and game/NeoForge APIs.
+`runHostPersistenceServer` selects one real-host cold-restart scenario with
+`-PocHost=robot|drone|tablet|microcontroller|rack`. It does not run the Case or older
+API suites. The addon still compiles only against the published SDK and public
+game/NeoForge APIs; runtime selection prevents unrelated optional-mod suites from
+loading their foreign classes.
 
 ```powershell
 $robotRun = 'robot-native53-' + (Get-Date -Format 'yyyyMMdd-HHmmss')
@@ -141,4 +145,53 @@ The Lua BIOS opens real tmpfs and HDD readers, retaining their offsets, a nested
 
 The second server loads that moved robot from disk. Native Lua 5.3 must continue the existing coroutine without executing BIOS again; its queued signal, locals, userdata registry provider, ItemStack/iterator data and both open file positions must survive. HDD/EEPROM contents, component identities and robot inventory/ownership must agree with prepare. Use a new run id and `-PocHostArchitecture=LuaJ` for the distinct LuaJ expectation: the BIOS must genuinely reboot once and read persisted HDD/EEPROM data; native stack or Value restoration is not claimed. Lua 5.2 can be selected explicitly with the same protocol.
 
-This section defines executable acceptance, not an assertion that the new host stages have already passed. Drone, tablet, microcontroller and rack/server-blade cold-process proofs remain separate outstanding host scenarios.
+Use the same prepare/resume protocol and a fresh id for another host; its reports
+are stored under `build/api-compat-addon/hosts/<host>/<id>`.
+
+- `drone` places the configured flying entity, makes a real Lua movement call,
+  and checks its saved flight target, exact saved entity state, UUID, ownership,
+  inventory and VM. Its original hardware permits no HDD; the native open-file
+  checkpoint uses its real tmpfs.
+- `tablet` inserts the bay floppy through the actual held-item menu, starts the
+  actual item-owned VM, and saves the physical item in a real chest. Resume loads
+  it from chest world NBT and recreates it through `Item.inventoryTick`, checking
+  tmpfs/HDD/floppy descriptor offsets as well as VM state and item identity.
+  This does not claim online player-inventory save behavior.
+- `microcontroller` uses the assembled block item, its actual EEPROM menu and
+  normal right-click power operation. The checkpoint covers the private VM,
+  EEPROM, hardware metadata, owner, orientation, all saved output flags and five
+  independent external network graphs. Actual packets must enter on every
+  non-front side and leave only through open outputs. No unsupported HDD is added.
+- `rack` installs legal hardware through the real blade menu and inserts it
+  through the real rack menu. The real rack-edit codec/handler sets primary and
+  secondary mappings, and the real server-menu handler powers the blade. The
+  checkpoint covers VM and HDD offsets, machine users, real redstone output,
+  hardware metadata, bus identities and bidirectional selected-secondary-bus
+  packets. A second stopped blade witnesses primary-bus isolation; it does not
+  substitute for a second running VM checkpoint. Its locally registered test
+  player uses a mock transport, so remote network round trips are not claimed.
+
+These are distinct executable scenarios. Consult their actual stage reports and
+`docs/PORTING.md` for completed runs; a scenario's presence is not a pass result.
+
+## Optional foreign runtimes
+
+Each named run below creates a fresh isolated world and reports actual behavior
+through a placed Case's native Lua 5.3 VM and Adapter. Supply the same published
+SDK/legacy SDK/full OC artifact properties used above. Foreign runtime paths must
+point to separately obtained official full JARs; the fixture does not embed them.
+
+| Task | Required properties | Report directory |
+| --- | --- | --- |
+| `runAppliedEnergisticsServer` | `ocAppliedEnergisticsRunId`, `ocAppliedEnergisticsJar`, `ocGuideMeJar` | `build/api-compat-addon/appeng/<id>` |
+| `runEnderStorageServer` | `ocEnderStorageRunId`, `ocEnderStorageJar`, `ocCodeChickenLibJar` | `build/api-compat-addon/enderstorage/<id>` |
+
+EnderStorage's separate `-PocEnderStorageDisabled=true` run verifies that its five
+callbacks have no callable device entry while physical contents, frequencies and
+owners remain intact. Generic inventory/tank drivers retain their original
+default of disabled. Add `-PocEnderStorageGeneric=true` to enable both explicitly
+for a second blacklist run: real capabilities, Drivers and two visible wrappers
+are then mandatory, and each wrapper must reject all five EnderStorage methods.
+The actual wrappers are obtained through public `Analyzable`; no placeholder
+nodes are created when the generic drivers are off. Both tasks reject an existing
+world/report and fail when `contract-results.txt` does not begin with `status=PASS`.

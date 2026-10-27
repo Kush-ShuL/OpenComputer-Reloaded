@@ -65,10 +65,14 @@ public final class HostPersistenceContract {
     private static Run active;
     private HostPersistenceContract(){}
     public static boolean enabled(){return System.getProperty("ocfixture.hostStage")!=null;}
-    public static void register(){Driver.add(new ProbeDriver());}
-    public static void start(MinecraftServer server){try{active=new Run(server);active.start();}catch(Throwable error){if(active!=null)active.fail(error);else throw new IllegalStateException("Host persistence setup failed",error);}}
-    public static void tick(){Run run=active;if(run==null||run.finished)return;try{run.tick();}catch(Throwable error){run.fail(error);}}
-    public static void stopped(){Run run=active;if(run==null)return;if(run.pendingSuccess){run.report("PASS");LOGGER.info("HOST_PERSISTENCE_COMPLETE host={} stage={} architecture={} status=PASS",run.hostName,run.stage,run.architecture);}else if(!run.finished)run.fail(new AssertionError("Server stopped before host proof completed"));active=null;}
+    private static boolean droneSelected(){return "drone".equals(System.getProperty("ocfixture.host","robot"));}
+    private static boolean tabletSelected(){return "tablet".equals(System.getProperty("ocfixture.host","robot"));}
+    private static boolean microcontrollerSelected(){return "microcontroller".equals(System.getProperty("ocfixture.host","robot"));}
+    private static boolean rackSelected(){return "rack".equals(System.getProperty("ocfixture.host","robot"));}
+    public static void register(){if(rackSelected()){RackServerPersistenceContract.register();return;}if(microcontrollerSelected()){MicrocontrollerPersistenceContract.register();return;}if(tabletSelected()){TabletPersistenceContract.register();return;}if(droneSelected()){DronePersistenceContract.register();return;}Driver.add(new ProbeDriver());}
+    public static void start(MinecraftServer server){if(rackSelected()){RackServerPersistenceContract.start(server);return;}if(microcontrollerSelected()){MicrocontrollerPersistenceContract.start(server);return;}if(tabletSelected()){TabletPersistenceContract.start(server);return;}if(droneSelected()){DronePersistenceContract.start(server);return;}try{active=new Run(server);active.start();}catch(Throwable error){if(active!=null)active.fail(error);else throw new IllegalStateException("Host persistence setup failed",error);}}
+    public static void tick(){if(rackSelected()){RackServerPersistenceContract.tick();return;}if(microcontrollerSelected()){MicrocontrollerPersistenceContract.tick();return;}if(tabletSelected()){TabletPersistenceContract.tick();return;}if(droneSelected()){DronePersistenceContract.tick();return;}Run run=active;if(run==null||run.finished)return;try{run.tick();}catch(Throwable error){run.fail(error);}}
+    public static void stopped(){if(rackSelected()){RackServerPersistenceContract.stopped();return;}if(microcontrollerSelected()){MicrocontrollerPersistenceContract.stopped();return;}if(tabletSelected()){TabletPersistenceContract.stopped();return;}if(droneSelected()){DronePersistenceContract.stopped();return;}Run run=active;if(run==null)return;if(run.pendingSuccess){run.report("PASS");LOGGER.info("HOST_PERSISTENCE_COMPLETE host={} stage={} architecture={} status=PASS",run.hostName,run.stage,run.architecture);}else if(!run.finished)run.fail(new AssertionError("Server stopped before host proof completed"));active=null;}
     private static void require(boolean condition,String message){if(!condition)throw new AssertionError(message);}
     private static ItemStack item(String name){var descriptor=li.cil.oc.api.Items.get(name);require(descriptor!=null,"Missing real host hardware "+name);return descriptor.createItemStack(1);}
     private static final class Run {
@@ -221,7 +225,7 @@ public final class HostPersistenceContract {
           assert(hdd.read(f,100)=="persistent-cold-marker") hdd.close(f)
           assert(component.invoke(flash,"getData")=="host-eeprom-data")
           assert(p.rebooted(machine,tmp,disk,flash,control))
-          computer.shutdown()
+          while true do computer.pullSignal() end
         end
         local retained=314159
         local co=coroutine.create(function() local n=271828 coroutine.yield() return n+1 end)
@@ -248,6 +252,6 @@ public final class HostPersistenceContract {
         assert(component.invoke(flash,"getData")=="host-eeprom-data")
         fs.close(reader) hdd.close(diskReader)
         assert(p.verified(machine,tmp,disk,flash,control,retained))
-        computer.shutdown()
+        while true do computer.pullSignal() end
         """;
 }

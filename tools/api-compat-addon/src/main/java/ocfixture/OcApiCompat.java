@@ -38,6 +38,9 @@ public final class OcApiCompat {
         bus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(() -> {
             if (HostPersistenceContract.enabled()) { HostPersistenceContract.register(); return; }
             if (DeviceContract.enabled()) return;
+            if (MekanismContract.enabled()) return;
+            if (ae2Scenario()) return;
+            if (EnderStorageContract.enabled()) return;
             if (API.driver == null || API.network == null) throw new AssertionError("OC facades unavailable during enqueued common setup");
             if (!ModList.get().isLoaded(API.ID_OWNER)) throw new AssertionError("SDK API.ID_OWNER differs from runtime mod metadata: " + API.ID_OWNER);
             if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) {
@@ -60,6 +63,9 @@ public final class OcApiCompat {
         bus.addListener((InterModEnqueueEvent event) -> {
             if (HostPersistenceContract.enabled()) return;
             if (DeviceContract.enabled()) return;
+            if (MekanismContract.enabled()) return;
+            if (ae2Scenario()) return;
+            if (EnderStorageContract.enabled()) return;
             li.cil.oc.api.IMC.registerProgramDiskLabel("oc_fixture_program", "fixture-disk");
             ProductionContract.enqueue();
         });
@@ -68,6 +74,9 @@ public final class OcApiCompat {
     public static String run(ServerLevel level) throws Exception {
         if (RuntimeContract.isRunning()) throw new IllegalStateException("A fixture run is already active");
         finished = false;
+        if (EnderStorageContract.enabled()) return EnderStorageContract.run(level);
+        if (ae2Scenario()) return AppliedEnergisticsContract.run(level);
+        if (MekanismContract.enabled()) return MekanismContract.run(level);
         if (Boolean.getBoolean("ocfixture.computerCraftOnly")) {
             if (!computerCraftLoaded()) throw new IllegalStateException("The requested optional ComputerCraft runtime mod was not loaded");
             verifyComputerCraftSelection();
@@ -106,9 +115,12 @@ public final class OcApiCompat {
         if (HostPersistenceContract.enabled()) { HostPersistenceContract.tick(); return; }
         if (DeviceContract.enabled()) { DeviceContract.tick(); return; }
         if (WorldPersistenceContract.enabled()) { WorldPersistenceContract.tick(event.getServer()); return; }
-        RuntimeContract.tick(); BaseContract.tick(); CheckpointContract.tick(); ProductionContract.tick();
+        if (EnderStorageContract.enabled()) EnderStorageContract.tick();
+        else if (ae2Scenario()) AppliedEnergisticsContract.tick();
+        else if (MekanismContract.enabled()) MekanismContract.tick();
+        else { RuntimeContract.tick(); BaseContract.tick(); CheckpointContract.tick(); ProductionContract.tick(); }
         if (computerCraftLoaded()) ComputerCraftContract.tick();
-        if (!AUTOMATED.get() || finished || RuntimeContract.isRunning() || BaseContract.isRunning() || CheckpointContract.isRunning() || ProductionContract.isRunning() || computerCraftLoaded() && ComputerCraftContract.isRunning()) return;
+        if (!AUTOMATED.get() || finished || EnderStorageContract.isRunning() || ae2Scenario() && AppliedEnergisticsContract.isRunning() || MekanismContract.isRunning() || RuntimeContract.isRunning() || BaseContract.isRunning() || CheckpointContract.isRunning() || ProductionContract.isRunning() || computerCraftLoaded() && ComputerCraftContract.isRunning()) return;
         finished = true;
         boolean failure = results().stream().anyMatch(result -> result.startsWith("FAIL"));
         for (String result : results()) LOGGER.info("API_FIXTURE {}", result);
@@ -129,6 +141,7 @@ public final class OcApiCompat {
             Files.write(path, lines, StandardCharsets.UTF_8);
         } catch (IOException error) { throw new UncheckedIOException("Could not write the API contract report", error); }
     }
+    private static boolean ae2Scenario() { return Boolean.getBoolean("ocfixture.ae2Only"); }
     private static boolean computerCraftLoaded() { return ModList.get().isLoaded("computercraft"); }
     private static boolean computerCraftEnabled() {
         return API.config != null && API.config.hasPath("integration.computerCraft.enabled")
@@ -143,6 +156,6 @@ public final class OcApiCompat {
         if (expected != null && computerCraftEnabled() != Boolean.parseBoolean(expected))
             throw new AssertionError("Isolated ComputerCraft configuration differs from explicit ocEnableComputerCraft selection");
     }
-    public static List<String> results() { return java.util.stream.Stream.of(BaseContract.results(), RuntimeContract.results(), CheckpointContract.results(), ProductionContract.results(), computerCraftLoaded() ? ComputerCraftContract.results() : List.<String>of()).flatMap(List::stream).toList(); }
-    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { if (HostPersistenceContract.enabled()) { HostPersistenceContract.stopped(); return; } if (DeviceContract.enabled()) { DeviceContract.stopped(); return; } WorldPersistenceContract.stopped(); RuntimeContract.close(); BaseContract.close(); CheckpointContract.close(); ProductionContract.close(); if (computerCraftLoaded()) ComputerCraftContract.close(); AUTOMATED.set(false); }
+    public static List<String> results() { if(EnderStorageContract.enabled())return EnderStorageContract.results();if(ae2Scenario())return AppliedEnergisticsContract.results();if(MekanismContract.enabled())return MekanismContract.results();return java.util.stream.Stream.of(BaseContract.results(), RuntimeContract.results(), CheckpointContract.results(), ProductionContract.results(), computerCraftLoaded() ? ComputerCraftContract.results() : List.<String>of()).flatMap(List::stream).toList(); }
+    @SubscribeEvent public static void stopped(ServerStoppedEvent event) { if(EnderStorageContract.enabled()){EnderStorageContract.close();AUTOMATED.set(false);return;}if(ae2Scenario()){AppliedEnergisticsContract.close();AUTOMATED.set(false);return;}if(MekanismContract.enabled()){MekanismContract.close();AUTOMATED.set(false);return;}if (HostPersistenceContract.enabled()) { HostPersistenceContract.stopped(); return; } if (DeviceContract.enabled()) { DeviceContract.stopped(); return; } WorldPersistenceContract.stopped(); RuntimeContract.close(); BaseContract.close(); CheckpointContract.close(); ProductionContract.close(); if (computerCraftLoaded()) ComputerCraftContract.close(); AUTOMATED.set(false); }
 }

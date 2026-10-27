@@ -21,6 +21,15 @@ def hostStage = providers.gradleProperty('ocHostStage').getOrElse('prepare')
 def hostArchitecture = providers.gradleProperty('ocHostArchitecture').getOrElse('Lua 5.3')
 def hostDirectory = file("${repositoryRoot}/build/api-compat-addon/hosts/${hostName}/${hostId}")
 def hostReport = new File(hostDirectory, "${hostStage}-results.txt")
+def mekanismId = providers.gradleProperty('ocMekanismRunId').getOrElse('unselected')
+def mekanismDirectory = file("${repositoryRoot}/build/api-compat-addon/mekanism/${mekanismId}")
+def mekanismReport = new File(mekanismDirectory, 'contract-results.txt')
+def appengId = providers.gradleProperty('ocAppliedEnergisticsRunId').getOrElse('unselected')
+def appengDirectory = file("${repositoryRoot}/build/api-compat-addon/appeng/${appengId}")
+def appengReport = new File(appengDirectory, 'contract-results.txt')
+def enderId = providers.gradleProperty('ocEnderStorageRunId').getOrElse('unselected')
+def enderDirectory = file("${repositoryRoot}/build/api-compat-addon/enderstorage/${enderId}")
+def enderReport = new File(enderDirectory, 'contract-results.txt')
 def computerCraftEnabled = providers.gradleProperty('ocEnableComputerCraft').getOrElse('false') == 'true'
 def computerCraftScenario = providers.gradleProperty('ocComputerCraftJar').isPresent()
 def fixtureConfiguration = { String version ->
@@ -95,6 +104,33 @@ neoForge {
             systemProperty 'ocfixture.hostArchitecture', hostArchitecture
             systemProperty 'ocfixture.hostDirectory', hostDirectory.absolutePath
         }
+        mekanismServer {
+            server()
+            gameDirectory = mekanismDirectory
+            programArgument '--nogui'
+            systemProperty 'ocfixture.autorun', 'true'
+            systemProperty 'ocfixture.stopAfterRun', 'true'
+            systemProperty 'ocfixture.mekanismOnly', 'true'
+            systemProperty 'ocfixture.reportFile', mekanismReport.absolutePath
+        }
+        appliedEnergisticsServer {
+            server()
+            gameDirectory = appengDirectory
+            programArgument '--nogui'
+            systemProperty 'ocfixture.autorun', 'true'
+            systemProperty 'ocfixture.stopAfterRun', 'true'
+            systemProperty 'ocfixture.ae2Only', 'true'
+            systemProperty 'ocfixture.reportFile', appengReport.absolutePath
+        }
+        enderStorageServer {
+            server()
+            gameDirectory = enderDirectory
+            programArgument '--nogui'
+            systemProperty 'ocfixture.autorun', 'true'
+            systemProperty 'ocfixture.stopAfterRun', 'true'
+            systemProperty 'ocfixture.enderStorageOnly', 'true'
+            systemProperty 'ocfixture.reportFile', enderReport.absolutePath
+        }
     }
     mods { oc_api_compat { sourceSet sourceSets.main; sourceSet sourceSets.legacy } }
 }
@@ -104,9 +140,152 @@ dependencies {
     compileOnly 'com.typesafe:config:1.4.1'
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-core-api:1.120.2'
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-forge-api:1.120.2'
+    compileOnly('org.appliedenergistics:appliedenergistics2:19.2.14') { transitive = false }
     legacyCompileOnly files(legacyFile)
     runtimeOnly files(runtimeFile)
     if (providers.gradleProperty('ocComputerCraftJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocComputerCraftJar').get())
+    if (providers.gradleProperty('ocMekanismJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocMekanismJar').get())
+    if (providers.gradleProperty('ocAppliedEnergisticsJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocAppliedEnergisticsJar').get())
+    if (providers.gradleProperty('ocGuideMeJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocGuideMeJar').get())
+    if (providers.gradleProperty('ocEnderStorageJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocEnderStorageJar').get())
+    if (providers.gradleProperty('ocCodeChickenLibJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocCodeChickenLibJar').get())
+}
+def prepareMekanismRun = tasks.register('prepareMekanismRun') {
+    outputs.upToDateWhen { false }
+    doLast {
+        if (!providers.gradleProperty('ocMekanismRunId').isPresent() || !(mekanismId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a new, explicit -PocMekanismRunId=NAME')
+        if (!providers.gradleProperty('ocMekanismJar').isPresent() || !file(providers.gradleProperty('ocMekanismJar').get()).isFile())
+            throw new GradleException('Supply -PocMekanismJar=/absolute/path/to/the/real/Mekanism.jar')
+        if (new File(mekanismDirectory, 'ocfixture-mekanism-world/level.dat').exists() || mekanismReport.exists())
+            throw new GradleException('This Mekanism run already exists; choose a new run id. Existing worlds are never reset.')
+        def blacklist = providers.gradleProperty('ocMekanismBlacklist').getOrElse('').split(',').collect { it.trim() }.findAll { !it.isEmpty() }
+        def debugIds = providers.gradleProperty('ocMekanismIds').getOrElse('false') == 'true'
+        def settings = new File(mekanismDirectory, 'config/opencomputers/settings.conf')
+        settings.parentFile.mkdirs()
+        settings.text = fixtureConfiguration('mekanism-fixture') +
+            '\nopencomputers.integration.modBlacklist = ' + groovy.json.JsonOutput.toJson(blacklist) +
+            "\nopencomputers.debug.insertIdsInConverters = ${debugIds}\n"
+        def propertiesFile = new File(mekanismDirectory, 'server.properties')
+        if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-mekanism-world
+level-type=minecraft\\:flat
+generator-settings={"layers":[{"block":"minecraft:bedrock","height":1}],"biome":"minecraft:plains"}
+online-mode=false
+server-ip=127.0.0.1
+server-port=25581
+gamemode=creative
+spawn-protection=0
+view-distance=2
+simulation-distance=2
+enable-command-block=false
+''', 'UTF-8')
+        def selected = new Properties(); propertiesFile.withInputStream { selected.load(it) }
+        if (selected.getProperty('level-name') != 'ocfixture-mekanism-world') throw new GradleException('Refusing a different Minecraft world')
+        def eula = new File(mekanismDirectory, 'eula.txt')
+        def previous = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
+        if (!eula.exists() && previous.isFile()) {
+            def accepted = new Properties(); previous.withInputStream { accepted.load(it) }
+            if (accepted.getProperty('eula') == 'true') eula.bytes = previous.bytes
+        }
+        if (!eula.isFile()) throw new GradleException("Set the isolated server's EULA in ${eula}; acceptance is not generated")
+    }
+}
+tasks.matching { it.name == 'runMekanismServer' }.configureEach {
+    dependsOn prepareMekanismRun
+    doLast {
+        def lines = mekanismReport.isFile() ? mekanismReport.readLines('UTF-8') : []
+        if (lines.isEmpty() || lines[0] != 'status=PASS') throw new GradleException("The real Mekanism scenario did not pass; see ${mekanismReport}")
+    }
+}
+def prepareAppliedEnergisticsRun = tasks.register('prepareAppliedEnergisticsRun') {
+    outputs.upToDateWhen { false }
+    doLast {
+        if (!providers.gradleProperty('ocAppliedEnergisticsRunId').isPresent() || !(appengId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a new, explicit -PocAppliedEnergisticsRunId=NAME')
+        for (String property : ['ocAppliedEnergisticsJar', 'ocGuideMeJar'])
+            if (!providers.gradleProperty(property).isPresent() || !file(providers.gradleProperty(property).get()).isFile())
+                throw new GradleException("Supply -P${property}=/absolute/path/to/the/official/runtime.jar")
+        if (new File(appengDirectory, 'ocfixture-appeng-world/level.dat').exists() || appengReport.exists())
+            throw new GradleException('This AE2 run already exists; choose a new run id. Existing worlds are never reset.')
+        def settings = new File(appengDirectory, 'config/opencomputers/settings.conf')
+        settings.parentFile.mkdirs(); settings.text = fixtureConfiguration('appeng-fixture')
+        def propertiesFile = new File(appengDirectory, 'server.properties')
+        if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-appeng-world
+level-type=minecraft\\:flat
+generator-settings={"layers":[{"block":"minecraft:bedrock","height":1}],"biome":"minecraft:plains"}
+online-mode=false
+server-ip=127.0.0.1
+server-port=25582
+gamemode=creative
+spawn-protection=0
+view-distance=2
+simulation-distance=2
+enable-command-block=false
+''', 'UTF-8')
+        def selected = new Properties(); propertiesFile.withInputStream { selected.load(it) }
+        if (selected.getProperty('level-name') != 'ocfixture-appeng-world') throw new GradleException('Refusing a different Minecraft world')
+        def eula = new File(appengDirectory, 'eula.txt')
+        def previous = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
+        if (!eula.exists() && previous.isFile()) {
+            def accepted = new Properties(); previous.withInputStream { accepted.load(it) }
+            if (accepted.getProperty('eula') == 'true') eula.bytes = previous.bytes
+        }
+        if (!eula.isFile()) throw new GradleException("Set the isolated server's EULA in ${eula}; acceptance is not generated")
+    }
+}
+tasks.matching { it.name == 'runAppliedEnergisticsServer' }.configureEach {
+    dependsOn prepareAppliedEnergisticsRun
+    doLast {
+        def lines = appengReport.isFile() ? appengReport.readLines('UTF-8') : []
+        if (lines.isEmpty() || lines[0] != 'status=PASS') throw new GradleException("The real AE2 scenario did not pass; see ${appengReport}")
+    }
+}
+def prepareEnderStorageRun = tasks.register('prepareEnderStorageRun') {
+    outputs.upToDateWhen { false }
+    doLast {
+        if (!providers.gradleProperty('ocEnderStorageRunId').isPresent() || !(enderId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a new, explicit -PocEnderStorageRunId=NAME')
+        for (String property : ['ocEnderStorageJar', 'ocCodeChickenLibJar'])
+            if (!providers.gradleProperty(property).isPresent() || !file(providers.gradleProperty(property).get()).isFile())
+                throw new GradleException("Supply -P${property}=/absolute/path/to/the/official/runtime.jar")
+        if (new File(enderDirectory, 'ocfixture-enderstorage-world/level.dat').exists() || enderReport.exists())
+            throw new GradleException('This EnderStorage run already exists; choose a new run id. Existing worlds are never reset.')
+        def settings = new File(enderDirectory, 'config/opencomputers/settings.conf')
+        settings.parentFile.mkdirs()
+        settings.text = fixtureConfiguration('enderstorage-fixture') +
+            (providers.gradleProperty('ocEnderStorageGeneric').getOrElse('false') == 'true' ?
+                '\nopencomputers.integration.vanilla.enableInventoryDriver = true\nopencomputers.integration.vanilla.enableTankDriver = true\n' : '') +
+            (providers.gradleProperty('ocEnderStorageDisabled').getOrElse('false') == 'true' ? '\nopencomputers.integration.modBlacklist = ["enderstorage"]\n' : '')
+        def propertiesFile = new File(enderDirectory, 'server.properties')
+        if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-enderstorage-world
+level-type=minecraft\\:flat
+generator-settings={"layers":[{"block":"minecraft:bedrock","height":1}],"biome":"minecraft:plains"}
+online-mode=false
+server-ip=127.0.0.1
+server-port=25583
+gamemode=creative
+spawn-protection=0
+view-distance=2
+simulation-distance=2
+enable-command-block=false
+''', 'UTF-8')
+        def selected = new Properties(); propertiesFile.withInputStream { selected.load(it) }
+        if (selected.getProperty('level-name') != 'ocfixture-enderstorage-world') throw new GradleException('Refusing a different Minecraft world')
+        def eula = new File(enderDirectory, 'eula.txt')
+        def previous = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
+        if (!eula.exists() && previous.isFile()) {
+            def accepted = new Properties(); previous.withInputStream { accepted.load(it) }
+            if (accepted.getProperty('eula') == 'true') eula.bytes = previous.bytes
+        }
+        if (!eula.isFile()) throw new GradleException("Set the isolated server's EULA in ${eula}; acceptance is not generated")
+    }
+}
+tasks.matching { it.name == 'runEnderStorageServer' }.configureEach {
+    dependsOn prepareEnderStorageRun
+    doLast {
+        def lines = enderReport.isFile() ? enderReport.readLines('UTF-8') : []
+        if (lines.isEmpty() || lines[0] != 'status=PASS') throw new GradleException("The real EnderStorage scenario did not pass; see ${enderReport}")
+    }
 }
 tasks.named('compileLegacyJava') {
     doFirst {
@@ -227,7 +406,7 @@ tasks.matching { it.name == 'runDeviceServer' }.configureEach {
 def prepareHostPersistenceRun = tasks.register('prepareHostPersistenceRun') {
     outputs.upToDateWhen { false }
     doLast {
-        if (hostName != 'robot') throw new GradleException('This first real-host scenario currently supports ocHost=robot only')
+        if (!(hostName in ['robot', 'drone', 'tablet', 'microcontroller', 'rack'])) throw new GradleException('ocHost must be robot, drone, tablet, microcontroller or rack')
         if (!providers.gradleProperty('ocHostRunId').isPresent() || !(hostId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
             throw new GradleException('Supply a new, explicit -PocHostRunId=NAME')
         if (!(hostStage in ['prepare', 'resume'])) throw new GradleException('ocHostStage must be prepare or resume')

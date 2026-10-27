@@ -240,6 +240,16 @@ every non-front side and left only through the configured open outputs; the five
 external graphs remained separate from one another and from the private VM.
 Its original hardware does not permit an HDD, and the fixture adds none.
 
+A real rack/server blade also passed native Lua 5.3 prepare/resume in separate
+Windows JVMs. Legal hardware was installed through the held blade menu and the
+blade through the rack menu; real payload codecs/handlers set wiring and power.
+The loaded blade retained its native locals, nested coroutine, registry-aware
+userdata, tmpfs/HDD offsets, EEPROM, queued signal, every component identity,
+machine users and actual redstone output. Primary graphs stayed isolated and
+secondary packets used the saved selected bus in both directions. A second
+stopped blade witnessed bus isolation; no second running VM proof is claimed.
+The registered test player used a local mock transport, not a remote client.
+
 The external-addon fixture also passed an end-to-end IMC production contract:
 the real assembler validates and consumes addon inputs, applies energy over
 multiple work ticks and produces the requested item; the real disassembler
