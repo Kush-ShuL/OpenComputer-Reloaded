@@ -21,5 +21,7 @@ public final class WaypointScreen extends Screen {
     @Override public boolean isPauseScreen(){return false;}
     @Override public void tick(){if(minecraft==null||minecraft.player==null||minecraft.level==null||!minecraft.level.dimension().location().equals(waypoint.dimension())||minecraft.player.distanceToSqr(waypoint.pos().getX()+.5,waypoint.pos().getY()+.5,waypoint.pos().getZ()+.5)>64||!(minecraft.level.getBlockEntity(waypoint.pos()) instanceof WaypointBlockEntity))onClose();}
     @Override public boolean keyPressed(int key,int scan,int modifiers){if(key==GLFW.GLFW_KEY_ENTER||key==GLFW.GLFW_KEY_KP_ENTER){if(!field.getValue().equals(waypoint.label())){PacketDistributor.sendToServer(new NetworkBlockNetworking.WaypointLabel(waypoint.dimension(),waypoint.pos(),field.getValue()));onClose();}return true;}return super.keyPressed(key,scan,modifiers);}
-    @Override public void render(GuiGraphics graphics,int mouseX,int mouseY,float partial){graphics.blit(BACKGROUND,left,top,0,0,176,24);super.render(graphics,mouseX,mouseY,partial);}
+    // Screen.render draws this background before the field. Its default background
+    // blurs the world and would also blur a panel drawn before super.render.
+    @Override public void renderBackground(GuiGraphics graphics,int mouseX,int mouseY,float partial){graphics.blit(BACKGROUND,left,top,0,0,176,24);}
 }

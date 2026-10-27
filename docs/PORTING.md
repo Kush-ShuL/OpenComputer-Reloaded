@@ -599,6 +599,15 @@ validated, leaving seven: six have no confirmed official usable 1.21.1 NeoForge
 target; Railcraft Reborn has a modern target with changed WorldSpike behavior.
 All seven remain on the fixed checklist.
 
+The additional Windows client `client-waypoint-20261027-j2` verified the
+Waypoint name editor's background fix. Its original panel is now drawn through
+the screen's own background method, bypassing the inherited blur and keeping
+the text field above the panel. A real same-frame screen Pre/Post comparison
+preserved all 890,415 world pixels outside the panel with the global blur
+option still at 5; the actual before/after and ordinary editor frames were
+visually reviewed. This focused run passed at approximately 59 FPS and does
+not close the remaining C23 menu families.
+
 The standalone SDK has successfully compiled and published to Maven Local.
 A separately compiled addon has passed on a Windows dedicated server: legacy
 Converter binaries, registry-aware persistence, network and prefab lifecycles,
