@@ -19,7 +19,8 @@ public final class InternetFilteringRule {
     private static volatile Policy policy;
     private final List<BiPredicate<InetAddress,String>> predicates=new ArrayList<>();
     private final List<Domain> domains=new ArrayList<>();
-    private boolean allow,ignored,invalid;
+    private boolean allow,ignored;
+    private volatile boolean invalid;
     private static boolean privateAddress(InetAddress address) { return address.isAnyLocalAddress()||address.isLoopbackAddress()||address.isLinkLocalAddress()||address.isSiteLocalAddress(); }
     private static boolean bogon(InetAddress address) { return BOGONS.stream().anyMatch(range->range.matches(address)); }
     private static final class Domain {
@@ -62,9 +63,10 @@ public final class InternetFilteringRule {
     public Boolean apply(InetAddress address,String host) {
         if(invalid) return false;
         if(ignored) return null;
+        try{resolve();}catch(IOException error){OpenComputers.LOGGER.error("Invalid Internet filtering rule domain",error);return false;}
         return predicates.stream().allMatch(predicate->predicate.test(address,host))?allow:null;
     }
-    private void resolve() throws IOException { for(var domain:domains) domain.resolve(); }
+    private void resolve() throws IOException { try{for(var domain:domains) domain.resolve();}catch(IOException error){invalid=true;throw error;} }
     public static Policy policy() { return policy(Settings.get()); }
     public static Policy policy(Settings settings) {
         Policy result=policy;
@@ -89,10 +91,10 @@ public final class InternetFilteringRule {
                 }
                 if(key.equals("whitelist")&&!entries.isEmpty()) rules.add(new InternetFilteringRule("deny all"));
             }
-            settings.config.getStringList("internet.filteringRules").forEach(rule->rules.add(new InternetFilteringRule(rule)));
+            rules.addAll(Arrays.asList(settings.internetFilteringRules));
             invalid=rules.stream().anyMatch(InternetFilteringRule::invalid);
         }
-        public boolean available() { return (settings.httpEnabled||settings.tcpEnabled)&&!invalid; }
+        public boolean available() { return settings.internetAccessAllowed()&&!invalid; }
         private synchronized void resolve() throws IOException {
             if(resolved) return;
             try { for(var rule:rules) rule.resolve(); resolved=true; }

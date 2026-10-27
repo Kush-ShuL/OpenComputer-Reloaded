@@ -119,6 +119,7 @@ public final class DeviceContract {
             if(Boolean.getBoolean("ocfixture.agentActionsOnly")){robotDone=rackDone=true;FlightUpgradeContract.start(level,origin.south(12),results);CraftingTradingContract.start(level,origin.south(36),results);ChunkloaderContract.start(level,origin.south(60),results);return;}
             if(Boolean.getBoolean("ocfixture.deviceBatchOnly")){robotDone=rackDone=true;InventoryControlContract.start(level,origin.south(12),results);PowerDevicesContract.start(level,origin.south(48),results);WorldSensorsContract.start(level,origin.south(84),results);NetworkDevicesContract.start(level,origin.south(128),results);RemoteAdapterContract.start(level,origin.south(168),results);return;}
             if(Boolean.getBoolean("ocfixture.hostBatchOnly")){robotDone=rackDone=true;StorageFileSystemContract.start(level,origin.south(12),results);ProductionDevicesContract.start(level,origin.south(48),results);PlayerToolsContract.start(level,origin.south(84),results);MachineHostsContract.start(level,origin.south(128),results);return;}
+            if(Boolean.getBoolean("ocfixture.advancedBatchOnly")){robotDone=rackDone=true;GraphicsCardContract.start(level,origin.south(12),results);HologramContract.start(level,origin.south(48),results);InternetCardContract.start(level,origin.south(84),results);SchedulerContract.start(level,origin.south(128),results);CheckpointContract.run(level);return;}
             if(Boolean.getBoolean("ocfixture.vanillaOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;VanillaContract.start(level,origin.south(12),results);return;}
             if(Boolean.getBoolean("ocfixture.forgeEnergyOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;ForgeEnergyContract.start(level,origin.south(12),results);return;}
             require(CreativeTab.instance!=null,"OC did not publish its creative tab");
@@ -212,7 +213,12 @@ public final class DeviceContract {
             ProductionDevicesContract.tick();
             PlayerToolsContract.tick();
             MachineHostsContract.tick();
-            if(robotDone&&rackDone&&!DiskConcurrencyContract.isRunning()&&!AgentFluidContract.isRunning()&&!ForgeEnergyContract.isRunning()&&!ExperienceContract.isRunning()&&!GeneratorContract.isRunning()&&!VanillaContract.isRunning()&&!RecipeConfigContract.isRunning()&&!EnderIOContract.isRunning()&&!Tis3dContract.isRunning()&&!UpgradeStorageContract.isRunning()&&!FlightUpgradeContract.isRunning()&&!CraftingTradingContract.isRunning()&&!ChunkloaderContract.isRunning()&&!InventoryControlContract.isRunning()&&!PowerDevicesContract.isRunning()&&!WorldSensorsContract.isRunning()&&!NetworkDevicesContract.isRunning()&&!RemoteAdapterContract.isRunning()&&!StorageFileSystemContract.isRunning()&&!ProductionDevicesContract.isRunning()&&!PlayerToolsContract.isRunning()&&!MachineHostsContract.isRunning())finish();
+            GraphicsCardContract.tick();
+            HologramContract.tick();
+            InternetCardContract.tick();
+            SchedulerContract.tick();
+            CheckpointContract.tick();
+            if(robotDone&&rackDone&&!DiskConcurrencyContract.isRunning()&&!AgentFluidContract.isRunning()&&!ForgeEnergyContract.isRunning()&&!ExperienceContract.isRunning()&&!GeneratorContract.isRunning()&&!VanillaContract.isRunning()&&!RecipeConfigContract.isRunning()&&!EnderIOContract.isRunning()&&!Tis3dContract.isRunning()&&!UpgradeStorageContract.isRunning()&&!FlightUpgradeContract.isRunning()&&!CraftingTradingContract.isRunning()&&!ChunkloaderContract.isRunning()&&!InventoryControlContract.isRunning()&&!PowerDevicesContract.isRunning()&&!WorldSensorsContract.isRunning()&&!NetworkDevicesContract.isRunning()&&!RemoteAdapterContract.isRunning()&&!StorageFileSystemContract.isRunning()&&!ProductionDevicesContract.isRunning()&&!PlayerToolsContract.isRunning()&&!MachineHostsContract.isRunning()&&!GraphicsCardContract.isRunning()&&!HologramContract.isRunning()&&!InternetCardContract.isRunning()&&!SchedulerContract.isRunning()&&!CheckpointContract.isRunning())finish();
         }
         void tickRobot(){
             Machine machine=robot.machine();
@@ -276,6 +282,7 @@ public final class DeviceContract {
         }
         void finish(){
             if(finished)return;finished=true;
+            if(Boolean.getBoolean("ocfixture.advancedBatchOnly"))results.addAll(CheckpointContract.results());
             try{cleanup();}catch(Throwable error){results.add("FAIL cleanup: "+error);LOGGER.error("DEVICE_FIXTURE cleanup",error);}
             boolean failure=results.stream().anyMatch(value->value.startsWith("FAIL"));List<String> report=new ArrayList<>();report.add("status="+(failure?"FAIL":"PASS"));report.add("scenario=real-devices");report.add("run_id="+runId);report.add("ticks="+ticks);report.addAll(results);
             try{Files.createDirectories(directory);Files.write(directory.resolve("device-results.txt"),report,StandardCharsets.UTF_8);}catch(Exception error){throw new IllegalStateException("Could not write device report",error);}
@@ -304,6 +311,11 @@ public final class DeviceContract {
             ProductionDevicesContract.close();
             PlayerToolsContract.close();
             MachineHostsContract.close();
+            GraphicsCardContract.close();
+            HologramContract.close();
+            InternetCardContract.close();
+            SchedulerContract.close();
+            CheckpointContract.close();
             if(player!=null)player.closeFixtureMenu();if(robot!=null){robot.machine().stop();robot.equipmentInventory().clearContent();robot.mainInventory().clearContent();}if(tablet!=null){tablet.machine().stop();tablet.machine().node().remove();}
             for(Probe probe:probes)probe.node().remove();probes.clear();
             var entries=new ArrayList<>(restored.entrySet());Collections.reverse(entries);for(var entry:entries){if(level.getBlockEntity(entry.getKey()) instanceof Rack existing)existing.clearContent();level.setBlock(entry.getKey(),entry.getValue(),3);}restored.clear();

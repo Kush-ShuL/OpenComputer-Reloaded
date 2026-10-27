@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 82 项，剩余 38 项。**
+**总计 120 项，已闭合 86 项，剩余 34 项。**
 
-剩余包括：已有实现待核对/验收 30 项，有明确缺口 8 项。
+剩余包括：已有实现待核对/验收 26 项，有明确缺口 8 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -27,8 +27,8 @@
 
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
-| 基础与交付 | 24 | 14 | 10 |
-| 设备与组件 | 61 | 48 | 13 |
+| 基础与交付 | 24 | 15 | 9 |
+| 设备与组件 | 61 | 51 | 10 |
 | 工具与附加玩法 | 16 | 14 | 2 |
 | 可选集成 | 19 | 6 | 13 |
 
@@ -102,15 +102,15 @@
 
 闭合依据：[docs/PORTING.md](../docs/PORTING.md)、[tools/api-compat-addon/src/main/java/ocfixture/BaseContract.java](../tools/api-compat-addon/src/main/java/ocfixture/BaseContract.java)
 
-### C07 · 机器调度、预算、线程与异常处理 · 已有实现，待核对/验收
+### C07 · 机器调度、预算、线程与异常处理 · 已闭合
 
 完成条件：原回调预算、内存限制、暂停/停止/超时、线程安全与错误传播闭合；已有死锁修复保留。
-
-剩余：核对剩余调度/资源限制分支；已有原生及 LuaJ 回归只覆盖部分路径。
 
 原版范围：`src/main/scala/li/cil/oc/server/machine/`、`src/main/scala/li/cil/oc/common/SaveHandler.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/machine/](../src/main/java/li/cil/oc/server/machine/)
+
+闭合依据：[docs/machine-scheduler.md](../docs/machine-scheduler.md)、[build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt](../build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt)
 
 ### C08 · 原生 Lua 5.2 运行与状态恢复 · 已闭合
 
@@ -457,35 +457,35 @@
 
 闭合依据：[docs/world-sensors.md](../docs/world-sensors.md)、[src/main/java/li/cil/oc/server/driver/item/Geolyzer.java](../src/main/java/li/cil/oc/server/driver/item/Geolyzer.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
-### D18 · 显卡及显存 · 已有实现，待核对/验收
+### D18 · 显卡及显存 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/GraphicsCard.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/GraphicsCard.java](../src/main/java/li/cil/oc/server/component/GraphicsCard.java)
 
-### D19 · 全息投影 · 已有实现，待核对/验收
+闭合依据：[docs/graphics-card.md](../docs/graphics-card.md)、[build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt](../build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt)
+
+### D19 · 全息投影 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Hologram.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/HologramBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/HologramBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Hologram.java](../src/main/java/li/cil/oc/server/component/Hologram.java)
 
-### D20 · 因特网卡 · 已有实现，待核对/验收
+闭合依据：[docs/hologram.md](../docs/hologram.md)、[build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt](../build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt)
+
+### D20 · 因特网卡 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/InternetCard.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/InternetCard.java](../src/main/java/li/cil/oc/server/component/InternetCard.java)
+
+闭合依据：[docs/internet-card.md](../docs/internet-card.md)、[build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt](../build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt)
 
 ### D21 · 键盘 · 已有实现，待核对/验收
 

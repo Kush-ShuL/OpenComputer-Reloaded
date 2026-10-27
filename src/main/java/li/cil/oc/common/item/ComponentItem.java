@@ -50,6 +50,9 @@ public final class ComponentItem extends Item implements Tiered {
     public boolean processor() { return kind == Kind.PROCESSOR || kind == Kind.APU; }
     public boolean graphics() { return kind == Kind.GRAPHICS || kind == Kind.APU; }
     public boolean storage() { return kind == Kind.HDD || kind == Kind.FLOPPY; }
+    @Override public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
+        return kind != Kind.GRAPHICS && super.isBookEnchantable(stack, book);
+    }
     public static void setDriveUiOpener(BiConsumer<Player, InteractionHand> opener) { driveUi = Objects.requireNonNull(opener); }
 
     @Override public int getMaxStackSize(ItemStack stack) {
@@ -76,7 +79,7 @@ public final class ComponentItem extends Item implements Tiered {
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         CompoundTag data = root.getCompound("oc:data");
         var driver = li.cil.oc.api.Driver.driverFor(stack);
-        if (kind != Kind.EEPROM && kind != Kind.FLOPPY)
+        if (kind != Kind.EEPROM && kind != Kind.FLOPPY && (kind != Kind.GRAPHICS || flag.isAdvanced()))
             detail(tooltip, "hardware_tier", tier() + 1);
         if (processor() && driver instanceof MutableProcessor processor) {
             detail(tooltip, "cpu_components", processor.supportedComponents(stack));
@@ -85,7 +88,14 @@ public final class ComponentItem extends Item implements Tiered {
             detail(tooltip, "processor_configure");
         }
         if (kind == Kind.MEMORY) detail(tooltip, "memory_size", Settings.get().ramSizes[level]);
-        if (graphics()) {
+        if (kind == Kind.GRAPHICS) {
+            int[] resolution = Settings.screenResolutionsByTier[level];
+            String operations = switch (level) { case 0 -> "1/1/4/2/2"; case 1 -> "2/4/8/4/4"; default -> "4/8/16/8/8"; };
+            Component.translatable("oc:tooltip.graphicscard", resolution[0], resolution[1],
+                    PackedColor.Depth.bits(Settings.screenDepthsByTier[level]), operations)
+                .getString().replace("[nl]", "\n").lines()
+                .forEach(line -> tooltip.add(Component.literal(line.strip()).withStyle(ChatFormatting.GRAY)));
+        } else if (graphics()) {
             int[] resolution = Settings.screenResolutionsByTier[level];
             detail(tooltip, "gpu_resolution", resolution[0], resolution[1]);
             detail(tooltip, "gpu_depth", PackedColor.Depth.bits(Settings.screenDepthsByTier[level]));
@@ -111,6 +121,7 @@ public final class ComponentItem extends Item implements Tiered {
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        if (kind == Kind.GRAPHICS) return InteractionResultHolder.pass(stack);
         if (processor() && player.isShiftKeyDown() && !level.isClientSide) {
             if (li.cil.oc.api.Driver.driverFor(stack) instanceof MutableProcessor processor) {
                 var architectures = new ArrayList<>(processor.allArchitectures());

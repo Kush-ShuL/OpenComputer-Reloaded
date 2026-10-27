@@ -21,17 +21,18 @@ public final class NetworkCardItem extends Item implements Tiered {
     }
     public Kind kind() { return kind; }
     @Override public int tier() { return tier; }
+    @Override public boolean isBookEnchantable(ItemStack stack,ItemStack book) { return kind!=Kind.INTERNET&&super.isBookEnchantable(stack,book); }
     @Override public int getMaxStackSize(ItemStack stack) {
         var data=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getCompound("oc:data");
         return data.getCompound("node").contains("address")?1:super.getMaxStackSize(stack);
     }
     @Override public void appendHoverText(ItemStack stack,TooltipContext context,List<Component> tooltip,TooltipFlag flag) {
         super.appendHoverText(stack,context,tooltip,flag);
-        if(kind==Kind.DATA||kind==Kind.LINKED){
-            String key=kind==Kind.DATA?"oc:tooltip.datacard"+tier:"oc:tooltip.linkedcard";
+        if(kind==Kind.DATA||kind==Kind.LINKED||kind==Kind.INTERNET){
+            String key=kind==Kind.DATA?"oc:tooltip.datacard"+tier:kind==Kind.LINKED?"oc:tooltip.linkedcard":"oc:tooltip.internetcard";
             for(String line:Component.translatable(key).getString().split("\\[nl\\]"))tooltip.add(Component.literal(line));
         }
-        tooltip.add(Component.translatable("tooltip.opencomputers.hardware_tier",tier+1).withStyle(ChatFormatting.GRAY));
+        if(kind!=Kind.INTERNET)tooltip.add(Component.translatable("tooltip.opencomputers.hardware_tier",tier+1).withStyle(ChatFormatting.GRAY));
         if(kind==Kind.LINKED) {
             var data=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getCompound("oc:data");
             if(data.contains("oc:tunnel")) {

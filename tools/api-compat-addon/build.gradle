@@ -134,6 +134,7 @@ neoForge {
             systemProperty 'ocfixture.agentActionsOnly', providers.gradleProperty('ocAgentActionsOnly').getOrElse('false')
             systemProperty 'ocfixture.deviceBatchOnly', providers.gradleProperty('ocDeviceBatchOnly').getOrElse('false')
             systemProperty 'ocfixture.hostBatchOnly', providers.gradleProperty('ocHostBatchOnly').getOrElse('false')
+            systemProperty 'ocfixture.advancedBatchOnly', providers.gradleProperty('ocAdvancedBatchOnly').getOrElse('false')
             systemProperty 'ocfixture.vanillaOnly', providers.gradleProperty('ocVanillaOnly').getOrElse('false')
         }
         hostPersistenceServer {
@@ -570,6 +571,15 @@ def prepareDeviceRun = tasks.register('prepareDeviceRun') {
         settings.text = fixtureConfiguration('real-device-fixture') +
             '\nopencomputers.power.modBlacklist = ' + groovy.json.JsonOutput.toJson(powerBlacklist) +
             '\nopencomputers.integration.modBlacklist = ' + groovy.json.JsonOutput.toJson(integrationBlacklist) + '\n'
+        if (providers.gradleProperty('ocAdvancedBatchOnly').getOrElse('false') == 'true') {
+            settings.append('''
+opencomputers.internet.enableHttp = true
+opencomputers.internet.enableTcp = true
+opencomputers.internet.enableHttpHeaders = true
+opencomputers.internet.filteringRules = ["allow ip:127.0.0.1", "deny all"]
+opencomputers.internet.maxTcpConnections = 4
+''', 'UTF-8')
+        }
         if (providers.gradleProperty('ocRecipeConfigOnly').getOrElse('false') == 'true') {
             new File(settings.parentFile, 'user.recipes').text = 'include file("default.recipes")\ninclude file("fixture.recipes")\n'
             new File(settings.parentFile, 'fixture.recipes').text = '''

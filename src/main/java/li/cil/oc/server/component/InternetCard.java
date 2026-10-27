@@ -85,7 +85,7 @@ public final class InternetCard extends AbstractManagedEnvironment implements De
         if(owner!=null&&message.data().length==0&&(message.name().equals("computer.stopped")||message.name().equals("computer.started"))&&Objects.equals(message.source().address(),owner.node().address()))closeConnections();
     }
     private static URL checkAddress(String address) throws IOException {
-        URL url;try{url=URI.create(address).toURL();}catch(IllegalArgumentException|MalformedURLException error){throw new FileNotFoundException("invalid address");}
+        URL url;try{url=new URL(address);}catch(MalformedURLException error){throw new FileNotFoundException("invalid address");}
         if(!url.getProtocol().equalsIgnoreCase("http")&&!url.getProtocol().equalsIgnoreCase("https"))throw new FileNotFoundException("unsupported protocol");return url;
     }
     private static URI checkUri(String address,int port) {
@@ -137,6 +137,7 @@ public final class InternetCard extends AbstractManagedEnvironment implements De
         private volatile InternetCard owner;
         private SocketChannel channel;
         private Future<?> address;
+        private boolean addressResolved;
         private final UUID id=UUID.randomUUID();
         public TCPSocket() {} // A persisted live OS socket intentionally restores closed.
         private TCPSocket(InternetCard owner,URI uri,int port) throws IOException {
@@ -150,9 +151,12 @@ public final class InternetCard extends AbstractManagedEnvironment implements De
         private boolean connected() throws IOException {
             if(owner==null)throw new IOException("connection lost");
             try {
-                if(!address.isDone())return false;address.get();return channel.isConnected()||channel.finishConnect();
-            }catch(InterruptedException error){Thread.currentThread().interrupt();close();throw new IOException("connection interrupted",error);}
-            catch(ExecutionException|CancellationException|IOException error){close();throw failure(error);}
+                if(addressResolved)return channel.finishConnect();
+                if(address.isCancelled())throw new IOException("bad connection descriptor");
+                if(address.isDone()){address.get();addressResolved=true;}
+                return false;
+            }catch(InterruptedException error){Thread.currentThread().interrupt();close();return false;}
+            catch(ExecutionException|CancellationException|IOException error){close();return false;}
         }
         private void notifyReadable() {
             SocketChannel current=channel;if(current==null||!current.isConnected())return;

@@ -100,12 +100,12 @@ public final class Machine extends AbstractManagedEnvironment implements li.cil.
     @Override public boolean isRunning(){State s=state();return s!=State.Stopped&&s!=State.Stopping;}
     @Override public boolean isPaused(){return state()==State.Paused&&remainingPause>0;}
     @Override public boolean start(){
-        if(ArchitectureCallbackContext.isCallbackFor(this))synchronized(stateLock){
-            // A callback belongs to an already active VM. It may request a
-            // resume/restart, but cannot initialize a new VM inside itself.
+        synchronized(stateLock){
+            // Resuming, requesting a restart, and rejecting an active start do
+            // not initialize an architecture or wait for its executing worker.
             if(state()==State.Paused&&remainingPause>0){remainingPause=0;host.markChanged();return true;}
             if(state()==State.Stopping){switchTo(State.Restarting);return true;}
-            return false;
+            if(state()!=State.Stopped||ArchitectureCallbackContext.isCallbackFor(this))return false;
         }
         synchronized(this){return startLocked();}
     }
@@ -196,8 +196,8 @@ public final class Machine extends AbstractManagedEnvironment implements li.cil.
             case Sleeping->{if(remainIdle<=0||!signals.isEmpty())switchTo(State.Yielded);}
             case Paused->{if(remainingPause>0)remainingPause--;else{synchronized(stateLock){verifyComponents();states.pop();switchTo(states.peek());}}}
             case SynchronizedCall->{
-                switchTo(State.Running);try{inSynchronizedCall=true;architecture.runSynchronized();synchronized(stateLock){if(state()==State.Running)switchTo(State.SynchronizedReturn);else if(state()==State.Paused){states.pop();states.pop();states.push(State.SynchronizedReturn);states.push(State.Paused);}else if(state()==State.Stopping){states.clear();states.push(State.Stopping);}}}
-                catch(Throwable exception){OpenComputers.LOGGER.error("Synchronized architecture failure",exception);crash(exception instanceof OutOfMemoryError?"gui.Error.OutOfMemory":"gui.Error.InternalError");}finally{inSynchronizedCall=false;}
+                switchTo(State.Running);try{inSynchronizedCall=true;architecture.runSynchronized();synchronized(stateLock){if(state()==State.Running)switchTo(State.SynchronizedReturn);else if(state()==State.Paused){states.pop();states.pop();states.push(State.SynchronizedReturn);states.push(State.Paused);}else if(state()==State.Stopping){states.clear();states.push(State.Stopping);}else throw new AssertionError("Invalid state after synchronized execution");}}
+                catch(Throwable exception){OpenComputers.LOGGER.error("Synchronized architecture failure",exception);crash(exception instanceof OutOfMemoryError||exception instanceof java.lang.Error&&"not enough memory".equals(exception.getMessage())?"gui.Error.OutOfMemory":"gui.Error.InternalError");}finally{inSynchronizedCall=false;}
             }
             default->{}
         }
@@ -215,9 +215,11 @@ public final class Machine extends AbstractManagedEnvironment implements li.cil.
                 if(result instanceof ExecutionResult.Sleep sleep){remainIdle=sleep.ticks;if(paused)states.push(State.Sleeping);else switchTo(signals.isEmpty()&&sleep.ticks>0?State.Sleeping:State.Yielded);}
                 else if(result instanceof ExecutionResult.SynchronizedCall){if(paused)states.push(State.SynchronizedCall);else switchTo(State.SynchronizedCall);}
                 else if(result instanceof ExecutionResult.Shutdown shutdown){State next=shutdown.reboot?State.Restarting:State.Stopping;if(paused)states.push(next);else switchTo(next);}
-                else if(result instanceof ExecutionResult.Error failure)crash(Objects.requireNonNullElse(failure.message,"unknown error"));
+                else if(result instanceof ExecutionResult.Error failure){if(!paused)beep("--");crash(Objects.requireNonNullElse(failure.message,"unknown error"));}
+                else throw new AssertionError("Invalid architecture execution result");
                 if(paused)states.push(State.Paused);
-            }else if(top==State.Stopping){states.clear();states.push(State.Stopping);}}
+            }else if(top==State.Stopping){states.clear();states.push(State.Stopping);}else if(top!=State.Restarting)throw new AssertionError("Invalid state in executor post-processing.");
+                if(isExecuting())throw new AssertionError("Executor did not leave the running state");}
         }catch(Throwable exception){OpenComputers.LOGGER.error("Architecture execution failure",exception);crash("gui.Error.InternalError");}finally{cpuTotal+=System.nanoTime()-cpuStart;cpuStart=0;}
     }
     @Override public void onMessage(Message message){

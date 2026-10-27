@@ -164,7 +164,7 @@
       "id": "C07",
       "group": "基础与交付",
       "name": "机器调度、预算、线程与异常处理",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/machine/",
         "src/main/scala/li/cil/oc/common/SaveHandler.scala"
@@ -175,8 +175,11 @@
       "acceptance": [
         "原回调预算、内存限制、暂停/停止/超时、线程安全与错误传播闭合；已有死锁修复保留。"
       ],
-      "remaining": "核对剩余调度/资源限制分支；已有原生及 LuaJ 回归只覆盖部分路径。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/machine-scheduler.md",
+        "build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt"
+      ]
     },
     {
       "id": "C08",
@@ -888,7 +891,7 @@
       "id": "D18",
       "group": "设备与组件",
       "name": "显卡及显存",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/GraphicsCard.scala"
       ],
@@ -898,14 +901,17 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/graphics-card.md",
+        "build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt"
+      ]
     },
     {
       "id": "D19",
       "group": "设备与组件",
       "name": "全息投影",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Hologram.scala"
       ],
@@ -916,14 +922,17 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/hologram.md",
+        "build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt"
+      ]
     },
     {
       "id": "D20",
       "group": "设备与组件",
       "name": "因特网卡",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/InternetCard.scala"
       ],
@@ -933,8 +942,11 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/internet-card.md",
+        "build/api-compat-addon/devices/advanced-20261027-e2/device-results.txt"
+      ]
     },
     {
       "id": "D21",

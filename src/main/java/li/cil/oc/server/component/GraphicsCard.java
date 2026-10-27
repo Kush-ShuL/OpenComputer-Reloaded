@@ -1,10 +1,11 @@
 package li.cil.oc.server.component;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import li.cil.oc.Settings;
 import li.cil.oc.api.Network;
 import li.cil.oc.api.driver.DeviceInfo;
@@ -27,13 +28,15 @@ import li.cil.oc.util.PackedColor;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
 
 /** Original GPU color, text, viewport and persistent off-screen VRAM operations. */
 public class GraphicsCard extends AbstractManagedEnvironment implements DeviceInfo, VideoRamDevice {
     public final int tier;
     private final int maxWidth, maxHeight;
     private final ColorDepth maxDepth;
-    private final double totalVram;
+    private final double totalVram, bitbltCost;
     private final Map<Integer, GpuTextBuffer> pages = new LinkedHashMap<>();
     private String screenAddress;
     private TextBuffer screen;
@@ -47,6 +50,7 @@ public class GraphicsCard extends AbstractManagedEnvironment implements DeviceIn
         if (tier < 0 || tier > 2) throw new IllegalArgumentException("invalid graphics card tier");
         this.tier=tier; maxWidth=Settings.screenResolutionsByTier[tier][0]; maxHeight=Settings.screenResolutionsByTier[tier][1];
         maxDepth=Settings.screenDepthsByTier[tier]; totalVram=(double)maxWidth*maxHeight*Settings.get().vramSizes[tier];
+        bitbltCost=Settings.get().bitbltCost*Math.pow(2,tier);
         setNode(Network.newNode(this, Visibility.Neighbors).withComponent("gpu").withConnector().create());
     }
     @Override public Map<Integer,GpuTextBuffer> videoBuffers() { return pages; }
@@ -95,14 +99,16 @@ public class GraphicsCard extends AbstractManagedEnvironment implements DeviceIn
         int width=args.optInteger(0,maxWidth),height=args.optInteger(1,maxHeight);
         if(width<=0||height<=0)return new Object[]{null,"invalid page dimensions: must be greater than zero"};
         if((long)width*height>totalVram-calculateUsedMemory())return new Object[]{null,"not enough video memory"};
-        if(node().address()==null)return new Object[]{null,"graphics card appears disconnected"};
+        if(node()==null)return new Object[]{null,"graphics card appears disconnected"};
         int index=nextAvailableBufferIndex();
         addBuffer(new GpuTextBuffer(node().address(),index,new li.cil.oc.util.TextBuffer(width,height,PackedColor.Depth.format(maxDepth))));
         return new Object[]{index};
     }
     @Override public void onBufferRamDestroy(int id) {
-        TextBuffer target=buffer(0);
-        if(target instanceof VideoRamRasterizer rasterizer)rasterizer.removeBuffer(node().address(),id);
+        if(id!=RESERVED_SCREEN_INDEX){
+            TextBuffer target=buffer(0);
+            if(target instanceof VideoRamRasterizer rasterizer)rasterizer.removeBuffer(node().address(),id);
+        }
         if(id==active)active=0;
     }
     @Callback(direct=true,doc="function([index:number]):boolean -- Free a VRAM page.")
@@ -120,13 +126,16 @@ public class GraphicsCard extends AbstractManagedEnvironment implements DeviceIn
 
     @Callback(direct=true,doc="function([dst,col,row,width,height,src,fromCol,fromRow]):boolean -- Copy a rectangle between pages or the screen.")
     public synchronized Object[] bitblt(Context context,Arguments args)throws LimitReachedException {
-        int destinationIndex=args.optInteger(0,0),sourceIndex=args.optInteger(5,active);
-        TextBuffer destination=buffer(destinationIndex),source=buffer(sourceIndex);
+        int destinationIndex=args.optInteger(0,0);
+        TextBuffer destination=buffer(destinationIndex);
         if(destination==null)return new Object[]{null,destinationIndex==0?"no screen":"invalid buffer index"};
+        int col=args.optInteger(1,1),row=args.optInteger(2,1),width=args.optInteger(3,destination.getWidth()),height=args.optInteger(4,destination.getHeight());
+        int sourceIndex=args.optInteger(5,active);
+        TextBuffer source=buffer(sourceIndex);
         if(source==null)return new Object[]{null,sourceIndex==0?"no screen":"invalid buffer index"};
-        int col=args.optInteger(1,1),row=args.optInteger(2,1),width=args.optInteger(3,destination.getWidth()),height=args.optInteger(4,destination.getHeight()),fromCol=args.optInteger(6,1),fromRow=args.optInteger(7,1);
+        int fromCol=args.optInteger(6,1),fromRow=args.optInteger(7,1);
         double budget=source instanceof GpuTextBuffer page && !(destination instanceof GpuTextBuffer)
-                ? page.dirty ? Settings.get().bitbltCost*Math.pow(2,tier)*(double)source.getWidth()*source.getHeight()/(maxWidth*maxHeight):.001:0;
+                ? page.dirty ? bitbltCost*(double)source.getWidth()*source.getHeight()/(maxWidth*maxHeight):.001:0;
         double credit=(tier+1)*.5,over=budget-credit;
         if(over>0){if(budgetExhausted){if(over>credit)context.pause((over-credit)/credit/20);budget=0;}else{budgetExhausted=true;throw new LimitReachedException();}}
         budgetExhausted=false;
@@ -141,20 +150,22 @@ public class GraphicsCard extends AbstractManagedEnvironment implements DeviceIn
 
     @Callback(doc="function(address:string[,reset:boolean=true]):boolean -- Bind a screen in the component network.")
     public synchronized Object[] bind(Context context,Arguments args) {
+        String address=args.checkString(0);boolean reset=args.optBoolean(1,true);
         if(node().network()==null)return new Object[]{null,"invalid address"};
-        Node target=node().network().node(args.checkString(0));
+        Node target=node().network().node(address);
         if(target==null)return new Object[]{null,"invalid address"};
         if(!(target.host() instanceof TextBuffer text))return new Object[]{null,"not a screen"};
         screenAddress=target.address();screen=text;
-        synchronized(text){
-            if(args.optBoolean(1,true)){
-                text.setResolution(Math.min(maxWidth,text.getMaximumWidth()),Math.min(maxHeight,text.getMaximumHeight()));
-                text.setColorDepth(ColorDepth.values()[Math.min(maxDepth.ordinal(),text.getMaximumColorDepth().ordinal())]);
-                text.setForegroundColor(0xffffff);text.setBackgroundColor(0);
-                if(text instanceof VideoRamRasterizer rasterizer)rasterizer.removeAllBuffers();
+        // The original callback resets the currently selected target, including a selected VRAM page.
+        return screen(selected->{
+            if(reset){
+                selected.setResolution(Math.min(maxWidth,selected.getMaximumWidth()),Math.min(maxHeight,selected.getMaximumHeight()));
+                selected.setColorDepth(ColorDepth.values()[Math.min(maxDepth.ordinal(),selected.getMaximumColorDepth().ordinal())]);
+                selected.setForegroundColor(0xffffff);selected.setBackgroundColor(0);
+                if(selected instanceof VideoRamRasterizer rasterizer)rasterizer.removeAllBuffers();
             }else context.pause(0);
-        }
-        return new Object[]{true};
+            return new Object[]{true};
+        });
     }
     @Callback(direct=true,doc="function():string -- Get the bound screen address.")
     public synchronized Object[] getScreen(Context context,Arguments args) { return screen(0,s->new Object[]{s.node().address()}); }
@@ -162,34 +173,41 @@ public class GraphicsCard extends AbstractManagedEnvironment implements DeviceIn
     public synchronized Object[] getBackground(Context context,Arguments args) { return screen(s->new Object[]{s.getBackgroundColor(),s.isBackgroundFromPalette()}); }
     @Callback(direct=true,doc="function(color:number[,palette:boolean]):number,number -- Set background color.")
     public synchronized Object[] setBackground(Context context,Arguments args) {
+        int color=args.checkInteger(0);
         if(active==0)context.consumeCallBudget(BACKGROUND[tier]);
         return screen(s->{int previous=s.getBackgroundColor();boolean palette=s.isBackgroundFromPalette();int rgb=palette?s.getPaletteColor(previous):previous;
-            s.setBackgroundColor(args.checkInteger(0),args.optBoolean(1,false));return new Object[]{rgb,palette?previous:null};});
+            s.setBackgroundColor(color,args.optBoolean(1,false));return new Object[]{rgb,palette?previous:null};});
     }
     @Callback(direct=true,doc="function():number,boolean -- Get foreground color and palette flag.")
     public synchronized Object[] getForeground(Context context,Arguments args) { return screen(s->new Object[]{s.getForegroundColor(),s.isForegroundFromPalette()}); }
     @Callback(direct=true,doc="function(color:number[,palette:boolean]):number,number -- Set foreground color.")
     public synchronized Object[] setForeground(Context context,Arguments args) {
+        int color=args.checkInteger(0);
         if(active==0)context.consumeCallBudget(FOREGROUND[tier]);
         return screen(s->{int previous=s.getForegroundColor();boolean palette=s.isForegroundFromPalette();int rgb=palette?s.getPaletteColor(previous):previous;
-            s.setForegroundColor(args.checkInteger(0),args.optBoolean(1,false));return new Object[]{rgb,palette?previous:null};});
+            s.setForegroundColor(color,args.optBoolean(1,false));return new Object[]{rgb,palette?previous:null};});
     }
     @Callback(direct=true,doc="function(index:number):number -- Get a palette entry.")
     public synchronized Object[] getPaletteColor(Context context,Arguments args) {
-        return screen(s->{try{return new Object[]{s.getPaletteColor(args.checkInteger(0))};}catch(IndexOutOfBoundsException error){throw new IllegalArgumentException("invalid palette index");}});
+        int index=args.checkInteger(0);
+        return screen(s->{try{return new Object[]{s.getPaletteColor(index)};}catch(IndexOutOfBoundsException error){throw new IllegalArgumentException("invalid palette index");}});
     }
     @Callback(direct=true,doc="function(index:number,color:number):number -- Change a palette entry and return its old RGB value.")
     public synchronized Object[] setPaletteColor(Context context,Arguments args) {
+        int index=args.checkInteger(0),color=args.checkInteger(1);
         if(active==0){context.consumeCallBudget(PALETTE[tier]);context.pause(.1);}
-        return screen(s->{try{int index=args.checkInteger(0),old=s.getPaletteColor(index);s.setPaletteColor(index,args.checkInteger(1));return new Object[]{old};}catch(IndexOutOfBoundsException error){throw new IllegalArgumentException("invalid palette index");}});
+        return screen(s->{try{int old=s.getPaletteColor(index);s.setPaletteColor(index,color);return new Object[]{old};}catch(IndexOutOfBoundsException error){throw new IllegalArgumentException("invalid palette index");}});
     }
     @Callback(direct=true,doc="function():number -- Get the current color depth.")
     public synchronized Object[] getDepth(Context context,Arguments args) { return screen(s->new Object[]{PackedColor.Depth.bits(s.getColorDepth())}); }
     @Callback(doc="function(depth:number):number -- Change color depth and return the previous depth.")
     public synchronized Object[] setDepth(Context context,Arguments args) {
-        int bits=args.checkInteger(0);ColorDepth depth=switch(bits){case 1->ColorDepth.OneBit;case 4->ColorDepth.FourBit;case 8->ColorDepth.EightBit;default->throw new IllegalArgumentException("unsupported depth");};
-        if(depth.ordinal()>maxDepth.ordinal())throw new IllegalArgumentException("unsupported depth");
-        return screen(s->{int previous=PackedColor.Depth.bits(s.getColorDepth());s.setColorDepth(depth);return new Object[]{previous};});
+        int bits=args.checkInteger(0);
+        return screen(s->{
+            ColorDepth depth=switch(bits){case 1->ColorDepth.OneBit;case 4->ColorDepth.FourBit;case 8->ColorDepth.EightBit;default->throw new IllegalArgumentException("unsupported depth");};
+            if(depth.ordinal()>maxDepth.ordinal())throw new IllegalArgumentException("unsupported depth");
+            ColorDepth previous=s.getColorDepth();s.setColorDepth(depth);return new Object[]{previous};
+        });
     }
     @Callback(direct=true,doc="function():number -- Get the shared maximum color depth of this GPU and its screen.")
     public synchronized Object[] maxDepth(Context context,Arguments args) { return screen(s->new Object[]{PackedColor.Depth.bits(ColorDepth.values()[Math.min(maxDepth.ordinal(),s.getMaximumColorDepth().ordinal())])}); }
@@ -246,21 +264,23 @@ public class GraphicsCard extends AbstractManagedEnvironment implements DeviceIn
         });
     }
     private static void drawError(TextBuffer screen,String error) {
-        int width=screen.getWidth(),height=screen.getHeight();List<String> lines=new ArrayList<>();
-        for(String paragraph:error.replace("\t","  ").split("\\n",-1)){
-            String remaining=paragraph;int limit=Math.max(1,width-2);
-            while(remaining.length()>limit){int end=remaining.lastIndexOf(' ',limit);if(end<1)end=limit;lines.add(remaining.substring(0,end));remaining=remaining.substring(end).stripLeading();}
-            lines.add(remaining);
-        }
-        int first=Math.max(2,(height-lines.size())/2);String title="Unrecoverable Error";screen.set(Math.max(0,(width-title.length())/2),first-2,title,false);
+        int width=screen.getWidth(),height=screen.getHeight();
+        String key=Language.getInstance().has("oc:"+error)?"oc:"+error:error;
+        String localized=Language.getInstance().has(key)?Component.translatable(key).getString():error;
+        localized=localized.replace("[nl]","\n").lines().map(String::strip).collect(java.util.stream.Collectors.joining("\n"));
+        String wrapped=Pattern.compile("(.{1,"+Math.max(1,width-2)+"})\\s").matcher(localized.replace("\t","  ")+"\n")
+                .replaceAll(match->Matcher.quoteReplacement(match.group(1)+"\n"));
+        List<String> lines=wrapped.lines().toList();
+        int first=Math.max(2,(height-lines.size())/2);String title="Unrecoverable Error";screen.set((width-title.length())/2,first-2,title,false);
         int length=lines.stream().mapToInt(String::length).max().orElse(0),column=Math.max(0,(width-length)/2);
         for(int i=0;i<lines.size()&&first+i<height;i++)screen.set(column,first+i,lines.get(i),false);
     }
     @Override public synchronized void onConnect(Node node) { if(screen==null&&screenAddress!=null&&screenAddress.equals(node.address())&&node.host() instanceof TextBuffer text)screen=text; }
     @Override public synchronized void onDisconnect(Node node) { if(node==node()||screenAddress!=null&&screenAddress.equals(node.address())){screenAddress=null;screen=null;} }
     @Override public synchronized void load(CompoundTag tag) {
-        super.load(tag);screen=null;screenAddress=tag.getString("screen");if(screenAddress.isEmpty())screenAddress=null;
-        pages.clear();
+        super.load(tag);
+        removeAllBuffers();
+        if(tag.contains("screen",Tag.TAG_STRING)){screen=null;screenAddress=tag.getString("screen");if(screenAddress.isEmpty())screenAddress=null;}
         for(Tag raw:tag.getCompound("videoRam").getList("pages",Tag.TAG_COMPOUND)){
             CompoundTag page=(CompoundTag)raw;int index=page.getInt("page_idx");if(index>0)loadBuffer(node().address(),index,page.getCompound("page_data"));
         }

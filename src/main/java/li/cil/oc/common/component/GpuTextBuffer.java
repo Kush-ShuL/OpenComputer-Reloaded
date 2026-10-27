@@ -20,8 +20,9 @@ public class GpuTextBuffer implements TextBufferProxy {
     @Override public Node node() { throw new IllegalStateException("GpuTextBuffers do not have nodes"); }
     @Override public int getMaximumWidth() { return data.width; }
     @Override public int getMaximumHeight() { return data.height; }
-    @Override public int getViewportWidth() { return data.width; }
-    @Override public int getViewportHeight() { return data.height; }
+    // These two legacy VRAM accessors intentionally expose height/width, unlike getWidth/getHeight.
+    @Override public int getViewportWidth() { return data.height; }
+    @Override public int getViewportHeight() { return data.width; }
     @Override public void onBufferSet(int col, int row, String text, boolean vertical) { dirty = true; }
     @Override public void onBufferColorChange() { dirty = true; }
     @Override public void onBufferCopy(int col, int row, int w, int h, int tx, int ty) { dirty = true; }

@@ -293,7 +293,8 @@ HTTP redirects now retain the original HttpURLConnection boundaries: host/port
 changes discard destination credentials and protocol changes return the actual
 redirect response. LuaJ byte-string headers are decoded before applying the
 configured header gate. These source corrections pass the Windows build;
-end-to-end HTTP acceptance remains separate work.
+end-to-end loopback HTTP/TCP acceptance subsequently passed in the advanced
+component batch described below.
 
 A later live client freeze exposed a concrete external-drive lock cycle: a Lua
 read held its filesystem lock while `BlockEntity.setChanged` waited for a server
@@ -457,9 +458,25 @@ multiple work ticks and produces the requested item; the real disassembler
 uses the addon callback and inserts its guaranteed drops into an adjacent chest.
 This confirms those extension flows, not every built-in device recipe or model.
 
+The advanced-component batch closes C07, D18, D19 and D20. Windows NeoForge
+21.1.224 run `advanced-20261027-e2` passed in 30 actual world ticks: three GPU
+tiers and real screen/VRAM raster, power, serialization and removal paths; both
+hologram tiers' callbacks, auxiliary storage and periodic power; real loopback
+HTTP/TCP, filtering, limits and physical card removal/remount; and eight world
+Cases using an external SDK architecture to exercise scheduling and failures.
+Main-thread start/resume/restart requests use the original fast state path
+without waiting for an executing architecture. Actual Lua 5.2, Lua 5.3 and LuaJ
+checkpoint regressions also passed, including direct-callback start/pause.
+The fixed checklist is now 86/120 complete with 34 remaining. See
+[graphics cards](graphics-card.md), [holograms](hologram.md),
+[Internet cards](internet-card.md) and [machine scheduling](machine-scheduler.md).
+Shared client rendering, text buffers, remote synchronization and final delivery
+remain tracked under their existing C items.
+
 The host/storage/tool batch closes C11, D02, D03, D07, D11, D14, D32, D33,
-D38, T01, T02, T03, T04, T05 and T16, bringing the fixed checklist to 82/120
-complete and 38 remaining. Windows NeoForge 21.1.224 run
+D38, T01, T02, T03, T04, T05 and T16. That earlier batch increased the checklist
+from 67 to 82 closed items, before the advanced-component batch above.
+Windows NeoForge 21.1.224 run
 `host-storage-20261027-d3` passed in 67 actual world ticks. It covers real
 filesystem quota/ownership/descriptor semantics, raw media, hot hardware and
 blade removal, closed-before-save item drops, buffered HDD immediate remount,
