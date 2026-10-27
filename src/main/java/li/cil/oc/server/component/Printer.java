@@ -99,7 +99,7 @@ public final class Printer extends AbstractManagedEnvironment implements DeviceI
         boolean dirty = false, wasWorking = working; working = false;
         if (active && output.isEmpty()) {
             ItemStack candidate = data.createItemStack(host.world().registryAccess());
-            if (canMerge(candidate)) {
+            if (outputTypeMatches(candidate)) {
                 Optional<PrintData.Costs> costs = PrintData.computeCosts(data);
                 if (costs.isEmpty()) { active = false; data = new PrintData(); host.syncPreview(); dirty = true; }
                 else if (material >= costs.get().material() && ink >= costs.get().ink()) {
@@ -114,7 +114,15 @@ public final class Printer extends AbstractManagedEnvironment implements DeviceI
             double have = want > 0 ? want + (Settings.get().ignorePower ? 0 : node().changeBuffer(-want)) : 0;
             remainingEnergy = Math.max(0, remainingEnergy - have); working = have > .5;
             dirty |= have > 0;
-            if (remainingEnergy <= 0 && canMerge(output)) {
+            if (remainingEnergy <= 0) {
+                if (!canMerge(output)) {
+                    // Keep the completed piece and queue busy until there is room.
+                    // Waiting consumes neither more power nor additional input items.
+                    working = false;
+                    if (dirty) host.markChanged();
+                    if (wasWorking != working) host.syncPreview();
+                    return;
+                }
                 ItemStack present = host.getItem(2);
                 if (present.isEmpty()) host.setItem(2, output.copy()); else { present.grow(output.getCount()); host.setChanged(); }
                 output = ItemStack.EMPTY; working = false; dirty = true;
@@ -136,6 +144,7 @@ public final class Printer extends AbstractManagedEnvironment implements DeviceI
         if (dirty) host.markChanged();
         if (wasWorking != working) host.syncPreview();
     }
+    private boolean outputTypeMatches(ItemStack candidate) { ItemStack present = host.getItem(2); return present.isEmpty() || ItemStack.isSameItemSameComponents(present, candidate); }
     private boolean canMerge(ItemStack candidate) { ItemStack present = host.getItem(2); return present.isEmpty() || ItemStack.isSameItemSameComponents(present, candidate) && present.getCount() + candidate.getCount() <= present.getMaxStackSize(); }
     @Override public void load(CompoundTag tag, HolderLookup.Provider registries) {
         super.load(tag); material = tag.getInt("oc:amountMaterial"); ink = tag.getInt("oc:amountInk");

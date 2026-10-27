@@ -57,12 +57,15 @@ public final class PrintBlockEntity extends BlockEntity implements RotatableBloc
     }
     public void neighborChanged() {
         if (level == null || level.isClientSide || isRemoved()) return;
+        boolean inputChanged = false;
         for (Direction side : Direction.values()) {
             BlockPos neighbor = worldPosition.relative(side);
             int next = li.cil.oc.common.redstone.BundledRedstone.computeInput(level, worldPosition, side);
             int index = side.get3DDataValue(), old = input[index]; input[index] = next;
+            inputChanged |= old != next;
             if (old >= 0 && old != next && !data.emitRedstone() && data.hasActiveState() && active != (next > 0)) toggle();
         }
+        if (inputChanged) setChanged();
     }
     public boolean solid(Direction side) {
         for (PrintData.Shape shape : active ? data.stateOn : data.stateOff) {
@@ -112,12 +115,18 @@ public final class PrintBlockEntity extends BlockEntity implements RotatableBloc
         super.loadAdditional(tag, registries);
         data.load(tag.getCompound(tag.contains("data") ? "data" : "oc:data"));
         active = tag.getBoolean(tag.contains("state") ? "state" : "oc:state");
+        if (level == null || !level.isClientSide) {
+            Arrays.fill(input, -1);
+            int[] savedInput = tag.getIntArray("oc:rs.input");
+            System.arraycopy(savedInput, 0, input, 0, Math.min(savedInput.length, input.length));
+        }
         updateGeometry(); if (level != null && level.isClientSide) { level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3); level.getChunkSource().getLightEngine().checkBlock(worldPosition); }
     }
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries); CompoundTag model = new CompoundTag(); data.save(model); tag.put("oc:data", model); tag.putBoolean("oc:state", active);
+        if (level == null || !level.isClientSide) tag.putIntArray("oc:rs.input", input.clone());
     }
     @Override public ModelData getModelData() { return modelData; }
-    @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) { CompoundTag tag = new CompoundTag(); saveAdditional(tag, registries); return tag; }
+    @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries) { CompoundTag tag = new CompoundTag(); saveAdditional(tag, registries); tag.remove("oc:rs.input"); return tag; }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
 }

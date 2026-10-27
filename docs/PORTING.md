@@ -205,9 +205,14 @@ consumers; restoration on remaining host types; and full
 client/server behavior. Existing menus, payloads, rendering, energy, persistence
 and crafting also need functional acceptance.
 
-Concrete remaining print parity work includes persisting the six redstone input
-levels used by printed-block edge transitions, and retaining the original busy
-queue while a compatible output stack is full.
+Printed blocks now persist the original six redstone input levels used for edge
+transitions, with independent NBT snapshots and no server input history in client
+updates. Existing saves without that field retain the original initial-sample
+behavior. Printers now process the current piece even when a compatible output
+stack is full, then retain it as busy until there is delivery space. Waiting
+does not spend additional energy, consume another piece's material or convert
+more input items. The Windows build covers these source changes; actual chunk
+reload and output-release gameplay acceptance remain outstanding.
 
 A successful API build validates the SDK build. API compatibility checks cover
 the specific contracts they exercise; they do not establish computer boot, saved
