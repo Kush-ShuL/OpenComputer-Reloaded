@@ -23,6 +23,23 @@ A rewritten module is not automatically validated in game.
 
 Completion requires the whole mod, not just registration or an API JAR: computers and persistent Lua VM state; native Lua and LuaJ; OpenOS and loot disks; driver discovery and component networks; storage and EEPROM; graphics and input; robots and upgrades; drones; tablets and terminals; servers and racks; redstone, transposers and fluid/inventory automation; printers, holograms, geolyzers and motion sensors; nanomachines; recipes/configuration; multiplayer menus and payloads; rendering; and compatible optional integrations.
 
+The scope is now locked to the [120-item migration checklist](MIGRATION-CHECKLIST.md),
+backed by [its machine-readable state](MIGRATION-CHECKLIST.json). Run
+`python tools/migration_status.py` for exact current completed and remaining counts.
+The fixed units are 61 device/component families, 16 other player feature families,
+19 original integration modules and 24 platform/delivery requirements. Existing
+code awaiting fidelity review or acceptance still counts as open. A regression
+reopens its existing ID; a bug, helper, tier or additional test does not add scope.
+The fixed original commit determines behavior. Old integrations without a confirmed
+modern target remain on the list until resolved; they are not silently discarded.
+
+Shared rendering, menus and remote networking are tracked once under C20/C23/C19.
+A runtime-only device or integration item may close while those shared items remain
+open. Closure does not demand testing every behavior of an external mod or every
+Cartesian combination of host and architecture. The checklist records each item's
+bounded acceptance and evidence, and the whole goal requires all 120 items closed
+including the final delivery item C24.
+
 Systems awaiting Java migration remain incomplete, even if the current Java
 modules compile. Empty components are not a substitute for their original
 behavior.
@@ -264,8 +281,9 @@ tmpfs position, userdata/iterator state, signal and component identities. A
 separate LuaJ world passed its expected reboot and disk-data restoration. A
 separate native Lua 5.2 world then passed prepare and resume in different JVMs,
 including real chunk unload/reload, one BIOS boot and two userdata restorations.
-Other physical-host architecture combinations and remote multiplayer persistence
-still need acceptance.
+The fixed physical-host persistence requirement is C12. Additional architecture/host
+combinations are further regression coverage; actual remote player and network
+lifecycle remains open under C19.
 No public SDK signatures changed for these runtime fixes.
 
 A real configured robot also passed native Lua 5.3 cold-process restoration after

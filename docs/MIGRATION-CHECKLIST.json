@@ -1,0 +1,2207 @@
+{
+  "baseline": {
+    "version": 1,
+    "upstream_commit": "258943363ea8fc4ef14948e6bc6f67375061580c",
+    "upstream_url": "https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c",
+    "locked_total": 120,
+    "counting_rule": "61个原设备/组件族 + 16个独立工具/附加玩法族 + 19个原integration一级模块 + 24个基础/交付项目。tier、共享trait、helper、修复、测试场景不新增项目。",
+    "scope_change_rule": "该总表冻结于原版PIN；发现同范围遗漏行为归入现有ID，回归重开原ID。只有用户明确改变原版范围才修订基线总数，不为缩小剩余而删行。",
+    "closure_rule": "每项按其列明的原版行为与有限验收条件闭合，提供代码接入与必要运行证据；不要求穷举外部mod自身实现、所有宿主架构笛卡尔积或未知未来场景。模型/菜单/多人等跨模块验收统一由C项承担。120项全部闭合且最终C24通过后才可宣称完整移植。",
+    "status_rule": {
+      "complete": "已闭合：完成条件已有证据。",
+      "review": "已有实现/映射，原版行为核对或必要验收仍未闭合，计入剩余。",
+      "gap": "已确认存在缺口/原模块尚未移植，计入剩余；旧模组未确认现代目标同样计入。"
+    },
+    "scope_ownership": [
+      "D01-D61覆盖原common/tileentity、common/entity、server/component的独立功能族；同族硬件item、driver、data、inventory与trait归该族。",
+      "T01-T16覆盖common/item中无独立组件类的工具/升级/材料，以及纳米机器、人工末地石与终端服务器。",
+      "I01-I19逐一覆盖原integration的19个外部/原版平台模块；opencomputers和util为内建框架，归C05和相应D项。",
+      "C01-C24覆盖API、平台/启动/ASM替代、网络/VM/文件系统、程序资源、配置/配方、创造预设、菜单/载荷、模型/纹理/字体/声音、翻译/命令及交付。",
+      "原工具类、proxy、共享traits、原文档和资源归调用功能及对应C/T项，不以文件数、测试数或发现的bug数增加项目。"
+    ]
+  },
+  "items": [
+    {
+      "id": "C01",
+      "group": "基础与交付",
+      "name": "许可与上游署名",
+      "status": "complete",
+      "upstream": [
+        "LICENSE",
+        "LICENSE-jnlua",
+        "LICENSE-luaj",
+        "LICENSE-mods"
+      ],
+      "implementation": [
+        "LICENSE",
+        "NOTICE"
+      ],
+      "acceptance": [
+        "保留原版及第三方许可、作者和资源署名；分发条款与来源说明一致。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "LICENSE",
+        "NOTICE"
+      ]
+    },
+    {
+      "id": "C02",
+      "group": "基础与交付",
+      "name": "独立仓库、Java 21 与 NeoForge 构建",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/OpenComputers.scala",
+        "build.gradle"
+      ],
+      "implementation": [
+        "build.gradle",
+        "settings.gradle"
+      ],
+      "acceptance": [
+        "独立 Git 历史；1.21.1/NeoForge 完整 Java 构建；不依赖 Scala。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/PORTING.md",
+        "build/launch-support/windows-hardware-build.log"
+      ]
+    },
+    {
+      "id": "C03",
+      "group": "基础与交付",
+      "name": "公开 SDK 与 JitPack API 发布",
+      "status": "complete",
+      "upstream": [
+        "src/main/java/li/cil/oc/api/"
+      ],
+      "implementation": [
+        "api/",
+        "src/main/java/li/cil/oc/api/"
+      ],
+      "acceptance": [
+        "独立 compileOnly SDK；旧 Converter 二参二进制兼容、注册表持久化及外部消费者通过；JitPack API 发行不附资产。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/API.md",
+        "docs/PORTING.md",
+        "jitpack.yml"
+      ]
+    },
+    {
+      "id": "C04",
+      "group": "基础与交付",
+      "name": "模组生命周期、注册与专用服务端隔离",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/OpenComputers.scala",
+        "src/main/scala/li/cil/oc/common/init/",
+        "src/main/scala/li/cil/oc/common/launch/",
+        "src/main/scala/li/cil/oc/common/asm/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/OpenComputers.java",
+        "src/main/java/li/cil/oc/common/init/"
+      ],
+      "acceptance": [
+        "注册设备与能力，完成 common/client 初始化，服务端不加载客户端实现；旧加载器/ASM的必需行为由现代事件与能力承接。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "build/launch-support/windows-projectred-default.log",
+        "build/launch-support/windows-jade-default.log"
+      ]
+    },
+    {
+      "id": "C05",
+      "group": "基础与交付",
+      "name": "驱动、转换器与 IMC 扩展框架",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/driver/",
+        "src/main/scala/li/cil/oc/common/IMC.scala",
+        "src/main/scala/li/cil/oc/integration/opencomputers/",
+        "src/main/scala/li/cil/oc/integration/util/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/driver/",
+        "src/main/java/li/cil/oc/common/IMC.java"
+      ],
+      "acceptance": [
+        "外部 SDK 驱动发现、Value/Converter、程序盘与真实装配/拆解 IMC 链路通过；各可选模组驱动归对应 I 项。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/API.md",
+        "docs/PORTING.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/ProductionContract.java"
+      ]
+    },
+    {
+      "id": "C06",
+      "group": "基础与交付",
+      "name": "组件网络、可见性、消息与能量连接器",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/network/",
+        "src/main/scala/li/cil/oc/server/ComponentTracker.scala",
+        "src/main/scala/li/cil/oc/common/ComponentTracker.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/network/"
+      ],
+      "acceptance": [
+        "节点生命周期、可见/可达、合并/拆分、消息和缓冲传播符合原接口；真实宿主私有网/外部网保持隔离。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/PORTING.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/BaseContract.java"
+      ]
+    },
+    {
+      "id": "C07",
+      "group": "基础与交付",
+      "name": "机器调度、预算、线程与异常处理",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/machine/",
+        "src/main/scala/li/cil/oc/common/SaveHandler.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/machine/"
+      ],
+      "acceptance": [
+        "原回调预算、内存限制、暂停/停止/超时、线程安全与错误传播闭合；已有死锁修复保留。"
+      ],
+      "remaining": "核对剩余调度/资源限制分支；已有原生及 LuaJ 回归只覆盖部分路径。",
+      "evidence": []
+    },
+    {
+      "id": "C08",
+      "group": "基础与交付",
+      "name": "原生 Lua 5.2 运行与状态恢复",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/machine/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/machine/"
+      ],
+      "acceptance": [
+        "真实 Lua 5.2 启动、同步回调、协程/Value/文件位置与独立 JVM、区块恢复通过；不要求穷举全部宿主组合。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/PORTING.md",
+        "build/api-compat-addon/persistence/native52-20261026-202339/resume-results.txt"
+      ]
+    },
+    {
+      "id": "C09",
+      "group": "基础与交付",
+      "name": "原生 Lua 5.3 运行与状态恢复",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/machine/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/machine/"
+      ],
+      "acceptance": [
+        "真实 Lua 5.3 回调、协程/Value/打开文件、队列与独立 JVM 恢复通过。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/PORTING.md",
+        "build/api-compat-addon/hosts/robot/robot-native53-20261026-203657/resume-results.txt"
+      ]
+    },
+    {
+      "id": "C10",
+      "group": "基础与交付",
+      "name": "LuaJ 运行及原版重启式读档",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/machine/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/machine/"
+      ],
+      "acceptance": [
+        "LuaJ 实际回调转换通过，读档真实重启一次并保留磁盘/EEPROM数据；不冒充原生栈恢复。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/PORTING.md",
+        "build/api-compat-addon/persistence/luaj-20261026-181932/resume-results.txt"
+      ]
+    },
+    {
+      "id": "C11",
+      "group": "基础与交付",
+      "name": "文件系统、沙箱、配额与句柄",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/fs/",
+        "src/main/scala/li/cil/oc/server/component/FileSystem.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/fs/",
+        "src/main/java/li/cil/oc/server/component/FileSystem.java"
+      ],
+      "acceptance": [
+        "原路径/只读/配额/句柄和读写/寻址/重命名/删除行为闭合；硬件介质归 D14，程序盘归 C15。"
+      ],
+      "remaining": "已有真实读写和恢复；仍需把路径、只读、配额、句柄边界按原实现闭合。",
+      "evidence": []
+    },
+    {
+      "id": "C12",
+      "group": "基础与交付",
+      "name": "物理宿主保存、冷恢复与区块生命周期",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/SaveHandler.scala",
+        "src/main/scala/li/cil/oc/server/agent/",
+        "src/main/scala/li/cil/oc/common/item/data/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/agent/",
+        "src/main/java/li/cil/oc/server/portable/"
+      ],
+      "acceptance": [
+        "Case 的 5.2/5.3/LuaJ 与 Robot/Drone/Tablet/Microcontroller/Rack 的 5.3 独立进程保存恢复及已实现区块生命周期通过；玩家网络流程由 C19验收。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/PORTING.md",
+        "tools/api-compat-addon/README.md"
+      ]
+    },
+    {
+      "id": "C13",
+      "group": "基础与交付",
+      "name": "OpenOS 安装与基础系统程序",
+      "status": "review",
+      "upstream": [
+        "src/main/resources/assets/opencomputers/loot/openos/"
+      ],
+      "implementation": [
+        "src/main/resources/assets/opencomputers/loot/"
+      ],
+      "acceptance": [
+        "保留原系统及许可；空白介质安装、重启、终端输入、文件/组件基础程序通过。"
+      ],
+      "remaining": "已有开发客户端启动使用记录；需按固定安装到重启流程闭合。",
+      "evidence": []
+    },
+    {
+      "id": "C14",
+      "group": "基础与交付",
+      "name": "Plan9k 安装与基础系统程序",
+      "status": "review",
+      "upstream": [
+        "src/main/resources/assets/opencomputers/loot/plan9k/"
+      ],
+      "implementation": [
+        "src/main/resources/assets/opencomputers/loot/"
+      ],
+      "acceptance": [
+        "保留原系统与许可；安装、引导、基础进程/终端/文件操作通过。"
+      ],
+      "remaining": "保留系统并修过卡死；需闭合真实安装、重启及基础程序流程。",
+      "evidence": []
+    },
+    {
+      "id": "C15",
+      "group": "基础与交付",
+      "name": "程序盘、箱子掉落及存档自定义盘",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/Loot.scala",
+        "src/main/resources/assets/opencomputers/loot/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/integration/LootIntegration.java",
+        "src/main/java/li/cil/oc/common/integration/ProgramDiskLootModifier.java"
+      ],
+      "acceptance": [
+        "真实目标箱子生成保留原版战利品；程序盘完整、标记清除、零权重过滤、真实挂载读字节，自定义程序来源保留。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/loot-and-updates.md",
+        "build/api-compat-addon/devices/devices-loot-20261026-203027/device-results.txt"
+      ]
+    },
+    {
+      "id": "C16",
+      "group": "基础与交付",
+      "name": "HOCON 配置加载、升级与保留",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/Settings.scala",
+        "src/main/resources/application.conf"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/Settings.java",
+        "tools/config-verification/"
+      ],
+      "acceptance": [
+        "默认项、旧版本补丁、数组/范围、错误文件保留和未知键保留通过；具体设备配置消费者由该设备项负责。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/CONFIGURATION.md",
+        "tools/config-verification/src/main/java/li/cil/oc/tools/config/ConfigurationVerification.java"
+      ]
+    },
+    {
+      "id": "C17",
+      "group": "基础与交付",
+      "name": "合成、配方档案、重合成与材料返还",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/recipe/",
+        "src/main/resources/assets/opencomputers/recipes/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/recipe/",
+        "src/main/resources/data/opencomputers/"
+      ],
+      "acceptance": [
+        "原配方档案、动态配方、装配/拆解材料与重合成保留；数据包覆盖及许可资源一致。"
+      ],
+      "remaining": "部分生产链已通过；尚需按原配方集合闭合动态和档案差异。",
+      "evidence": []
+    },
+    {
+      "id": "C18",
+      "group": "基础与交付",
+      "name": "创造物品栏与四类预配置设备",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/CreativeTab.scala",
+        "src/main/scala/li/cil/oc/common/init/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/init/Items.java"
+      ],
+      "acceptance": [
+        "原配置的 Robot/Drone/Tablet/Microcontroller 真实放置及合法硬件、软盘容器路径可用。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/PORTING.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/DeviceContract.java"
+      ]
+    },
+    {
+      "id": "C19",
+      "group": "基础与交付",
+      "name": "多人载荷、菜单、权限与玩家生命周期",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/PacketType.scala",
+        "src/main/scala/li/cil/oc/common/PacketBuilder.scala",
+        "src/main/scala/li/cil/oc/server/PacketHandler.scala",
+        "src/main/scala/li/cil/oc/client/PacketHandler.scala",
+        "src/main/scala/li/cil/oc/common/container/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/network/",
+        "src/main/java/li/cil/oc/common/menu/"
+      ],
+      "acceptance": [
+        "原包族映射与真实两客户端菜单/输入/权限/关闭/切换宿主流程通过；每个包族一次代表路径，不穷举玩家组合。"
+      ],
+      "remaining": "当前不少证明使用本地mock transport；还缺真实远程客户端往返和玩家保存/退出流程。",
+      "evidence": []
+    },
+    {
+      "id": "C20",
+      "group": "基础与交付",
+      "name": "全部方块/物品模型、纹理与动态图层",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/client/renderer/",
+        "src/main/scala/li/cil/oc/client/Textures.scala",
+        "src/main/resources/assets/opencomputers/textures/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/client/",
+        "src/main/resources/assets/opencomputers/"
+      ],
+      "acceptance": [
+        "各原模型族的默认/活动/掉落物状态无缺面、紫黑或错误UV；每个模型族一次可视验收。"
+      ],
+      "remaining": "已修机箱、机器人、驱动器等具体问题；其他原模型族仍需固定清单中的可视验收。",
+      "evidence": []
+    },
+    {
+      "id": "C21",
+      "group": "基础与交付",
+      "name": "文字缓冲、字体、屏幕与着色渲染",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/component/",
+        "src/main/scala/li/cil/oc/client/renderer/font/",
+        "src/main/scala/li/cil/oc/client/renderer/gui/BufferRenderer.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/component/",
+        "src/main/java/li/cil/oc/client/renderer/"
+      ],
+      "acceptance": [
+        "字体、缩放、颜色、Unicode、GPU缓冲显示与原屏幕交互正确；相关接口本身归D18/D37。"
+      ],
+      "remaining": "源码与缓存修复已有；尚需闭合文字/显存显示场景。",
+      "evidence": []
+    },
+    {
+      "id": "C22",
+      "group": "基础与交付",
+      "name": "客户端效果、声音、宠物、命令与更新提示",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/client/Sound.scala",
+        "src/main/scala/li/cil/oc/common/Sound.scala",
+        "src/main/scala/li/cil/oc/client/renderer/PetRenderer.scala",
+        "src/main/scala/li/cil/oc/server/PetVisibility.scala",
+        "src/main/scala/li/cil/oc/client/command/",
+        "src/main/scala/li/cil/oc/common/Achievement.scala",
+        "src/main/scala/li/cil/oc/server/command/",
+        "src/main/scala/li/cil/oc/common/command/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/client/",
+        "src/main/java/li/cil/oc/common/integration/UpdateChecker.java"
+      ],
+      "acceptance": [
+        "原声音/粒子/宠物/显示设置/客户端及服务器命令/调试与更新提示各一条代表路径可用。PIN的Achievement是空占位，保留其无行为语义，无需创造额外成就。"
+      ],
+      "remaining": "已注册实现；部分实际玩家显示、声音范围与更新网络流程待验收。",
+      "evidence": []
+    },
+    {
+      "id": "C23",
+      "group": "基础与交付",
+      "name": "翻译、全部菜单布局与提示文本",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/Localization.scala",
+        "src/main/scala/li/cil/oc/client/gui/",
+        "src/main/resources/assets/opencomputers/lang/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/client/gui/",
+        "src/main/resources/assets/opencomputers/lang/"
+      ],
+      "acceptance": [
+        "原菜单族全部有背景、槽位、可读文本和本地化；提示不残留、不遮挡主操作，正常帧率。"
+      ],
+      "remaining": "机器人GUI已由玩家确认约60FPS；其他原菜单族和长文本仍需一次可视验收。",
+      "evidence": []
+    },
+    {
+      "id": "C24",
+      "group": "基础与交付",
+      "name": "最终完整模组构建与玩家安装说明",
+      "status": "review",
+      "upstream": [
+        "build.gradle",
+        "README.md"
+      ],
+      "implementation": [
+        "build.gradle",
+        "README.md",
+        "docs/PORTING.md"
+      ],
+      "acceptance": [
+        "其余固定项目闭合后，用最终同一版本在Windows客户端和专用服务端启动，提供主模组与独立SDK的明确安装说明；无需额外公开资产发行。"
+      ],
+      "remaining": "须在其余项目闭合后完成最终交付验证。",
+      "evidence": []
+    },
+    {
+      "id": "D01",
+      "group": "设备与组件",
+      "name": "APU",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/APU.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/APU.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D02",
+      "group": "设备与组件",
+      "name": "适配器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Adapter.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/AdapterBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D03",
+      "group": "设备与组件",
+      "name": "装配机",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Assembler.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/AssemblerBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D04",
+      "group": "设备与组件",
+      "name": "CPU",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/CPU.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/driver/item/Processor.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D05",
+      "group": "设备与组件",
+      "name": "线缆",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Cable.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/CableBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D06",
+      "group": "设备与组件",
+      "name": "普通及地毯电容",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Capacitor.scala",
+        "src/main/scala/li/cil/oc/common/tileentity/CarpetedCapacitor.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/CapacitorBlockEntity.java",
+        "src/main/java/li/cil/oc/common/block/entity/CarpetedCapacitorBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D07",
+      "group": "设备与组件",
+      "name": "机箱",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Case.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/CaseBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D08",
+      "group": "设备与组件",
+      "name": "充电器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Charger.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/ChargerBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D09",
+      "group": "设备与组件",
+      "name": "数据卡",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/DataCard.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/DataCard.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D10",
+      "group": "设备与组件",
+      "name": "调试卡",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/DebugCard.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/DebugCard.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D11",
+      "group": "设备与组件",
+      "name": "拆解机",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Disassembler.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/DisassemblerBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D12",
+      "group": "设备与组件",
+      "name": "外置软盘驱动器",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/DiskDrive.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/DiskDriveBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/PORTING.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/DeviceContract.java"
+      ]
+    },
+    {
+      "id": "D13",
+      "group": "设备与组件",
+      "name": "机架式软盘驱动器",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/DiskDriveMountable.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/DiskDriveMountable.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/PORTING.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/DeviceContract.java"
+      ]
+    },
+    {
+      "id": "D14",
+      "group": "设备与组件",
+      "name": "硬盘及软盘存储",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/Drive.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/Drive.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D15",
+      "group": "设备与组件",
+      "name": "无人机",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/entity/Drone.scala",
+        "src/main/scala/li/cil/oc/server/component/Drone.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/entity/DroneEntity.java",
+        "src/main/java/li/cil/oc/server/component/Drone.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "共享 Agent 流体控制缺原版跨罐交换/空罐和默认比较语义。",
+      "evidence": []
+    },
+    {
+      "id": "D16",
+      "group": "设备与组件",
+      "name": "EEPROM",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/EEPROM.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/EEPROM.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D17",
+      "group": "设备与组件",
+      "name": "地质分析仪",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Geolyzer.scala",
+        "src/main/scala/li/cil/oc/server/component/Geolyzer.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/GeolyzerBlockEntity.java",
+        "src/main/java/li/cil/oc/server/component/Geolyzer.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D18",
+      "group": "设备与组件",
+      "name": "显卡及显存",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/GraphicsCard.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/GraphicsCard.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D19",
+      "group": "设备与组件",
+      "name": "全息投影",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Hologram.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/HologramBlockEntity.java",
+        "src/main/java/li/cil/oc/server/component/Hologram.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D20",
+      "group": "设备与组件",
+      "name": "因特网卡",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/InternetCard.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/InternetCard.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D21",
+      "group": "设备与组件",
+      "name": "键盘",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Keyboard.scala",
+        "src/main/scala/li/cil/oc/server/component/Keyboard.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/KeyboardBlockEntity.java",
+        "src/main/java/li/cil/oc/server/component/Keyboard.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D22",
+      "group": "设备与组件",
+      "name": "量子链接卡",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/LinkedCard.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/LinkedCard.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D23",
+      "group": "设备与组件",
+      "name": "内存",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/Memory.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/driver/item/Memory.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D24",
+      "group": "设备与组件",
+      "name": "微控制器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Microcontroller.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/MicrocontrollerBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D25",
+      "group": "设备与组件",
+      "name": "运动传感器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/MotionSensor.scala",
+        "src/main/scala/li/cil/oc/server/component/MotionSensor.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/MotionSensorBlockEntity.java",
+        "src/main/java/li/cil/oc/server/component/MotionSensor.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D26",
+      "group": "设备与组件",
+      "name": "网络分离器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/NetSplitter.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/NetSplitterBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D27",
+      "group": "设备与组件",
+      "name": "有线网卡",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/NetworkCard.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/NetworkCard.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D28",
+      "group": "设备与组件",
+      "name": "能源转换器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/PowerConverter.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/PowerConverterBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D29",
+      "group": "设备与组件",
+      "name": "能源分配器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/PowerDistributor.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/PowerDistributorBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D30",
+      "group": "设备与组件",
+      "name": "打印方块",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Print.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/PrintBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D31",
+      "group": "设备与组件",
+      "name": "3D打印机",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Printer.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/PrinterBlockEntity.java",
+        "src/main/java/li/cil/oc/server/component/Printer.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D32",
+      "group": "设备与组件",
+      "name": "机架",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Rack.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/RackBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D33",
+      "group": "设备与组件",
+      "name": "磁盘阵列",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Raid.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/RaidBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D34",
+      "group": "设备与组件",
+      "name": "普通及集束红石",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Redstone.scala",
+        "src/main/scala/li/cil/oc/server/component/Redstone.scala",
+        "src/main/scala/li/cil/oc/server/component/RedstoneBundled.scala",
+        "src/main/scala/li/cil/oc/server/component/RedstoneSignaller.scala",
+        "src/main/scala/li/cil/oc/server/component/RedstoneVanilla.scala",
+        "src/main/scala/li/cil/oc/server/component/RedstoneWireless.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/RedstoneBlockEntity.java",
+        "src/main/java/li/cil/oc/server/component/Redstone.java",
+        "src/main/java/li/cil/oc/server/component/RedstoneBundled.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D35",
+      "group": "设备与组件",
+      "name": "中继器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Relay.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/RelayBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D36",
+      "group": "设备与组件",
+      "name": "机器人",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Robot.scala",
+        "src/main/scala/li/cil/oc/common/tileentity/RobotProxy.scala",
+        "src/main/scala/li/cil/oc/server/component/Robot.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/RobotBlockEntity.java",
+        "src/main/java/li/cil/oc/server/agent/RobotController.java",
+        "src/main/java/li/cil/oc/server/component/Robot.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "共享 Agent 流体控制缺原版跨罐交换/空罐和默认比较语义。",
+      "evidence": []
+    },
+    {
+      "id": "D37",
+      "group": "设备与组件",
+      "name": "屏幕",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Screen.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/ScreenBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D38",
+      "group": "设备与组件",
+      "name": "服务器刀片",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/Server.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/Server.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D39",
+      "group": "设备与组件",
+      "name": "平板电脑",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/Tablet.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/portable/TabletHost.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D40",
+      "group": "设备与组件",
+      "name": "转运器",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Transposer.scala",
+        "src/main/scala/li/cil/oc/server/component/Transposer.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/TransposerBlockEntity.java",
+        "src/main/java/li/cil/oc/server/component/Transposer.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "外部储罐可选索引对显式nil的校验与原版不一致。",
+      "evidence": []
+    },
+    {
+      "id": "D41",
+      "group": "设备与组件",
+      "name": "天使升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeAngel.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeAngel.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D42",
+      "group": "设备与组件",
+      "name": "条码读取升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeBarcodeReader.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeBarcodeReader.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D43",
+      "group": "设备与组件",
+      "name": "电池升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeBattery.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeBattery.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D44",
+      "group": "设备与组件",
+      "name": "区块加载升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeChunkloader.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeChunkloader.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D45",
+      "group": "设备与组件",
+      "name": "合成升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeCrafting.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeCrafting.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D46",
+      "group": "设备与组件",
+      "name": "数据库升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeDatabase.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeDatabase.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D47",
+      "group": "设备与组件",
+      "name": "经验升级",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeExperience.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeExperience.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "RobotAnalyzeEvent 发射/经验统计提示尚未接齐，物品等级提示有差异；本批已修部分公式与恢复。",
+      "evidence": []
+    },
+    {
+      "id": "D48",
+      "group": "设备与组件",
+      "name": "发电机升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeGenerator.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeGenerator.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "本批已修燃料容器实际接收/回退、选中槽顺序、零数量插入及燃烧脏标记；尚需实际容量/容器/燃烧保存流程闭合。",
+      "evidence": []
+    },
+    {
+      "id": "D49",
+      "group": "设备与组件",
+      "name": "物品栏控制器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeInventoryController.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeInventoryController.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D50",
+      "group": "设备与组件",
+      "name": "拴绳升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeLeash.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeLeash.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D51",
+      "group": "设备与组件",
+      "name": "多功能升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeMF.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeMF.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D52",
+      "group": "设备与组件",
+      "name": "导航升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeNavigation.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeNavigation.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D53",
+      "group": "设备与组件",
+      "name": "普通及粘性活塞升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradePiston.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradePiston.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D54",
+      "group": "设备与组件",
+      "name": "告示牌升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeSign.scala",
+        "src/main/scala/li/cil/oc/server/component/UpgradeSignInAdapter.scala",
+        "src/main/scala/li/cil/oc/server/component/UpgradeSignInRotatable.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeSign.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D55",
+      "group": "设备与组件",
+      "name": "太阳能升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeSolarGenerator.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeSolarGenerator.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D56",
+      "group": "设备与组件",
+      "name": "储罐升级",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeTank.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeTank.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "设备信息产品名和capacity字段与原版不同。",
+      "evidence": []
+    },
+    {
+      "id": "D57",
+      "group": "设备与组件",
+      "name": "流体控制器",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeTankController.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeTankController.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "默认无储罐查询及外部索引/自定义堆叠容器行为仍有差异。",
+      "evidence": []
+    },
+    {
+      "id": "D58",
+      "group": "设备与组件",
+      "name": "牵引光束升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/UpgradeTractorBeam.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeTractorBeam.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D59",
+      "group": "设备与组件",
+      "name": "交易升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/Trade.scala",
+        "src/main/scala/li/cil/oc/server/component/UpgradeTrading.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/UpgradeTrading.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D60",
+      "group": "设备与组件",
+      "name": "航点",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/tileentity/Waypoint.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/block/entity/WaypointBlockEntity.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "D61",
+      "group": "设备与组件",
+      "name": "无线网卡",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/server/component/WirelessNetworkCard.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/component/WirelessNetworkCard.java"
+      ],
+      "acceptance": [
+        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+      ],
+      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
+      "evidence": []
+    },
+    {
+      "id": "T01",
+      "group": "工具与附加玩法",
+      "name": "分析仪",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/Analyzer.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/AnalyzerItem.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "机器人分析事件及经验统计缺失，诊断/剪贴板/权限流程需闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T02",
+      "group": "工具与附加玩法",
+      "name": "扳手",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/Wrench.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/WrenchItem.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "旋转、拆卸、工具损耗和保护事件的原操作路径待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T03",
+      "group": "工具与附加玩法",
+      "name": "游戏内手册",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/Manual.scala",
+        "src/main/scala/li/cil/oc/client/Manual.scala",
+        "src/main/scala/li/cil/oc/client/renderer/markdown/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/ManualItem.java",
+        "src/main/java/li/cil/oc/client/manual/ManualRegistry.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "物品打开/上下文页/历史与原Markdown特性、图片和链接闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T04",
+      "group": "工具与附加玩法",
+      "name": "调试器物品",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/Debugger.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/DebuggerItem.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "原操作、访问权限及显示/诊断交互待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T05",
+      "group": "工具与附加玩法",
+      "name": "纹理选择器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/TexturePicker.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/TexturePickerItem.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "实际选择方块材质及复制/显示流程待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T06",
+      "group": "工具与附加玩法",
+      "name": "悬浮靴",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/HoverBoots.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/HoverBootsItem.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "充电、悬浮/跌落、耐久和装备交互待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T07",
+      "group": "工具与附加玩法",
+      "name": "悬浮升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/UpgradeHover.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/FunctionalUpgradeItem.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "各等级高度和运动/能耗行为待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T08",
+      "group": "工具与附加玩法",
+      "name": "物品栏升级",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/UpgradeInventory.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/server/agent/RobotController.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "升级容量、插槽增减与多升级组合的原规则待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T09",
+      "group": "工具与附加玩法",
+      "name": "扩展卡容器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/UpgradeContainerCard.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/init/Agents.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "各等级合法插槽与卸载/热插拔流程待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T10",
+      "group": "工具与附加玩法",
+      "name": "扩展升级容器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/UpgradeContainerUpgrade.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/init/Agents.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "各等级合法升级与卸载/热插拔流程待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T11",
+      "group": "工具与附加玩法",
+      "name": "组件总线",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/ComponentBus.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/ComponentBusItem.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "各级组件容量与服务器实际限制待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T12",
+      "group": "工具与附加玩法",
+      "name": "无线终端及终端服务器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/Terminal.scala",
+        "src/main/scala/li/cil/oc/common/item/TerminalServer.scala",
+        "src/main/scala/li/cil/oc/common/item/Interweb.scala",
+        "src/main/scala/li/cil/oc/common/component/TerminalServer.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/TerminalItem.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "绑定、距离、访问权、屏幕输入与断连/重连待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T13",
+      "group": "工具与附加玩法",
+      "name": "纳米机器与行为提供器",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/Nanomachines.scala",
+        "src/main/scala/li/cil/oc/common/item/Acid.scala",
+        "src/main/scala/li/cil/oc/common/nanomachines/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/nanomachines/"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "安装/卸载、网络命令、输入限制、效果/能耗/保存和公开Provider API待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T14",
+      "group": "工具与附加玩法",
+      "name": "季节礼物",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/Present.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/PresentItem.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "原日期、概率/奖励和使用行为待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T15",
+      "group": "工具与附加玩法",
+      "name": "人工末地石",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/block/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/init/MiscDevices.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "原生成/特殊行为、掉落与配方闭合。",
+      "evidence": []
+    },
+    {
+      "id": "T16",
+      "group": "工具与附加玩法",
+      "name": "合成材料、机壳与墨盒耗材",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/common/item/ALU.scala",
+        "src/main/scala/li/cil/oc/common/item/Acid.scala",
+        "src/main/scala/li/cil/oc/common/item/ArrowKeys.scala",
+        "src/main/scala/li/cil/oc/common/item/ButtonGroup.scala",
+        "src/main/scala/li/cil/oc/common/item/Chamelium.scala",
+        "src/main/scala/li/cil/oc/common/item/CircuitBoard.scala",
+        "src/main/scala/li/cil/oc/common/item/ControlUnit.scala",
+        "src/main/scala/li/cil/oc/common/item/CuttingWire.scala",
+        "src/main/scala/li/cil/oc/common/item/DiamondChip.scala",
+        "src/main/scala/li/cil/oc/common/item/DroneCase.scala",
+        "src/main/scala/li/cil/oc/common/item/InkCartridge.scala",
+        "src/main/scala/li/cil/oc/common/item/InkCartridgeEmpty.scala",
+        "src/main/scala/li/cil/oc/common/item/Microchip.scala",
+        "src/main/scala/li/cil/oc/common/item/MicrocontrollerCase.scala",
+        "src/main/scala/li/cil/oc/common/item/NumPad.scala",
+        "src/main/scala/li/cil/oc/common/item/PrintedCircuitBoard.scala",
+        "src/main/scala/li/cil/oc/common/item/RawCircuitBoard.scala",
+        "src/main/scala/li/cil/oc/common/item/TabletCase.scala",
+        "src/main/scala/li/cil/oc/common/item/Transistor.scala"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/item/CraftingMaterialItem.java"
+      ],
+      "acceptance": [
+        "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
+      ],
+      "remaining": "原独立材料/耗材全部注册且保留属性和使用行为；配方归C17、外观归C20。",
+      "evidence": []
+    },
+    {
+      "id": "I01",
+      "group": "可选集成",
+      "name": "appeng",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/appeng/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/integration/appeng/"
+      ],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "模糊导出、运行中取消、Craftable/状态值冷恢复等原接口路径尚未闭合。",
+      "evidence": []
+    },
+    {
+      "id": "I02",
+      "group": "可选集成",
+      "name": "charset",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/charset/"
+      ],
+      "implementation": [],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
+      "evidence": []
+    },
+    {
+      "id": "I03",
+      "group": "可选集成",
+      "name": "cofh",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/cofh/"
+      ],
+      "implementation": [],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
+      "evidence": []
+    },
+    {
+      "id": "I04",
+      "group": "可选集成",
+      "name": "computercraft",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/computercraft/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/integration/computercraft/"
+      ],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "显式启用/禁用、外设/介质已验；集束红石及余下原桥接路径待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "I05",
+      "group": "可选集成",
+      "name": "ec",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/ec/"
+      ],
+      "implementation": [],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
+      "evidence": []
+    },
+    {
+      "id": "I06",
+      "group": "可选集成",
+      "name": "enderio",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/enderio/"
+      ],
+      "implementation": [],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
+      "evidence": []
+    },
+    {
+      "id": "I07",
+      "group": "可选集成",
+      "name": "enderstorage",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/enderstorage/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/integration/enderstorage/"
+      ],
+      "acceptance": [
+        "五个原回调、16色频率/边界、所有者保留、真实物品/流体及禁用/通用驱动组合通过；外部模组自身持久化不新增本项验收。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/enderstorage-integration.md"
+      ]
+    },
+    {
+      "id": "I08",
+      "group": "可选集成",
+      "name": "forestry",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/forestry/"
+      ],
+      "implementation": [],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
+      "evidence": []
+    },
+    {
+      "id": "I09",
+      "group": "可选集成",
+      "name": "ic2",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/ic2/"
+      ],
+      "implementation": [],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
+      "evidence": []
+    },
+    {
+      "id": "I10",
+      "group": "可选集成",
+      "name": "jei",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/jei/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/client/integration/jei/"
+      ],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "类别/文档导航、插槽高亮和世界磁盘刷新待客户端验收。",
+      "evidence": []
+    },
+    {
+      "id": "I11",
+      "group": "可选集成",
+      "name": "mekanism",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/mekanism/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/integration/mekanism/"
+      ],
+      "acceptance": [
+        "Configurator公开工具模式与真实交互、ChemicalStack转换/64位边界、ID开关及原黑名单门控通过。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/mekanism-integration.md"
+      ]
+    },
+    {
+      "id": "I12",
+      "group": "可选集成",
+      "name": "minecraft",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/minecraft/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/integration/VanillaDrivers.java"
+      ],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "已有部分原版驱动；ConverterWorld/WorldProvider等原模块功能尚未闭合。",
+      "evidence": []
+    },
+    {
+      "id": "I13",
+      "group": "可选集成",
+      "name": "minecraftforge",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/minecraftforge/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/capabilities/"
+      ],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "已有FE方块能力；通用FE物品充电注册等原功能尚未闭合。",
+      "evidence": []
+    },
+    {
+      "id": "I14",
+      "group": "可选集成",
+      "name": "projectred",
+      "status": "complete",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/projectred/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/integration/projectred/"
+      ],
+      "acceptance": [
+        "公开桥接16通道输入/输出、无符号边界/旋转/停机/禁用与真实工具损耗通过；外部线缆拓扑本身不新增OC需求。"
+      ],
+      "remaining": "",
+      "evidence": [
+        "docs/projectred-integration.md"
+      ]
+    },
+    {
+      "id": "I15",
+      "group": "可选集成",
+      "name": "railcraft",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/railcraft/"
+      ],
+      "implementation": [],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
+      "evidence": []
+    },
+    {
+      "id": "I16",
+      "group": "可选集成",
+      "name": "thaumcraft",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/thaumcraft/"
+      ],
+      "implementation": [],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
+      "evidence": []
+    },
+    {
+      "id": "I17",
+      "group": "可选集成",
+      "name": "tis3d",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/tis3d/"
+      ],
+      "implementation": [],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
+      "evidence": []
+    },
+    {
+      "id": "I18",
+      "group": "可选集成",
+      "name": "waila → Jade",
+      "status": "review",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/waila/"
+      ],
+      "implementation": [
+        "src/main/java/li/cil/oc/client/integration/jade/"
+      ],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原Waila→Jade；服务器真实数据已验，繁忙装配机和客户端三开关待闭合。",
+      "evidence": []
+    },
+    {
+      "id": "I19",
+      "group": "可选集成",
+      "name": "wrcbe",
+      "status": "gap",
+      "upstream": [
+        "src/main/scala/li/cil/oc/integration/wrcbe/"
+      ],
+      "implementation": [],
+      "acceptance": [
+        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+      ],
+      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
+      "evidence": []
+    }
+  ]
+}

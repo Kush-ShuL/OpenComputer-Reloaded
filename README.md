@@ -31,6 +31,8 @@
 
 配置位置和常用开关见 [配置说明](docs/CONFIGURATION.md)，CC:Tweaked 兼容需要手动启用。当前迁移进展与已知缺口见 [移植说明](docs/PORTING.md)。遇到问题可提交 [Issue](https://github.com/Kush-ShuL/OpenComputer-Reloaded/issues)，附上模组版本、游戏日志和复现步骤。
 
+移植范围已锁定为 [120 项固定清单](docs/MIGRATION-CHECKLIST.md)，其中逐项列出完成条件、当前状态和剩余工作；已有代码但尚未完成核对或验收的项目仍计入剩余。
+
 开发测试版的程序盘箱子掉落、存档自定义程序盘和更新提示，见 [程序盘与更新说明](docs/loot-and-updates.md)。
 
 ## 致谢与许可
