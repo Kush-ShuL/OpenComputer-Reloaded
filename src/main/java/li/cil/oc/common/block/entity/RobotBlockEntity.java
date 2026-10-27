@@ -39,9 +39,9 @@ public final class RobotBlockEntity extends BlockEntity implements li.cil.oc.api
     }
     public void tick(){controller.tick();if(level!=null&&!level.isClientSide&&node().network()==null)Network.joinOrCreateNetwork(this);}
     public void synchronize(){if(level!=null&&!level.isClientSide){setChanged();level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),2);}}
-    @Override public void onLoad(){super.onLoad();}
-    @Override public void setRemoved(){if(outside!=null)outside.remove();if(!movingAway&&controller.proxy==this)controller.runtime().close();super.setRemoved();}
-    @Override public void onChunkUnloaded(){if(outside!=null)outside.remove();if(!movingAway&&controller.proxy==this)controller.runtime().close();super.onChunkUnloaded();}
+    @Override public void onLoad(){super.onLoad();if(level!=null&&level.isClientSide)li.cil.oc.client.ComputerSounds.robotChanged(controller,controller,clientRunning,true);}
+    @Override public void setRemoved(){if(level!=null&&level.isClientSide)li.cil.oc.client.ComputerSounds.robotRemoved(this,false);if(outside!=null)outside.remove();if(!movingAway&&controller.proxy==this)controller.runtime().close();super.setRemoved();}
+    @Override public void onChunkUnloaded(){if(level!=null&&level.isClientSide)li.cil.oc.client.ComputerSounds.robotRemoved(this,true);if(outside!=null)outside.remove();if(!movingAway&&controller.proxy==this)controller.runtime().close();super.onChunkUnloaded();}
     @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){super.loadAdditional(tag,registries);controller.load(tag,registries);clientRunning=tag.getBoolean("oc:isRunning");if(level!=null&&level.isClientSide)li.cil.oc.client.AgentClient.applyScreen(controller,tag);}
     @Override protected void saveAdditional(CompoundTag tag,HolderLookup.Provider registries){super.saveAdditional(tag,registries);controller.save(tag,registries);}
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries){CompoundTag tag=new CompoundTag();controller.writeClient(tag,registries);return tag;}

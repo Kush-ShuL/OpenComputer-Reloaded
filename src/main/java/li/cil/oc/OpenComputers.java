@@ -107,6 +107,7 @@ public final class OpenComputers {
             li.cil.oc.common.integration.enderstorage.EnderStorageIntegration.initializeDrivers();
             li.cil.oc.common.integration.enderio.EnderIOIntegration.initializeDrivers();
             li.cil.oc.common.integration.appeng.AE2Integration.initializeDrivers();
+            li.cil.oc.common.integration.forestry.ForestryIntegration.initializeDrivers();
             li.cil.oc.common.integration.projectred.ProjectRedIntegration.initializeDrivers();
             li.cil.oc.common.template.BuiltinAssemblyTemplates.initialize();
             li.cil.oc.common.init.Converters.initialize();

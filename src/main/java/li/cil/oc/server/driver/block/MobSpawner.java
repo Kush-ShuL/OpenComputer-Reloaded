@@ -13,6 +13,6 @@ public final class MobSpawner extends VanillaBlockDriver<SpawnerBlockEntity> {
     @Override protected Class<?> environmentType(){return Environment.class;}
     public static final class Environment extends VanillaBlockEnvironment<SpawnerBlockEntity> {
         Environment(Level level,BlockPos pos,Direction side,SpawnerBlockEntity tile){super(level,pos,side,"mob_spawner",tile);}
-        @Callback(doc="function():string -- Get the name of the entity that is being spawned by this spawner.") public Object[] getSpawningMobName(Context context,Arguments args){if(!permitted())return denied();String id=target().getSpawner().getOrCreateNextSpawnData(level,level.random,position).getEntityToSpawn().getString("id");return new Object[]{id.isEmpty()?null:id};}
+        @Callback(doc="function():string -- Get the name of the entity that is being spawned by this spawner.") public Object[] getSpawningMobName(Context context,Arguments args){String id=target().getSpawner().getOrCreateNextSpawnData(level,level.random,position).getEntityToSpawn().getString("id");return new Object[]{id.isEmpty()?null:id};}
     }
 }

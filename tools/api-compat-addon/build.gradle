@@ -49,6 +49,8 @@ layout.buildDirectory = file("${repositoryRoot}/build/api-compat-addon")
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 repositories {
     mavenCentral()
+    maven { url = 'https://maven.blamejared.com'; content { includeGroup 'mezz.jei' } }
+    maven { url = 'https://www.cursemaven.com'; content { includeModule 'curse.maven', 'forestry-community-edition-1056828' } }
     maven { url = 'https://maven.squiddev.cc' }
     maven { url = 'https://api.modrinth.com/maven'; content { includeModule 'maven.modrinth', 'jade' } }
     maven { url = 'https://api.modrinth.com/maven'; content { includeModule 'maven.modrinth', 'tis3d'; includeModule 'maven.modrinth', 'markdownmanual' } }
@@ -69,6 +71,13 @@ def tis3dClientReport = new File(tis3dClientDirectory, 'manual-results.txt')
 def manualClientId = providers.gradleProperty('ocManualClientRunId').getOrElse('not-selected')
 def manualClientDirectory = file("${repositoryRoot}/build/api-compat-addon/manual-client/${manualClientId}")
 def manualClientReport = new File(manualClientDirectory, 'manual-results.txt')
+def integrationClientId = providers.gradleProperty('ocIntegrationClientRunId').getOrElse('not-selected')
+def integrationClientDirectory = file("${repositoryRoot}/build/api-compat-addon/integration-client/${integrationClientId}")
+def integrationClientReport = new File(integrationClientDirectory, 'client-results.txt')
+def ae2PersistenceId = providers.gradleProperty('ocAe2PersistenceRunId').getOrElse('not-selected')
+def ae2PersistenceStage = providers.gradleProperty('ocAe2Stage').getOrElse('prepare')
+def ae2PersistenceDirectory = file("${repositoryRoot}/build/api-compat-addon/appeng-persistence/${ae2PersistenceId}")
+def ae2PersistenceReport = new File(ae2PersistenceDirectory, "${ae2PersistenceStage}-results.txt")
 sourceSets {
     legacy { java.srcDir 'src/legacy/java'; resources.srcDirs = [] }
     main { compileClasspath += sourceSets.legacy.output; runtimeClasspath += sourceSets.legacy.output }
@@ -105,6 +114,26 @@ neoForge {
             systemProperty 'ocfixture.manualClientDirectory', manualClientDirectory.absolutePath
             systemProperty 'ocfixture.manualClientReport', manualClientReport.absolutePath
         }
+        integrationClient {
+            client()
+            gameDirectory = integrationClientDirectory
+            programArgument '--width'; programArgument '1280'
+            programArgument '--height'; programArgument '720'
+            systemProperty 'ocfixture.integrationClient', 'true'
+            systemProperty 'ocfixture.integrationClientRunId', integrationClientId
+            systemProperty 'ocfixture.integrationClientDirectory', integrationClientDirectory.absolutePath
+            systemProperty 'ocfixture.integrationClientReport', integrationClientReport.absolutePath
+            systemProperty 'ocfixture.integrationClientFocus', providers.gradleProperty('ocIntegrationClientFocus').getOrElse('all')
+        }
+        ae2PersistenceServer {
+            server()
+            gameDirectory = ae2PersistenceDirectory
+            programArgument '--nogui'
+            systemProperty 'ocfixture.ae2Persistence', 'true'
+            systemProperty 'ocfixture.ae2Stage', ae2PersistenceStage
+            systemProperty 'ocfixture.ae2RunId', ae2PersistenceId
+            systemProperty 'ocfixture.ae2Directory', ae2PersistenceDirectory.absolutePath
+        }
         persistenceServer {
             server()
             gameDirectory = persistenceDirectory
@@ -139,6 +168,8 @@ neoForge {
             systemProperty 'ocfixture.systemsFocus', providers.gradleProperty('ocSystemsFocus').getOrElse('all')
             systemProperty 'ocfixture.platformBatchOnly', providers.gradleProperty('ocPlatformBatchOnly').getOrElse('false')
             systemProperty 'ocfixture.platformFocus', providers.gradleProperty('ocPlatformFocus').getOrElse('all')
+            systemProperty 'ocfixture.completionBatchOnly', providers.gradleProperty('ocCompletionBatchOnly').getOrElse('false')
+            systemProperty 'ocfixture.completionFocus', providers.gradleProperty('ocCompletionFocus').getOrElse('all')
             systemProperty 'ocfixture.vanillaOnly', providers.gradleProperty('ocVanillaOnly').getOrElse('false')
         }
         hostPersistenceServer {
@@ -201,6 +232,9 @@ neoForge {
     mods { oc_api_compat { sourceSet sourceSets.main; sourceSet sourceSets.legacy } }
 }
 dependencies {
+    compileOnly 'mezz.jei:jei-1.21.1-common-api:19.21.0.247'
+    compileOnly 'mezz.jei:jei-1.21.1-neoforge-api:19.21.0.247'
+    compileOnly('curse.maven:forestry-community-edition-1056828:8782913') { transitive = false }
     if (providers.gradleProperty('ocApiCoordinate').isPresent()) compileOnly providers.gradleProperty('ocApiCoordinate').get()
     else compileOnly files(sdkFile)
     compileOnly 'com.typesafe:config:1.4.1'
@@ -222,8 +256,67 @@ dependencies {
         if (providers.gradleProperty(property).isPresent()) runtimeOnly files(providers.gradleProperty(property).get())
     if (providers.gradleProperty('ocCodeChickenLibJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocCodeChickenLibJar').get())
     if (providers.gradleProperty('ocJadeJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocJadeJar').get())
+    for (String property : ['ocJeiJar', 'ocForestryJar', 'ocPatchouliJar', 'ocForestryButterflyJar'])
+        if (providers.gradleProperty(property).isPresent()) runtimeOnly files(providers.gradleProperty(property).get())
     for (String property : ['ocProjectRedCoreJar', 'ocProjectRedTransmissionJar', 'ocCBMultipartJar'])
         if (providers.gradleProperty(property).isPresent()) runtimeOnly files(providers.gradleProperty(property).get())
+}
+def prepareIntegrationClient = tasks.register('prepareIntegrationClient') {
+    doLast {
+        if (!providers.gradleProperty('ocIntegrationClientRunId').isPresent() || !(integrationClientId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a fresh -PocIntegrationClientRunId=NAME')
+        if (integrationClientReport.exists() || new File(integrationClientDirectory, 'logs/latest.log').exists()) throw new GradleException('Select a fresh integration-client run id')
+        integrationClientDirectory.mkdirs()
+        new File(integrationClientDirectory, 'options.txt').setText('lang:zh_cn\nguiScale:2\nrenderDistance:2\nsimulationDistance:2\nautoJump:false\npauseOnLostFocus:false\n', 'UTF-8')
+        def settings = new File(integrationClientDirectory, 'config/opencomputers/settings.conf')
+        settings.parentFile.mkdirs(); settings.text = fixtureConfiguration('client-integration-fixture')
+    }
+}
+tasks.matching { it.name == 'runIntegrationClient' }.configureEach {
+    dependsOn prepareIntegrationClient
+    doLast {
+        if (!integrationClientReport.isFile() || integrationClientReport.readLines('UTF-8').first() != 'status=PASS')
+            throw new GradleException("The integration client did not pass; see ${integrationClientReport}")
+    }
+}
+def prepareAe2Persistence = tasks.register('prepareAe2Persistence') {
+    doLast {
+        if (!providers.gradleProperty('ocAe2PersistenceRunId').isPresent() || !(ae2PersistenceId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/) || !(ae2PersistenceStage in ['prepare', 'resume']))
+            throw new GradleException('Supply -PocAe2PersistenceRunId=NAME and -PocAe2Stage=prepare|resume')
+        def world = new File(ae2PersistenceDirectory, 'ocfixture-appeng-world/level.dat')
+        if (ae2PersistenceReport.exists() || (ae2PersistenceStage == 'prepare' && world.exists()) || (ae2PersistenceStage == 'resume' && !world.exists()))
+            throw new GradleException('AE2 persistence stage does not match the selected owned world/report')
+        def settings = new File(ae2PersistenceDirectory, 'config/opencomputers/settings.conf')
+        settings.parentFile.mkdirs(); settings.text = fixtureConfiguration('appeng-persistence-fixture')
+        def propertiesFile = new File(ae2PersistenceDirectory, 'server.properties')
+        if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-appeng-world
+level-type=minecraft\\:flat
+generator-settings={"layers":[{"block":"minecraft:bedrock","height":1}],"biome":"minecraft:plains"}
+online-mode=false
+server-ip=127.0.0.1
+server-port=25581
+gamemode=creative
+spawn-protection=0
+view-distance=2
+simulation-distance=2
+''', 'UTF-8')
+        def selected = new Properties(); propertiesFile.withInputStream { selected.load(it) }
+        if (selected.getProperty('level-name') != 'ocfixture-appeng-world') throw new GradleException('Refusing a different Minecraft world')
+        def eula = new File(ae2PersistenceDirectory, 'eula.txt')
+        def previous = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
+        if (!eula.exists() && previous.isFile()) {
+            def accepted = new Properties(); previous.withInputStream { accepted.load(it) }
+            if (accepted.getProperty('eula') == 'true') eula.bytes = previous.bytes
+        }
+        if (!eula.isFile()) throw new GradleException("Set the isolated server's EULA in ${eula}; acceptance is not generated")
+    }
+}
+tasks.matching { it.name == 'runAe2PersistenceServer' }.configureEach {
+    dependsOn prepareAe2Persistence
+    doLast {
+        if (!ae2PersistenceReport.isFile() || ae2PersistenceReport.readLines('UTF-8').first() != 'status=PASS')
+            throw new GradleException("The AE2 persistence stage did not pass; see ${ae2PersistenceReport}")
+    }
 }
 def prepareTis3dClient = tasks.register('prepareTis3dClient') {
     doLast {
@@ -590,6 +683,9 @@ opencomputers.internet.maxTcpConnections = 4
         if (providers.gradleProperty('ocPlatformBatchOnly').getOrElse('false') == 'true') {
             settings.append('\nopencomputers.nanomachines.commandRange = 2\n', 'UTF-8')
         }
+        if (providers.gradleProperty('ocCompletionBatchOnly').getOrElse('false') == 'true') {
+            settings.append('\nopencomputers.integration.vanilla.enableCommandBlockDriver = true\nopencomputers.integration.vanilla.enableInventoryDriver = true\n', 'UTF-8')
+        }
         if (providers.gradleProperty('ocRecipeConfigOnly').getOrElse('false') == 'true') {
             new File(settings.parentFile, 'user.recipes').text = 'include file("default.recipes")\ninclude file("fixture.recipes")\n'
             new File(settings.parentFile, 'fixture.recipes').text = '''
@@ -616,6 +712,10 @@ enable-command-block=false
 ''', 'UTF-8')
         def selected = new Properties(); propertiesFile.withInputStream { selected.load(it) }
         if (selected.getProperty('level-name') != 'ocfixture-device-world') throw new GradleException('Refusing a different world name')
+        if (providers.gradleProperty('ocCompletionBatchOnly').getOrElse('false') == 'true') {
+            selected.setProperty('enable-command-block', 'true')
+            propertiesFile.withOutputStream { selected.store(it, null) }
+        }
         def eula = new File(deviceDirectory, 'eula.txt')
         def previousEula = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
         if (!eula.exists() && previousEula.isFile()) {

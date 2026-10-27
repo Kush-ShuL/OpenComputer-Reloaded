@@ -47,9 +47,18 @@ behavior.
 ## Current state
 
 Work in progress. This is a partial development implementation, not a complete
-playable release. Earlier Windows development clients loaded Minecraft 1.21.1,
-NeoForge 21.1.224 and this mod. That startup evidence does not validate later
-changes or establish functional completion.
+playable release. The fixed checklist is currently **107/120 complete, with
+13 remaining**. The latest batch closed C17, I01, I08, I10, I12 and I18.
+The open platform/delivery items are C19, C20, C21, C22, C23 and C24; the open
+integrations are I02 Charset, I03 CoFH, I05 ExtraCells, I09 IndustrialCraft²,
+I15 Railcraft, I16 Thaumcraft and I19 Wireless Redstone CBE. C22, including sound,
+remains under review and is not counted complete.
+
+The development record below retains the earlier stages and their validation
+limits. Statements that a module was still awaiting acceptance describe those
+earlier stages; the later dated runs and current fixed checklist record its
+subsequent closure. Windows runtime evidence uses Minecraft 1.21.1 and
+NeoForge 21.1.224.
 
 The Java source includes the API types, core network/filesystem/machine/driver
 logic, LuaJ and native architecture code, CPU/APU/memory/storage/GPU/network-card
@@ -99,8 +108,8 @@ presence is not a claim that every upstream behavior has been validated.
 
 RAID storage, the debug card/debugger/texture picker, hover boots, seasonal
 presents and artificial end stone are also registered. RAID retains the original
-three-disk concatenation and destructive member-removal behavior. Missing vanilla
-Adapter drivers now include beacons, brewing stands, command blocks, comparators,
+three-disk concatenation and destructive member-removal behavior. Vanilla
+Adapter drivers include beacons, brewing stands, command blocks, comparators,
 spawners, note blocks and jukeboxes. The command-block driver remains opt-in.
 
 Rack disk-drive mountables now expose their real floppy filesystem on the selected
@@ -121,18 +130,34 @@ tree visualization are connected. These client additions compile; their visual
 and multiplayer acceptance remains outstanding.
 
 The original JEI manual/API categories, crafting extensions, configured-device
-subtypes, slot hover hints and client program-disk refresh are now implemented in
-Java against the official optional API. The Windows build passed; the JEI client
-screens and live world transitions still need acceptance.
+subtypes, slot hover hints and client program-disk refresh are implemented in
+Java against the official optional API. Windows client client-20261027-h4 passed
+the real API-page navigation, configured tablet manual button, CPU socket hover
+highlight and login program-disk snapshot/removal paths with JEI 19.21.0.247.
+The Chinese manual and actual highlighted Case screenshots were reviewed.
+See [JEI integration](jei-integration.md).
 
 The optional AE2 integration passed a Windows dedicated-server scenario with
 official AE2 19.2.14 and GuideME 21.1.1. Native Lua 5.3 reached real Adapter
 components, queried actual ME stock/CPU/energy/cell state, configured database
 filters, exported eight iron and imported eleven copper without changing item
 totals, and completed a real crafting request using a CPU, pattern and Molecular
-Assembler. SDK crafting values passed registry-aware save/load round-trips;
-pending-job cold recovery, fuzzy export, spatial movement and remote multiplayer
-remain separate acceptance work. See [AE2 integration](appeng-integration.md).
+Assembler. SDK crafting values passed registry-aware save/load round-trips.
+The later ae2-20261027-h2 prepare/resume runs passed in two independent Windows
+game JVMs after 251 and 215 ticks: actual fuzzy export, active-job cancellation,
+and a pending furnace job retained the same Craftable/status request UUID and
+native Lua locals with one BIOS boot. Only the fixture's furnace input/output
+layout needed correction; the production integration already supported these
+paths. Shared remote multiplayer and spatial-movement acceptance remain
+separate. See [AE2 integration](appeng-integration.md).
+
+Forestry CE 1.21.1-3.0.0-alpha8, its optional butterfly module and Patchouli 92
+loaded on NeoForge 21.1.224. The actual release declares NeoForge [21.1,), while
+21.1.230 is its source development environment, not the minimum runtime.
+Native Lua through real Adapters passed all nine analyzer/apiary callbacks and
+the registered bee/tree/butterfly, mutation and circuit conversion paths.
+The forestry.native result in completion-20261027-h1 passed independently of
+that report's separate recipe failure. See [Forestry integration](forestry-integration.md).
 
 The optional Mekanism bridge passed Windows dedicated-server scenarios with the
 official 10.7.19.85 runtime: actual Configurator modes and NetSplitter interactions,
@@ -170,9 +195,13 @@ The Windows build targets official Jade 15.10.0; a dedicated-server run with
 devices. Case world-side addresses/local energy/component names, all six relay
 addresses and real wireless strength, floppy filesystem insertion/ejection, and
 redstone-driven charger speed matched actual device state. A separate `waila`
-blacklist run loaded Jade without registering the OC provider. Client toggles,
-rendered tooltips, busy assembler data and remote synchronization still need
-acceptance. See [Jade integration](jade-integration.md).
+blacklist run loaded Jade without registering the OC provider. Windows client
+client-20261027-h4 then passed all eight independent client-option combinations,
+actual crosshair-side selection and the closed Case front, plus a real busy
+assembler's progress, minutes/seconds and serialized custom robot name BB-8.
+The three actual Chinese HUD screenshots were reviewed. Remote synchronization
+and shared rendering/font acceptance remain under their common items.
+See [Jade integration](jade-integration.md).
 
 The MinecraftForge platform bridge now registers standard NeoForge Energy item
 charging, including simulation, OC/FE conversion, integer limits and unapplied
@@ -245,8 +274,10 @@ The Windows `vanilla-20261027-115447` and `vanilla-disabled-20261027-115447` run
 passed actual callbacks with all three real server dimensions, original UUID/name
 fields, tank/NBT/item conversions, published geolyzer events and real redstone
 input, including explicit blacklist suppression. Provider snapshots additionally
-checked custom key/seed identity without manufacturing test worlds. I12 stays
-open for remaining driver and recipe-platform acceptance.
+checked custom key/seed identity without manufacturing test worlds. The later
+completion/client runs closed the remaining driver, inventory-protection and
+actual ClientLevel converter branches; their individual and overall report
+results are recorded below and in [recipes and vanilla behavior](recipes-and-vanilla.md).
 
 Program-disk chest generation preserves the original vanilla pool objects and
 enchantment holder ownership. A Windows real-world run generated all four target
@@ -312,14 +343,16 @@ lock, and the VM completed 80 reads and 10 writes with 181 received key-up signa
 The filled-to-empty drive update also passed NeoForge's real `onDataPacket`
 receiver path and cleared the inventory state used by the disk renderer.
 
-Still required: functional acceptance of advanced robot/drone upgrades, tablets,
+At that earlier development stage, acceptance was still required for advanced robot/drone upgrades, tablets,
 microcontrollers, network devices, robot/drone and rack/server/terminal
 platforms, holograms, printers and prints; remaining automation/power devices,
 item/block/component families; commands, manual item behavior, loot and
 configuration parity; remaining optional integrations and configuration
 consumers; restoration on remaining host types; and full
 client/server behavior. Existing menus, payloads, rendering, energy, persistence
-and crafting also need functional acceptance.
+and crafting also needed functional acceptance. The subsequent batches below
+closed their bounded families; the current remaining scope is the thirteen
+fixed items listed at the start of this section.
 
 Printed blocks now persist the original six redstone input levels used for edge
 transitions, with independent NBT snapshots and no server input history in client
@@ -511,8 +544,9 @@ New source fixes include RGB normalization for default/loaded screen colors so
 recolored screens merge, and tank-only Debug Card fluid access. Shared client
 appearance, remote packets and full menus remain in their existing C items.
 
-The subsequent parallel platform batch closes D15, D24, D34, D36, D39, T12, T13
-and I04. The fixed checklist is now **101/120 complete, with 19 remaining**.
+The subsequent parallel platform batch closed D15, D24, D34, D36, D39, T12, T13
+and I04. At that point the fixed checklist reached **101/120 complete, with
+19 remaining**.
 Windows NeoForge 21.1.224 `platform-20261027-g4` passed the individual portable,
 terminal and nanomachine contracts; its overall failure came from the separate
 agent and CC fixture paths. Focused `platform-20261027-g5` passed redstone, a
@@ -527,19 +561,52 @@ player transport, visuals and menus retain their acceptance scope. See
 [redstone](redstone.md), [terminals/nanomachines](terminal-and-nanomachines.md)
 and [CC compatibility](computercraft-integration.md).
 
-The eight unfinished legacy integrations now have a concrete
-[official-target inventory](legacy-integration-targets.md): six have no confirmed
-official usable 1.21.1 NeoForge target, Forestry CE has a modern target, and
-Railcraft Reborn has a modern target with changed WorldSpike behavior. All eight
-remain on the fixed checklist; target research does not count as migration.
+The latest completion batch closed C17, I01, I08, I10, I12 and I18, bringing the
+fixed checklist to **107/120 complete, with 13 remaining**. The report boundaries
+are explicit:
+
+- completion-20261027-h1 passed Forestry, vanilla special-purpose drivers and
+  actual command-block callbacks; its overall result was FAIL from the separate
+  recipe fixture timeout.
+- completion-20261027-h2 passed actual inventory-event protection; its overall
+  result was FAIL from a configured recipe mismatch.
+- completion-20261027-h4 passed the corrected recipe focus in five ticks,
+  retaining the earlier driver, command and inventory proofs.
+- ae2-20261027-h2 passed both independent-JVM preparation and recovery of the
+  actual pending crafting request.
+- client-20261027-h4 passed JEI, Jade and the real ClientLevel converter path;
+  its manual, socket highlight and Jade HUD screenshots were visually reviewed.
+
+See [recipes and vanilla behavior](recipes-and-vanilla.md),
+[AE2](appeng-integration.md), [Forestry](forestry-integration.md),
+[JEI](jei-integration.md) and [Jade](jade-integration.md) for the concrete reports.
+C19–C24 remain open.
+
+The subsequent Windows client `client-sound-20261027-h2` passed actual native
+Case/Robot loop startup, moving the same robot sound instance, stopping and
+restarting a Case, three category mute/recovery cycles, integrated pause,
+resource reload and real host removal. Each recovery retained one native ticker
+and source entry per live loop, with no stopped Case residue. A targeted client
+Mixin cleans only this mod's stale entries from the native zero-volume path.
+Disk insertion/ejection again uses the original 500 ms host-local debounce and
+range/volume conversion; its range acceptance and the remaining effects,
+settings, commands and update paths keep C22 open. See
+[client effects](client-effects.md).
+
+The [official-target inventory](legacy-integration-targets.md) originally
+recorded eight unfinished legacy integrations. Forestry is now implemented and
+validated, leaving seven: six have no confirmed official usable 1.21.1 NeoForge
+target; Railcraft Reborn has a modern target with changed WorldSpike behavior.
+All seven remain on the fixed checklist.
 
 The standalone SDK has successfully compiled and published to Maven Local.
 A separately compiled addon has passed on a Windows dedicated server: legacy
 Converter binaries, registry-aware persistence, network and prefab lifecycles,
 placed SimpleComponent discovery, and native Lua 5.3 / LuaJ callback conversion
-and IMC program mappings. The new Windows client also starts and joins the
-development world. Manual rendering and newly registered devices still need
-interactive acceptance. The remote JitPack tag build has succeeded and its Maven
+and IMC program mappings. Windows clients started and joined the development
+world; the later manual and integration-client runs above also passed their
+actual screens and HUD. Shared client/player and final delivery acceptance
+remains under the six open C items. The remote JitPack tag build has succeeded and its Maven
 POM is available. The player manual retains the original book + tier-one chip
 recipes; its page history, contextual navigation and interactions passed the
 Windows client scenario above.

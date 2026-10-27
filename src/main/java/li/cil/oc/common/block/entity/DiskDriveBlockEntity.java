@@ -2,7 +2,6 @@ package li.cil.oc.common.block.entity;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import li.cil.oc.Settings;
 import li.cil.oc.api.Driver;
 import li.cil.oc.api.driver.DeviceInfo;
 import li.cil.oc.api.driver.item.Slot;
@@ -29,10 +28,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
@@ -116,8 +112,7 @@ public final class DiskDriveBlockEntity extends BlockEntity implements Environme
         setChanged();
     }
     private void play(String sound) {
-        if (level != null && Settings.get().soundVolume > 0)
-            level.playSound(null, worldPosition, SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("opencomputers", sound)), SoundSource.BLOCKS, Settings.get().soundVolume, 1);
+        li.cil.oc.common.DiskSounds.play(this, sound);
     }
     @Override public void onConnect(Node connected) { if (connected == node && medium != null && medium.node() != null) node.connect(medium.node()); }
     @Override public void onDisconnect(Node disconnected) {

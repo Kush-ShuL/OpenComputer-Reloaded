@@ -111,7 +111,14 @@ transistor = false
 服务器执行 `/reload` 后重新读取配方文件；修改物品的隐藏状态后重启客户端。
 数据包仍可通过同名配方覆盖这些定义，例如
 `data/opencomputers/recipe/default/analyzer.json`。
-GregTech 档案需要对应的机器配方集成提供处理器，不能仅通过切换档案启用。
+GregTech 档案作为原始资源保留。固定上游源码实际只注册 `shaped`、`shapeless`、
+`furnace` 三种处理器，没有实现档案注释中的 `gt_*` 机器处理器；切换档案不会
+使这些机器配方生效。流体材料解析函数也没有原版调用方，不能据此视为已支持流体机器配方。
+
+HOCON 合成配方沿用原来的数据处理：处理器写入默认架构，导航升级保存实际地图，
+配对卡在服务端建立通道，重制设备保留硬件并更换 EEPROM，软盘格式化或复制按原规则
+处理数据。BIOS 和程序盘保留配方中配置的产出数量。`minecraft` 集成黑名单也会阻止
+注册上述三种 HOCON 处理器；独立重合成配方和数据包自身的定义仍各自处理。
 
 配方档案、自定义覆盖和数据包重载已在 Windows 服务端验证，验证入口为
 `tools/api-compat-addon/src/main/java/ocfixture/RecipeConfigContract.java`。

@@ -3,7 +3,6 @@ package li.cil.oc.server.component;
 import java.util.EnumSet;
 import java.util.Map;
 import li.cil.oc.Constants;
-import li.cil.oc.Settings;
 import li.cil.oc.api.Driver;
 import li.cil.oc.api.Network;
 import li.cil.oc.api.component.RackBusConnectable;
@@ -27,10 +26,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -81,7 +77,7 @@ public final class DiskDriveMountable extends RackDiskInventory implements RackM
         setChanged();
     }
     @Override public synchronized void setChanged(){flushMedium();super.setChanged();}
-    private void play(String sound){if(Settings.get().soundVolume>0)rack.world().playSound(null,rack.getBlockPos(),SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath("opencomputers",sound)),SoundSource.BLOCKS,Settings.get().soundVolume,1);}
+    private void play(String sound){li.cil.oc.common.DiskSounds.play(rack,sound);}
     @Override public boolean stillValid(Player player){return !disposed&&rack.getMountable(slot)==this&&rack.stillValid(player);}
     @Override public void onConnect(Node connected){if(connected==node&&medium!=null&&medium.node()!=null)node.connect(medium.node());}
     @Override public void onDisconnect(Node disconnected){if(disconnected==node&&medium!=null&&medium.node()!=null)medium.node().remove();}

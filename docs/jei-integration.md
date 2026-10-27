@@ -74,10 +74,33 @@ also be optional and client-side.
 
 ## Validation boundary
 
-The Windows Java build passed against the official JEI 19.21.0.247 APIs. The
-runtime remains optional and is not included in the OC JAR. In-game category
-navigation, long callback pages, manual clicks, hover alignment, configured
-subtype lookup and world disk refresh still require client acceptance.
+Windows client `client-20261027-h4` passed with actual JEI 19.21.0.247 and
+NeoForge 21.1.224. It rendered thirteen real GPU callback pages, navigated using
+JEI's actual next-page buttons, and clicked the manual usage button for a real
+configured tablet subtype to open its Chinese manual page. The runtime retained
+configured devices, hid invalid empty base stacks and kept floppy subtype
+identity independent of filesystem UUIDs.
+
+The actual filtered JEI CPU ingredient was hovered through Minecraft's normal
+cursor callback. Framebuffer pixels confirmed the original half-white overlay
+on the accepting Case socket and unchanged pixels in player inventory. The
+fixture only observes JEI's existing layout/slot bounds to locate controls; it
+registers no replacement categories, recipes, hover results or GUI. A GLFW
+cursor warp alone did not deliver game cursor events on this Windows driver.
+
+A real owned world's `opencomputers/loot/loot.properties` supplied a named
+OpenOS-factory override. It appeared in actual JEI ingredients after normal
+login synchronization. Delivering an empty production `DiskSync` through the
+normal integrated-server connection removed that variant and restored the
+bundled factory's ingredient. This checks snapshot receipt, not hot reloading
+the server's loot catalog or remote TCP multiplayer.
+
+Report: `build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt`.
+Actual `jei-api-first.png`, `jei-api-last.png`, `jei-manual-button.png`,
+`jei-tablet-manual.png` and `jei-sockets-highlight.png` live beside the report;
+the manual and highlighted Case frames were visually inspected. The runtime
+remains optional and is not included in the OC JAR. Shared C19/C20/C21/C23
+multiplayer, full model, screen and menu acceptance remain separate.
 
 JEI 19.21.0.247 declares NeoForge `[21.0.118-beta,)` and Minecraft
 `[1.21,1.21.1)`. FML 4.0.42 explicitly supplies Minecraft `1.21` and NeoForge

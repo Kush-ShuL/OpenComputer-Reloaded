@@ -375,23 +375,27 @@
       "id": "C17",
       "group": "基础与交付",
       "name": "合成、配方档案、重合成与材料返还",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/recipe/",
         "src/main/resources/assets/opencomputers/recipes/"
       ],
       "implementation": [
         "src/main/java/li/cil/oc/common/recipe/",
-        "src/main/resources/data/opencomputers/"
+        "src/main/resources/data/opencomputers/",
+        "docs/recipes-and-vanilla.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/RecipeVanillaContract.java"
       ],
       "acceptance": [
         "原配方档案、动态配方、装配/拆解材料与重合成保留；数据包覆盖及许可资源一致。"
       ],
-      "remaining": "原HOCON档案、user.recipes include、自定义shaped/shapeless/furnace、布尔禁用/隐藏、generic/lootdisks和数据包重载已接入；实际自定义与重载通过。尚需闭合GregTech机器配方处理器、流体材料和其余生产/拆解动态配方差异。",
+      "remaining": "",
       "evidence": [
         "docs/CONFIGURATION.md",
         "tools/api-compat-addon/src/main/java/ocfixture/RecipeConfigContract.java",
-        "build/api-compat-addon/devices/recipe-config-20261027-1249/device-results.txt"
+        "build/api-compat-addon/devices/recipe-config-20261027-1249/device-results.txt",
+        "docs/recipes-and-vanilla.md",
+        "build/api-compat-addon/devices/completion-20261027-h4/device-results.txt"
       ]
     },
     {
@@ -499,8 +503,11 @@
       "acceptance": [
         "原声音/粒子/宠物/显示设置/客户端及服务器命令/调试与更新提示各一条代表路径可用。PIN的Achievement是空占位，保留其无行为语义，无需创造额外成就。"
       ],
-      "remaining": "已注册实现；部分实际玩家显示、声音范围与更新网络流程待验收。",
-      "evidence": []
+      "remaining": "机箱/机器人循环声已通过Windows原生声道生命周期、移动、三轮静音恢复及无残留登记、暂停、重载和移除验收；磁盘声音范围、粒子、宠物、显示设置、命令及更新提示的代表路径仍待闭合。",
+      "evidence": [
+        "docs/client-effects.md",
+        "build/api-compat-addon/integration-client/client-sound-20261027-h2/client-results.txt"
+      ]
     },
     {
       "id": "C23",
@@ -2223,18 +2230,24 @@
       "id": "I01",
       "group": "可选集成",
       "name": "appeng",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/integration/appeng/"
       ],
       "implementation": [
-        "src/main/java/li/cil/oc/common/integration/appeng/"
+        "src/main/java/li/cil/oc/common/integration/appeng/",
+        "docs/appeng-integration.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/AppliedEnergisticsPersistenceContract.java"
       ],
       "acceptance": [
         "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
       ],
-      "remaining": "模糊导出、运行中取消、Craftable/状态值冷恢复等原接口路径尚未闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/appeng-integration.md",
+        "build/api-compat-addon/appeng-persistence/ae2-20261027-h2/prepare-results.txt",
+        "build/api-compat-addon/appeng-persistence/ae2-20261027-h2/resume-results.txt"
+      ]
     },
     {
       "id": "I02",
@@ -2354,17 +2367,23 @@
       "id": "I08",
       "group": "可选集成",
       "name": "forestry",
-      "status": "gap",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/integration/forestry/"
       ],
-      "implementation": [],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/integration/forestry/ForestryIntegration.java",
+        "docs/forestry-integration.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/ForestryContract.java"
+      ],
       "acceptance": [
         "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
       ],
-      "remaining": "已确认官方Forestry CE 1.21.1-3.0.0-alpha8/NeoForge21.1.230目标；分析机/蜂房与新版遗传、个体、物品/电路转换尚待Java接入。",
+      "remaining": "",
       "evidence": [
-        "docs/legacy-integration-targets.md"
+        "docs/legacy-integration-targets.md",
+        "docs/forestry-integration.md",
+        "build/api-compat-addon/devices/completion-20261027-h1/device-results.txt"
       ]
     },
     {
@@ -2388,18 +2407,24 @@
       "id": "I10",
       "group": "可选集成",
       "name": "jei",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/integration/jei/"
       ],
       "implementation": [
-        "src/main/java/li/cil/oc/client/integration/jei/"
+        "src/main/java/li/cil/oc/client/integration/jei/",
+        "docs/jei-integration.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/ClientIntegrationContract.java",
+        "tools/api-compat-addon/src/main/java/ocfixture/ClientJeiProbe.java"
       ],
       "acceptance": [
         "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
       ],
-      "remaining": "类别/文档导航、插槽高亮和世界磁盘刷新待客户端验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/jei-integration.md",
+        "build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt"
+      ]
     },
     {
       "id": "I11",
@@ -2424,7 +2449,7 @@
       "id": "I12",
       "group": "可选集成",
       "name": "minecraft",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/integration/minecraft/"
       ],
@@ -2432,16 +2457,23 @@
         "src/main/java/li/cil/oc/common/integration/VanillaDrivers.java",
         "src/main/java/li/cil/oc/server/driver/converter/World.java",
         "src/main/java/li/cil/oc/server/driver/converter/WorldProvider.java",
-        "src/main/java/li/cil/oc/server/driver/converter/FluidTank.java"
+        "src/main/java/li/cil/oc/server/driver/converter/FluidTank.java",
+        "docs/recipes-and-vanilla.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/RecipeVanillaContract.java",
+        "tools/api-compat-addon/src/main/java/ocfixture/ClientIntegrationContract.java"
       ],
       "acceptance": [
         "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
       ],
-      "remaining": "已补World/WorldProvider与现代储罐转换，保留原版三个维度UUID/名称并修复minecraft黑名单在转换、地质事件和普通红石输入的门控；启用/禁用真实场景已过。其他原版驱动、配方平台及自定义维度/客户端级别的整项验收仍待闭合。",
+      "remaining": "",
       "evidence": [
         "build/api-compat-addon/devices/vanilla-20261027-115447/device-results.txt",
         "build/api-compat-addon/devices/vanilla-disabled-20261027-115447/device-results.txt",
-        "tools/api-compat-addon/src/main/java/ocfixture/VanillaContract.java"
+        "tools/api-compat-addon/src/main/java/ocfixture/VanillaContract.java",
+        "docs/recipes-and-vanilla.md",
+        "build/api-compat-addon/devices/completion-20261027-h1/device-results.txt",
+        "build/api-compat-addon/devices/completion-20261027-h2/device-results.txt",
+        "build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt"
       ]
     },
     {
@@ -2550,18 +2582,24 @@
       "id": "I18",
       "group": "可选集成",
       "name": "waila → Jade",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/integration/waila/"
       ],
       "implementation": [
-        "src/main/java/li/cil/oc/client/integration/jade/"
+        "src/main/java/li/cil/oc/client/integration/jade/",
+        "docs/jade-integration.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/JadeClientContract.java",
+        "tools/api-compat-addon/src/main/java/ocfixture/JadeClientObserver.java"
       ],
       "acceptance": [
         "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
       ],
-      "remaining": "原Waila→Jade；服务器真实数据已验，繁忙装配机和客户端三开关待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/jade-integration.md",
+        "build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt"
+      ]
     },
     {
       "id": "I19",

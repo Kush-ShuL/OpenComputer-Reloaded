@@ -23,10 +23,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.ShapedRecipe;
 
 /** The data transforms formerly performed by ExtendedRecipe.addNBTToResult. */
 record RecipeOperation(String operation, int amount, Either<Integer, String> color, String disk) {
-    private static final Set<String> OPERATIONS = Set.of("default_architecture", "navigation_map", "linked_cards",
+    private static final Set<String> OPERATIONS = Set.of("extended", "default_architecture", "navigation_map", "linked_cards",
             "lua_bios", "loot_disk", "copy_eeprom", "swap_eeprom", "format_disk", "format_eeprom",
             "color_floppy", "color_chamelium", "print_beacon", "print_light");
     static final MapCodec<RecipeOperation> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
@@ -59,11 +61,11 @@ record RecipeOperation(String operation, int amount, Either<Integer, String> col
         ItemStack result = template.copy();
         switch (operation) {
             case "lua_bios" -> {
-                result = Recipes.definedItem("luabios");
+                result = Recipes.definedItem("luabios").copyWithCount(template.getCount());
                 if (Recipes.customData(result).getCompound("oc:data").getByteArray("oc:eeprom").length == 0)
                     throw new IllegalStateException("The Lua BIOS item is missing its EEPROM program");
             }
-            case "loot_disk" -> result = Recipes.lootDisk(disk);
+            case "loot_disk" -> result = Recipes.lootDisk(disk).copyWithCount(template.getCount());
             case "default_architecture" -> {
                 DriverItem driver = Driver.driverFor(result);
                 if (!(driver instanceof MutableProcessor processor))
@@ -93,11 +95,61 @@ record RecipeOperation(String operation, int amount, Either<Integer, String> col
         return result;
     }
 
+    ItemStack assemble(CraftingRecipe recipe, ItemStack template, CraftingInput input, HolderLookup.Provider registries) {
+        if (!operation.equals("extended")) return assemble(template, input, registries);
+        if (template.isEmpty()) return template;
+        if (Recipes.is(template, "navigationupgrade")) return transform("navigation_map", template, input, registries);
+        if (Recipes.is(template, "linkedcard")) return transform("linked_cards", template, input, registries);
+        if (List.of("cpu1", "cpu2", "cpu3", "apu1", "apu2", "apucreative").stream().anyMatch(name -> Recipes.is(template, name)))
+            return transform("default_architecture", template, input, registries);
+        if (List.of("floppy", "hdd1", "hdd2", "hdd3").stream().anyMatch(name -> Recipes.is(template, name))) {
+            if (recipe.canCraftInDimensions(1, 1)) return transform("format_disk", template, input, registries);
+            if (input.items().stream().filter(stack -> !stack.isEmpty()).allMatch(RecipeOperation::ordinaryFloppy)) {
+                ItemStack result = template.copy();
+                CompoundTag data = Recipes.customData(result);
+                for (ItemStack source : input.items()) if (ordinaryFloppy(source)) {
+                    CompoundTag old = Recipes.customData(source);
+                    for (String key : old.getAllKeys()) if (!data.contains(key)) data.put(key, old.get(key).copy());
+                }
+                Recipes.customData(result, data);
+                return result;
+            }
+        }
+        if (!(recipe instanceof ShapedRecipe) && recipe.getIngredients().size() == 2) {
+            if (Recipes.is(template, "eeprom") && template.getCount() == 2) return transform("copy_eeprom", template, input, registries);
+            if (Recipes.is(template, "print")) {
+                ItemStack result = find(input, "print");
+                result = result.isEmpty() ? template.copy() : result.copyWithCount(template.getCount());
+                for (ItemStack source : input.items()) {
+                    if (source.is(Items.IRON_BLOCK) || source.is(Items.GOLD_BLOCK) || source.is(Items.EMERALD_BLOCK) || source.is(Items.DIAMOND_BLOCK))
+                        result = transform("print_beacon", result, input, registries);
+                    else if (source.is(Items.GLOWSTONE_DUST) || source.is(Items.GLOWSTONE))
+                        result = new RecipeOperation("print_light", source.is(Items.GLOWSTONE) ? 4 : 1, Either.right(""), "").assemble(result, input, registries);
+                    if (result.isEmpty()) return result;
+                }
+                return result;
+            }
+        }
+        if (List.of("microcontroller", "drone", "robot", "tablet").stream().anyMatch(name -> Recipes.is(template, name))
+                && input.items().stream().anyMatch(stack -> !stack.isEmpty() && stack.is(template.getItem())))
+            return transform("swap_eeprom", template, input, registries);
+        return template;
+    }
+
+    private static boolean ordinaryFloppy(ItemStack stack) {
+        return Recipes.is(stack, "floppy") && !Recipes.customData(stack).contains("oc:lootFactory", Tag.TAG_STRING);
+    }
+
+    private static ItemStack transform(String operation, ItemStack template, CraftingInput input, HolderLookup.Provider registries) {
+        return new RecipeOperation(operation, 1, Either.right(""), "").assemble(template, input, registries);
+    }
+
     ItemStack assemble(ItemStack template, CraftingInput input, HolderLookup.Provider registries) {
         ItemStack result = displayResult(template);
         switch (operation) {
             case "navigation_map" -> {
-                ItemStack map = input.items().stream().filter(stack -> stack.is(Items.FILLED_MAP)).findFirst().orElse(ItemStack.EMPTY);
+                ItemStack map = ItemStack.EMPTY;
+                for (ItemStack source : input.items()) if (source.is(Items.FILLED_MAP)) map = source;
                 if (map.isEmpty()) return ItemStack.EMPTY;
                 DriverItem driver = requireDriver(result);
                 CompoundTag data = environmentData(driver, result);
@@ -105,10 +157,12 @@ record RecipeOperation(String operation, int amount, Either<Integer, String> col
                 driver.saveDataTag(result, data);
             }
             case "linked_cards" -> {
-                DriverItem driver = requireDriver(result);
-                CompoundTag data = environmentData(driver, result);
-                data.putString("oc:tunnel", UUID.randomUUID().toString());
-                driver.saveDataTag(result, data);
+                if (!li.cil.oc.util.SideTracker.isClient()) {
+                    DriverItem driver = requireDriver(result);
+                    CompoundTag data = environmentData(driver, result);
+                    data.putString("oc:tunnel", UUID.randomUUID().toString());
+                    driver.saveDataTag(result, data);
+                }
             }
             case "copy_eeprom" -> {
                 for (ItemStack source : input.items()) {
@@ -129,17 +183,17 @@ record RecipeOperation(String operation, int amount, Either<Integer, String> col
             }
             case "swap_eeprom" -> result = swapEeprom(template, input, registries);
             case "format_disk" -> {
-                CompoundTag root = new CompoundTag();
+                CompoundTag root = Recipes.customData(result);
                 for (ItemStack source : input.items()) {
                     CompoundTag old = Recipes.customData(source);
-                    if (Recipes.is(source, "floppy") && old.contains("oc:color", Tag.TAG_ANY_NUMERIC))
+                    if (Recipes.is(source, "floppy") && old.contains("oc:color", Tag.TAG_ANY_NUMERIC) && old.getInt("oc:color") != 7)
                         root.put("oc:color", old.get("oc:color").copy());
                 }
                 Recipes.customData(result, root);
             }
             case "format_eeprom" -> Recipes.customData(result, new CompoundTag());
             case "print_beacon", "print_light" -> {
-                result = find(input, "print").copyWithCount(1);
+                result = find(input, "print").copyWithCount(template.getCount());
                 if (result.isEmpty()) return ItemStack.EMPTY;
                 CompoundTag root = Recipes.customData(result);
                 if (operation.equals("print_beacon")) {
@@ -176,7 +230,7 @@ record RecipeOperation(String operation, int amount, Either<Integer, String> col
         ItemStack device = input.items().stream().filter(stack -> !stack.isEmpty() && stack.is(template.getItem()))
                 .findFirst().orElse(ItemStack.EMPTY);
         ItemStack eeprom = find(input, "eeprom");
-        if (device.isEmpty() || eeprom.isEmpty()) return ItemStack.EMPTY;
+        if (device.isEmpty()) return ItemStack.EMPTY;
         ItemStack result = device.copyWithCount(template.getCount());
         CompoundTag root = Recipes.customData(result);
         if (Recipes.is(device, "tablet")) {
@@ -195,15 +249,17 @@ record RecipeOperation(String operation, int amount, Either<Integer, String> col
                     if (index >= 0 && index < occupied.length) occupied[index] = true;
                 }
             }
-            if (replacementSlot < 0 || replacementSlot >= occupied.length || occupied[replacementSlot]) {
+            if (!eeprom.isEmpty() && (replacementSlot < 0 || replacementSlot >= occupied.length || occupied[replacementSlot])) {
                 replacementSlot = 0;
                 while (replacementSlot < occupied.length && occupied[replacementSlot]) replacementSlot++;
             }
-            if (replacementSlot >= occupied.length) return ItemStack.EMPTY;
-            CompoundTag replacement = new CompoundTag();
-            replacement.putByte("slot", (byte) replacementSlot);
-            replacement.put("item", eeprom.copyWithCount(1).saveOptional(registries));
-            items.add(replacement);
+            if (!eeprom.isEmpty()) {
+                if (replacementSlot >= occupied.length) return ItemStack.EMPTY;
+                CompoundTag replacement = new CompoundTag();
+                replacement.putByte("slot", (byte) replacementSlot);
+                replacement.put("item", eeprom.copyWithCount(1).saveOptional(registries));
+                items.add(replacement);
+            }
             root.put("oc:items", items);
         } else {
             ListTag components = new ListTag();
@@ -212,7 +268,7 @@ record RecipeOperation(String operation, int amount, Either<Integer, String> col
                 ItemStack old = ItemStack.parseOptional(registries, serialized);
                 if (!Recipes.is(old, "eeprom")) components.add(serialized.copy());
             }
-            components.add(eeprom.copyWithCount(1).saveOptional(registries));
+            if (!eeprom.isEmpty()) components.add(eeprom.copyWithCount(1).saveOptional(registries));
             root.put("oc:components", components);
         }
         Recipes.customData(result, root);

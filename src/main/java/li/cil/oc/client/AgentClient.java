@@ -24,8 +24,11 @@ public final class AgentClient {
     private static void extensions(RegisterClientExtensionsEvent event){event.registerItem(new IClientItemExtensions(){private net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer renderer;@Override public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer(){if(renderer==null)renderer=new li.cil.oc.client.renderer.AgentItemRenderer();return renderer;}},Agents.ROBOT_ITEM.get(),Agents.DRONE.get());}
     private static void unload(LevelEvent.Unload event){if(event.getLevel().isClientSide())ROBOTS.clear();}
     public static void applyScreen(RobotController host,CompoundTag tag){
+        RobotController incoming=host;
         String address=tag.getString("oc:address");
+        boolean initial=!ROBOTS.containsKey(address);
         if(!address.isEmpty()){RobotController previous=ROBOTS.get(address);if(previous!=null&&previous!=host){var proxy=host.proxy;proxy.attach(previous);host=previous;host.load(tag,proxy.getLevel().registryAccess());}ROBOTS.put(address,host);}
+        ComputerSounds.robotChanged(incoming,host,tag.getBoolean("oc:isRunning"),initial);
         host.clientHasKeyboard=tag.getBoolean("agentKeyboard");
         if(!tag.contains("agentBuffer")){host.clientScreen=null;return;}
         if(host.clientScreen==null)host.clientScreen=new TextBuffer(host,new AgentDisplayServices(host));

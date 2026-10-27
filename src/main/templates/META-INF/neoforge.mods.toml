@@ -24,6 +24,9 @@ side="BOTH"
 [[mixins]]
 config="opencomputers.printing.mixins.json"
 
+[[mixins]]
+config="opencomputers.sound.mixins.json"
+
 [[dependencies.opencomputers]]
 modId="minecraft"
 type="required"
@@ -49,6 +52,13 @@ side="CLIENT"
 modId="ae2"
 type="optional"
 versionRange="[19.2.14,)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.opencomputers]]
+modId="forestry"
+type="optional"
+versionRange="[3.0.0-alpha8,)"
 ordering="AFTER"
 side="BOTH"
 

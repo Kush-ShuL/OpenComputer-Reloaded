@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -12,6 +13,7 @@ import li.cil.oc.api.Items;
 import li.cil.oc.api.detail.ItemInfo;
 import li.cil.oc.api.machine.Architecture;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -55,6 +57,15 @@ public final class Recipes {
     }
 
     private Recipes() {}
+
+    /** Original optional fluid-ingredient parser; the pinned tree has no caller or GT handler. */
+    public static Optional<net.neoforged.neoforge.fluids.FluidStack> parseFluidIngredient(com.typesafe.config.Config entry) {
+        ResourceLocation name = ResourceLocation.parse(entry.getString("name"));
+        if (!BuiltInRegistries.FLUID.containsKey(name) || BuiltInRegistries.FLUID.get(name) == net.minecraft.world.level.material.Fluids.EMPTY)
+            throw new IllegalArgumentException("Unknown fluid: " + name);
+        int amount = entry.hasPath("amount") ? entry.getInt("amount") : 1000;
+        return Optional.of(new net.neoforged.neoforge.fluids.FluidStack(BuiltInRegistries.FLUID.get(name), amount));
+    }
 
     public static void register(IEventBus modBus) {
         SERIALIZERS.register(modBus);

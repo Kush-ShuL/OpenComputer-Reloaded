@@ -1,12 +1,12 @@
 # Legacy integration targets
 
-This note covers eight integrations: I02, I03, I05, I08, I09, I15, I16 and I19. OpenComputers behavior is taken exclusively from MightyPirates/OpenComputers commit `258943363ea8fc4ef14948e6bc6f67375061580c`. Official project pages and public source repositories were checked on 2026-10-27.
+This inventory originally covered eight unfinished integrations: I02, I03, I05, I08, I09, I15, I16 and I19. I08 Forestry has since been implemented and validated, leaving **seven open integrations**: I02, I03, I05, I09, I15, I16 and I19. OpenComputers behavior is taken exclusively from MightyPirates/OpenComputers commit `258943363ea8fc4ef14948e6bc6f67375061580c`. Official project pages and public source repositories were checked on 2026-10-27.
 
 - No official usable Minecraft 1.21.1 NeoForge target/API was found for six original projects: I02 Charset, I03 CoFH, I05 ExtraCells, I09 IC², I16 Thaumcraft and I19 Wireless Redstone CBE.
-- I08 Forestry has a modern target in Forestry: Community Edition, with a changed public genetics API.
+- I08 Forestry is closed against the official Forestry: Community Edition alpha8 runtime, including its changed public genetics API and optional butterfly content.
 - I15 Railcraft has a modern target in Railcraft Reborn, with observable differences in Worldspike behavior.
 
-All eight remain unfinished integration gaps. An available modern target is a path to implementation, not evidence that its OC bridge is implemented or validated; unavailable legacy targets remain in scope too.
+The seven remaining entries stay on the fixed checklist. Railcraft's available modern target still requires its full OC bridge; the six unavailable legacy targets remain in scope. Forestry's completed mapping and evidence are retained below as the resolution of the former eighth gap.
 
 ## I02: Charset
 
@@ -58,16 +58,18 @@ Original sources: `integration/cofh/item/{ModCoFHItem,EventHandlerCoFH}.scala` a
 
 The official [CoFH Core build configuration](https://github.com/CoFH/CoFHCore/blob/1.20.x/gradle.properties) currently declares version 11.0.2 for Minecraft 1.20.4 and NeoForge 20.4.237; the [download page](https://teamcofh.com/downloads/) lists the released 1.20 generation. No official 1.21.1 target was found. Modern control interfaces have also moved to `cofh.lib.api.control`; an actual 1.21.1 runtime and its hammer/information contracts are needed before the original bridge can be implemented and exercised.
 
-## I08: Forestry
+## I08: Forestry — completed
 
 Original sources: `integration/forestry/{ModForestry,DriverAnalyzer,ConverterItemStack}.scala` and `{DriverBeeHouse,ConverterIAlleles,ConverterIIndividual}.java`.
 
 - The analyzer exposes working state, progress and the displayed individual. Bee housing exposes breeding availability, drone/queen, mutation data, mutation-result species and parents.
 - Three converters expose mutation/species information; analyzed active/inactive bee, tree and butterfly genes; living-individual information; and individual/circuit data attached to actual items.
 
-[Forestry: CE](https://www.curseforge.com/minecraft/mc-mods/forestry-community-edition) publishes `1.21.1-3.0.0-alpha8` for NeoForge. Its [build configuration](https://github.com/thedarkcolour/ForestryCE/blob/1.21.1/gradle.properties) targets NeoForge 21.1.230. This is the Community Edition project, distinct from the original ForestryMC repository.
+[Forestry: CE](https://www.curseforge.com/minecraft/mc-mods/forestry-community-edition) publishes `1.21.1-3.0.0-alpha8` for NeoForge. The actual release JAR declares NeoForge `[21.1,)` and Patchouli `[1.21.1-92,)`. Its [build configuration](https://github.com/thedarkcolour/ForestryCE/blob/1.21.1/gradle.properties) uses NeoForge 21.1.230 for development; that is not the release's minimum runtime. The official alpha8 core, optional butterfly module and Patchouli 92 loaded successfully on this project's NeoForge 21.1.224. This is the Community Edition project, distinct from the original ForestryMC repository.
 
-The [public entry point](https://github.com/thedarkcolour/ForestryCE/blob/1.21.1/src/main/java/forestry/api/IForestryApi.java) supplies genetics and circuit managers. `forestry.api.core.genetics` replaces the old genetics package; `IIndividualHandlerItem` reads actual item individuals, and the typed genome/allele pairs require an explicit conversion back to the original Lua table fields. `IBeeHousing` remains public. The analyzer is now [`forestry.core.content.analyzer.TileAnalyzer`](https://github.com/thedarkcolour/ForestryCE/blob/1.21.1/src/main/java/forestry/core/content/analyzer/TileAnalyzer.java), retaining `hasWork`, `getIndividualOnDisplay` and inherited progress access. Butterflies are a separate modern module and must remain an optional part of the original converter scope. The target is available; implementing these drivers and conversions remains work.
+The [public entry point](https://github.com/thedarkcolour/ForestryCE/blob/1.21.1/src/main/java/forestry/api/IForestryApi.java) supplies genetics and circuit managers. `forestry.api.core.genetics` replaces the old genetics package; `IIndividualHandlerItem` reads actual item individuals, and the integration converts the typed genome/allele pairs back to the original Lua table fields. `IBeeHousing` remains public. The analyzer is now [`forestry.core.content.analyzer.TileAnalyzer`](https://github.com/thedarkcolour/ForestryCE/blob/1.21.1/src/main/java/forestry/core/content/analyzer/TileAnalyzer.java), retaining `hasWork`, `getIndividualOnDisplay` and inherited progress access. The butterfly content module remains optional.
+
+The individual `forestry.native` result in [completion-20261027-h1](../build/api-compat-addon/devices/completion-20261027-h1/device-results.txt) passed all nine real analyzer/apiary callbacks through a native Lua 5.3 Case and Adapter. The registered converters passed real bee, tree and butterfly individuals, analyzed/unanalysed and active/inactive genes, numeric and territory shapes, mutation/species information, item individuals and official-factory circuit IDs. That report's overall result was FAIL from a separate recipe-fixture timeout; the Forestry result passed. The recipe focus subsequently passed in completion-20261027-h4. See [Forestry integration](forestry-integration.md) for the implementation and bounded acceptance.
 
 ## I09: IndustrialCraft²
 

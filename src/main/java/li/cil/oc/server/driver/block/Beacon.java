@@ -15,8 +15,8 @@ public final class Beacon extends VanillaBlockDriver<BeaconBlockEntity> {
     public static final class Environment extends VanillaBlockEnvironment<BeaconBlockEntity> {
         Environment(Level level,BlockPos pos,Direction side,BeaconBlockEntity tile){super(level,pos,side,"beacon",tile);}
         private String effect(int index){var effect=BeaconMenu.decodeEffect(target().dataAccess.get(index));return effect==null?null:effect.value().getDescriptionId();}
-        @Callback(doc="function():number -- Get the number of levels for this beacon.") public Object[] getLevels(Context context,Arguments args){return permitted()?new Object[]{target().dataAccess.get(0)}:denied();}
-        @Callback(doc="function():string -- Get the name of the active primary effect.") public Object[] getPrimaryEffect(Context context,Arguments args){return permitted()?new Object[]{effect(1)}:denied();}
-        @Callback(doc="function():string -- Get the name of the active secondary effect.") public Object[] getSecondaryEffect(Context context,Arguments args){return permitted()?new Object[]{effect(2)}:denied();}
+        @Callback(doc="function():number -- Get the number of levels for this beacon.") public Object[] getLevels(Context context,Arguments args){return new Object[]{target().dataAccess.get(0)};}
+        @Callback(doc="function():string -- Get the name of the active primary effect.") public Object[] getPrimaryEffect(Context context,Arguments args){return new Object[]{effect(1)};}
+        @Callback(doc="function():string -- Get the name of the active secondary effect.") public Object[] getSecondaryEffect(Context context,Arguments args){return new Object[]{effect(2)};}
     }
 }

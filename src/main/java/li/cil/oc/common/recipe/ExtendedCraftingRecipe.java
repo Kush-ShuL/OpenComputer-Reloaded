@@ -37,7 +37,7 @@ public final class ExtendedCraftingRecipe implements CraftingRecipe {
     @Override
     public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
         if (!operation.canApply(input)) return ItemStack.EMPTY;
-        return operation.assemble(base.assemble(input, registries), input, registries);
+        return operation.assemble(base, base.assemble(input, registries), input, registries);
     }
 
     @Override

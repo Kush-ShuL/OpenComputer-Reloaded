@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 101 项，剩余 19 项。**
+**总计 120 项，已闭合 107 项，剩余 13 项。**
 
-剩余包括：已有实现待核对/验收 11 项，有明确缺口 8 项。
+剩余包括：已有实现待核对/验收 6 项，有明确缺口 7 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -27,10 +27,10 @@
 
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
-| 基础与交付 | 24 | 17 | 7 |
+| 基础与交付 | 24 | 18 | 6 |
 | 设备与组件 | 61 | 61 | 0 |
 | 工具与附加玩法 | 16 | 16 | 0 |
-| 可选集成 | 19 | 7 | 12 |
+| 可选集成 | 19 | 12 | 7 |
 
 ## 范围归属
 
@@ -202,17 +202,15 @@
 
 闭合依据：[docs/CONFIGURATION.md](../docs/CONFIGURATION.md)、[tools/config-verification/src/main/java/li/cil/oc/tools/config/ConfigurationVerification.java](../tools/config-verification/src/main/java/li/cil/oc/tools/config/ConfigurationVerification.java)
 
-### C17 · 合成、配方档案、重合成与材料返还 · 已有实现，待核对/验收
+### C17 · 合成、配方档案、重合成与材料返还 · 已闭合
 
 完成条件：原配方档案、动态配方、装配/拆解材料与重合成保留；数据包覆盖及许可资源一致。
 
-剩余：原HOCON档案、user.recipes include、自定义shaped/shapeless/furnace、布尔禁用/隐藏、generic/lootdisks和数据包重载已接入；实际自定义与重载通过。尚需闭合GregTech机器配方处理器、流体材料和其余生产/拆解动态配方差异。
-
 原版范围：`src/main/scala/li/cil/oc/common/recipe/`、`src/main/resources/assets/opencomputers/recipes/`
 
-当前接入：[src/main/java/li/cil/oc/common/recipe/](../src/main/java/li/cil/oc/common/recipe/)、[src/main/resources/data/opencomputers/](../src/main/resources/data/opencomputers/)
+当前接入：[src/main/java/li/cil/oc/common/recipe/](../src/main/java/li/cil/oc/common/recipe/)、[src/main/resources/data/opencomputers/](../src/main/resources/data/opencomputers/)、[docs/recipes-and-vanilla.md](../docs/recipes-and-vanilla.md)、[tools/api-compat-addon/src/main/java/ocfixture/RecipeVanillaContract.java](../tools/api-compat-addon/src/main/java/ocfixture/RecipeVanillaContract.java)
 
-闭合依据：[docs/CONFIGURATION.md](../docs/CONFIGURATION.md)、[tools/api-compat-addon/src/main/java/ocfixture/RecipeConfigContract.java](../tools/api-compat-addon/src/main/java/ocfixture/RecipeConfigContract.java)、[build/api-compat-addon/devices/recipe-config-20261027-1249/device-results.txt](../build/api-compat-addon/devices/recipe-config-20261027-1249/device-results.txt)
+闭合依据：[docs/CONFIGURATION.md](../docs/CONFIGURATION.md)、[tools/api-compat-addon/src/main/java/ocfixture/RecipeConfigContract.java](../tools/api-compat-addon/src/main/java/ocfixture/RecipeConfigContract.java)、[build/api-compat-addon/devices/recipe-config-20261027-1249/device-results.txt](../build/api-compat-addon/devices/recipe-config-20261027-1249/device-results.txt)、[docs/recipes-and-vanilla.md](../docs/recipes-and-vanilla.md)、[build/api-compat-addon/devices/completion-20261027-h4/device-results.txt](../build/api-compat-addon/devices/completion-20261027-h4/device-results.txt)
 
 ### C18 · 创造物品栏与四类预配置设备 · 已闭合
 
@@ -258,11 +256,13 @@
 
 完成条件：原声音/粒子/宠物/显示设置/客户端及服务器命令/调试与更新提示各一条代表路径可用。PIN的Achievement是空占位，保留其无行为语义，无需创造额外成就。
 
-剩余：已注册实现；部分实际玩家显示、声音范围与更新网络流程待验收。
+剩余：机箱/机器人循环声已通过Windows原生声道生命周期、移动、三轮静音恢复及无残留登记、暂停、重载和移除验收；磁盘声音范围、粒子、宠物、显示设置、命令及更新提示的代表路径仍待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/client/Sound.scala`、`src/main/scala/li/cil/oc/common/Sound.scala`、`src/main/scala/li/cil/oc/client/renderer/PetRenderer.scala`、`src/main/scala/li/cil/oc/server/PetVisibility.scala`、`src/main/scala/li/cil/oc/client/command/`、`src/main/scala/li/cil/oc/common/Achievement.scala`、`src/main/scala/li/cil/oc/server/command/`、`src/main/scala/li/cil/oc/common/command/`
 
 当前接入：[src/main/java/li/cil/oc/client/](../src/main/java/li/cil/oc/client/)、[src/main/java/li/cil/oc/common/integration/UpdateChecker.java](../src/main/java/li/cil/oc/common/integration/UpdateChecker.java)
+
+闭合依据：[docs/client-effects.md](../docs/client-effects.md)、[build/api-compat-addon/integration-client/client-sound-20261027-h2/client-results.txt](../build/api-compat-addon/integration-client/client-sound-20261027-h2/client-results.txt)
 
 ### C23 · 翻译、全部菜单布局与提示文本 · 已有实现，待核对/验收
 
@@ -1063,15 +1063,15 @@
 
 ## 可选集成
 
-### I01 · appeng · 已有实现，待核对/验收
+### I01 · appeng · 已闭合
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：模糊导出、运行中取消、Craftable/状态值冷恢复等原接口路径尚未闭合。
-
 原版范围：`src/main/scala/li/cil/oc/integration/appeng/`
 
-当前接入：[src/main/java/li/cil/oc/common/integration/appeng/](../src/main/java/li/cil/oc/common/integration/appeng/)
+当前接入：[src/main/java/li/cil/oc/common/integration/appeng/](../src/main/java/li/cil/oc/common/integration/appeng/)、[docs/appeng-integration.md](../docs/appeng-integration.md)、[tools/api-compat-addon/src/main/java/ocfixture/AppliedEnergisticsPersistenceContract.java](../tools/api-compat-addon/src/main/java/ocfixture/AppliedEnergisticsPersistenceContract.java)
+
+闭合依据：[docs/appeng-integration.md](../docs/appeng-integration.md)、[build/api-compat-addon/appeng-persistence/ae2-20261027-h2/prepare-results.txt](../build/api-compat-addon/appeng-persistence/ae2-20261027-h2/prepare-results.txt)、[build/api-compat-addon/appeng-persistence/ae2-20261027-h2/resume-results.txt](../build/api-compat-addon/appeng-persistence/ae2-20261027-h2/resume-results.txt)
 
 ### I02 · charset · 有明确缺口
 
@@ -1133,15 +1133,15 @@
 
 闭合依据：[docs/enderstorage-integration.md](../docs/enderstorage-integration.md)
 
-### I08 · forestry · 有明确缺口
+### I08 · forestry · 已闭合
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：已确认官方Forestry CE 1.21.1-3.0.0-alpha8/NeoForge21.1.230目标；分析机/蜂房与新版遗传、个体、物品/电路转换尚待Java接入。
-
 原版范围：`src/main/scala/li/cil/oc/integration/forestry/`
 
-闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
+当前接入：[src/main/java/li/cil/oc/common/integration/forestry/ForestryIntegration.java](../src/main/java/li/cil/oc/common/integration/forestry/ForestryIntegration.java)、[docs/forestry-integration.md](../docs/forestry-integration.md)、[tools/api-compat-addon/src/main/java/ocfixture/ForestryContract.java](../tools/api-compat-addon/src/main/java/ocfixture/ForestryContract.java)
+
+闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)、[docs/forestry-integration.md](../docs/forestry-integration.md)、[build/api-compat-addon/devices/completion-20261027-h1/device-results.txt](../build/api-compat-addon/devices/completion-20261027-h1/device-results.txt)
 
 ### I09 · ic2 · 有明确缺口
 
@@ -1153,15 +1153,15 @@
 
 闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
 
-### I10 · jei · 已有实现，待核对/验收
+### I10 · jei · 已闭合
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：类别/文档导航、插槽高亮和世界磁盘刷新待客户端验收。
-
 原版范围：`src/main/scala/li/cil/oc/integration/jei/`
 
-当前接入：[src/main/java/li/cil/oc/client/integration/jei/](../src/main/java/li/cil/oc/client/integration/jei/)
+当前接入：[src/main/java/li/cil/oc/client/integration/jei/](../src/main/java/li/cil/oc/client/integration/jei/)、[docs/jei-integration.md](../docs/jei-integration.md)、[tools/api-compat-addon/src/main/java/ocfixture/ClientIntegrationContract.java](../tools/api-compat-addon/src/main/java/ocfixture/ClientIntegrationContract.java)、[tools/api-compat-addon/src/main/java/ocfixture/ClientJeiProbe.java](../tools/api-compat-addon/src/main/java/ocfixture/ClientJeiProbe.java)
+
+闭合依据：[docs/jei-integration.md](../docs/jei-integration.md)、[build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt](../build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt)
 
 ### I11 · mekanism · 已闭合
 
@@ -1173,17 +1173,15 @@
 
 闭合依据：[docs/mekanism-integration.md](../docs/mekanism-integration.md)
 
-### I12 · minecraft · 已有实现，待核对/验收
+### I12 · minecraft · 已闭合
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：已补World/WorldProvider与现代储罐转换，保留原版三个维度UUID/名称并修复minecraft黑名单在转换、地质事件和普通红石输入的门控；启用/禁用真实场景已过。其他原版驱动、配方平台及自定义维度/客户端级别的整项验收仍待闭合。
-
 原版范围：`src/main/scala/li/cil/oc/integration/minecraft/`
 
-当前接入：[src/main/java/li/cil/oc/common/integration/VanillaDrivers.java](../src/main/java/li/cil/oc/common/integration/VanillaDrivers.java)、[src/main/java/li/cil/oc/server/driver/converter/World.java](../src/main/java/li/cil/oc/server/driver/converter/World.java)、[src/main/java/li/cil/oc/server/driver/converter/WorldProvider.java](../src/main/java/li/cil/oc/server/driver/converter/WorldProvider.java)、[src/main/java/li/cil/oc/server/driver/converter/FluidTank.java](../src/main/java/li/cil/oc/server/driver/converter/FluidTank.java)
+当前接入：[src/main/java/li/cil/oc/common/integration/VanillaDrivers.java](../src/main/java/li/cil/oc/common/integration/VanillaDrivers.java)、[src/main/java/li/cil/oc/server/driver/converter/World.java](../src/main/java/li/cil/oc/server/driver/converter/World.java)、[src/main/java/li/cil/oc/server/driver/converter/WorldProvider.java](../src/main/java/li/cil/oc/server/driver/converter/WorldProvider.java)、[src/main/java/li/cil/oc/server/driver/converter/FluidTank.java](../src/main/java/li/cil/oc/server/driver/converter/FluidTank.java)、[docs/recipes-and-vanilla.md](../docs/recipes-and-vanilla.md)、[tools/api-compat-addon/src/main/java/ocfixture/RecipeVanillaContract.java](../tools/api-compat-addon/src/main/java/ocfixture/RecipeVanillaContract.java)、[tools/api-compat-addon/src/main/java/ocfixture/ClientIntegrationContract.java](../tools/api-compat-addon/src/main/java/ocfixture/ClientIntegrationContract.java)
 
-闭合依据：[build/api-compat-addon/devices/vanilla-20261027-115447/device-results.txt](../build/api-compat-addon/devices/vanilla-20261027-115447/device-results.txt)、[build/api-compat-addon/devices/vanilla-disabled-20261027-115447/device-results.txt](../build/api-compat-addon/devices/vanilla-disabled-20261027-115447/device-results.txt)、[tools/api-compat-addon/src/main/java/ocfixture/VanillaContract.java](../tools/api-compat-addon/src/main/java/ocfixture/VanillaContract.java)
+闭合依据：[build/api-compat-addon/devices/vanilla-20261027-115447/device-results.txt](../build/api-compat-addon/devices/vanilla-20261027-115447/device-results.txt)、[build/api-compat-addon/devices/vanilla-disabled-20261027-115447/device-results.txt](../build/api-compat-addon/devices/vanilla-disabled-20261027-115447/device-results.txt)、[tools/api-compat-addon/src/main/java/ocfixture/VanillaContract.java](../tools/api-compat-addon/src/main/java/ocfixture/VanillaContract.java)、[docs/recipes-and-vanilla.md](../docs/recipes-and-vanilla.md)、[build/api-compat-addon/devices/completion-20261027-h1/device-results.txt](../build/api-compat-addon/devices/completion-20261027-h1/device-results.txt)、[build/api-compat-addon/devices/completion-20261027-h2/device-results.txt](../build/api-compat-addon/devices/completion-20261027-h2/device-results.txt)、[build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt](../build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt)
 
 ### I13 · minecraftforge · 已闭合
 
@@ -1235,15 +1233,15 @@
 
 闭合依据：[docs/tis3d-integration.md](../docs/tis3d-integration.md)、[tools/api-compat-addon/src/main/java/ocfixture/Tis3dContract.java](../tools/api-compat-addon/src/main/java/ocfixture/Tis3dContract.java)、[tools/api-compat-addon/src/main/java/ocfixture/Tis3dClientContract.java](../tools/api-compat-addon/src/main/java/ocfixture/Tis3dClientContract.java)、[build/api-compat-addon/devices/tis3d-20261027-1300/device-results.txt](../build/api-compat-addon/devices/tis3d-20261027-1300/device-results.txt)、[build/api-compat-addon/devices/tis3d-disabled-20261027-1306/device-results.txt](../build/api-compat-addon/devices/tis3d-disabled-20261027-1306/device-results.txt)、[build/launch-support/tis3d-client-manual-20261027-1320.txt](../build/launch-support/tis3d-client-manual-20261027-1320.txt)
 
-### I18 · waila → Jade · 已有实现，待核对/验收
+### I18 · waila → Jade · 已闭合
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原Waila→Jade；服务器真实数据已验，繁忙装配机和客户端三开关待闭合。
-
 原版范围：`src/main/scala/li/cil/oc/integration/waila/`
 
-当前接入：[src/main/java/li/cil/oc/client/integration/jade/](../src/main/java/li/cil/oc/client/integration/jade/)
+当前接入：[src/main/java/li/cil/oc/client/integration/jade/](../src/main/java/li/cil/oc/client/integration/jade/)、[docs/jade-integration.md](../docs/jade-integration.md)、[tools/api-compat-addon/src/main/java/ocfixture/JadeClientContract.java](../tools/api-compat-addon/src/main/java/ocfixture/JadeClientContract.java)、[tools/api-compat-addon/src/main/java/ocfixture/JadeClientObserver.java](../tools/api-compat-addon/src/main/java/ocfixture/JadeClientObserver.java)
+
+闭合依据：[docs/jade-integration.md](../docs/jade-integration.md)、[build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt](../build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt)
 
 ### I19 · wrcbe · 有明确缺口
 

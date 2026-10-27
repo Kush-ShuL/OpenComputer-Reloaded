@@ -61,7 +61,8 @@ public final class RecipeConfigLoader {
     private static volatile Set<String> hidden = Set.of();
     private static Path directory;
 
-    static {
+    /** Original minecraft integration owns these three handlers, including its blacklist gate. */
+    public static void registerVanillaHandlers() {
         registerRecipeHandler("shaped", (output, config) -> crafting(output, config, true));
         registerRecipeHandler("shapeless", (output, config) -> crafting(output, config, false));
         registerRecipeHandler("furnace", (output, config) -> new SmeltingRecipe("", CookingBookCategory.MISC,
@@ -134,9 +135,16 @@ public final class RecipeConfigLoader {
     private static void updateHidden(Config config) {
         Set<String> next = new LinkedHashSet<>();
         config.root().forEach((name, value) -> {
+            if (shadowedLegacyName(config, name)) return;
             if (value.valueType() == ConfigValueType.BOOLEAN && !((Boolean) value.unwrapped())) next.add(name.toLowerCase(Locale.ROOT));
         });
         hidden = Set.copyOf(next);
+    }
+
+    /** The original registry looked up exact names; an old luaBios entry must not replace luabios. */
+    private static boolean shadowedLegacyName(Config config, String name) {
+        String canonical = name.toLowerCase(Locale.ROOT);
+        return !name.equals(canonical) && config.root().containsKey(canonical);
     }
 
     public static boolean hidden(String name) { return hidden.contains(name); }
@@ -161,6 +169,7 @@ public final class RecipeConfigLoader {
             if (!bundled || dataPackOverride(resources, holder.id())) recipes.put(holder.id(), holder);
         }
         config.root().forEach((name, value) -> {
+            if (shadowedLegacyName(config, name)) return;
             if (value.valueType() != ConfigValueType.OBJECT) return;
             ItemStack result = output(name);
             if (!result.isEmpty()) add(recipes, resources, name.toLowerCase(Locale.ROOT), result, ((com.typesafe.config.ConfigObject) value).toConfig(), "");
@@ -201,18 +210,12 @@ public final class RecipeConfigLoader {
             String type = config.hasPath("type") ? config.getString("type") : "shaped";
             var handler = HANDLERS.get(type);
             if (handler == null) throw new IllegalArgumentException("No registered recipe handler: " + type);
-            Recipe<?> recipe = handler.apply(output.copyWithCount(config.hasPath("output") ? config.getInt("output") : 1), config);
+            int count = config.hasPath("output") ? config.getInt("output") : 1;
+            if (count <= 0) return;
+            Recipe<?> recipe = handler.apply(output.copyWithCount(count), config);
             if (recipe instanceof CraftingRecipe crafting) {
-                var info = li.cil.oc.api.Items.get(output);
-                String resultName = name.equals("luabios") ? name : info == null ? name : info.name();
-                String operation = !disk.isEmpty() ? "loot_disk" : switch (resultName) {
-                    case "cpu1", "cpu2", "cpu3", "apu1", "apu2", "apucreative" -> "default_architecture";
-                    case "navigationupgrade" -> "navigation_map";
-                    case "linkedcard" -> "linked_cards";
-                    case "luabios" -> "lua_bios";
-                    default -> "";
-                };
-                if (!operation.isEmpty()) recipe = new ExtendedCraftingRecipe(crafting,
+                String operation = !disk.isEmpty() ? "loot_disk" : name.equals("luabios") ? "lua_bios" : "extended";
+                recipe = new ExtendedCraftingRecipe(crafting,
                         new RecipeOperation(operation, 1, Either.right(""), disk), crafting instanceof ShapedRecipe);
             }
             recipes.put(id, new RecipeHolder<>(id, recipe));

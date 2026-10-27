@@ -106,7 +106,7 @@ public final class CaseBlockEntity extends BlockEntity implements Case,MenuProvi
     public void flushComponents(){for(int i=0;i<items.size();i++)flushComponent(i);}
     public void prepareDrops(){for(int i=0;i<items.size();i++)releaseComponent(i);}
     private static void lifecycle(ManagedEnvironment environment,Lifecycle.LifecycleState state){if(environment instanceof Lifecycle listener)listener.onLifecycleStateChange(state);}
-    private void diskSound(String name){if(level!=null&&!level.isClientSide&&Settings.get().soundVolume>0)level.playSound(null,worldPosition,net.minecraft.sounds.SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("opencomputers",name)),net.minecraft.sounds.SoundSource.BLOCKS,Settings.get().soundVolume,1);}
+    private void diskSound(String name){li.cil.oc.common.DiskSounds.play(this,name);}
     private void releaseComponent(int slot){ManagedEnvironment old=environments[slot];environments[slot]=null;if(old!=null){lifecycle(old,Lifecycle.LifecycleState.Disposing);if(old.node()!=null)old.node().remove();flushComponent(slot,old);if(old.node()!=null)old.node().remove();lifecycle(old,Lifecycle.LifecycleState.Disposed);}if(level!=null&&!level.isClientSide&&initialized&&!loading&&!items.get(slot).isEmpty()){String kind=InventorySlots.computer[tier][slot].slot();if(kind.equals("floppy"))diskSound("floppy_eject");if(kind.equals("cpu"))machine().stop();}}
     private void inventoryChanged(int slot){if(level!=null&&!level.isClientSide&&initialized&&!loading){createEnvironment(slot);machine().onHostChanged();if(InventorySlots.computer[tier][slot].slot().equals("floppy")&&!items.get(slot).isEmpty())diskSound("floppy_insert");}setChanged();}
     public static void tick(Level level,BlockPos pos,BlockState state,CaseBlockEntity entity){
@@ -123,10 +123,11 @@ public final class CaseBlockEntity extends BlockEntity implements Case,MenuProvi
         String[] users=machine.users();if(entity.hasErrored!=errored||!Arrays.equals(entity.users,users)){entity.hasErrored=errored;entity.users=users;entity.setChanged();level.sendBlockUpdated(pos,entity.getBlockState(),entity.getBlockState(),3);}
     }
     private static boolean tierCreative(int tier){return tier==3;}
-    @Override public void onLoad(){super.onLoad();if(level!=null&&!level.isClientSide)initialize();}
+    @Override public void onLoad(){super.onLoad();if(level!=null){if(level.isClientSide)li.cil.oc.client.ComputerSounds.caseChanged(this,true);else initialize();}}
+    @Override public void setBlockState(BlockState state){boolean running=getBlockState().getValue(CaseBlock.RUNNING);super.setBlockState(state);if(level!=null&&level.isClientSide&&state.getValue(CaseBlock.RUNNING)!=running)li.cil.oc.client.ComputerSounds.caseChanged(this,false);}
     private void dispose(){if(machine!=null){flushComponents();machine.node().remove();}for(ManagedEnvironment env:environments)if(env!=null&&env.node()!=null)env.node().remove();initialized=false;}
-    @Override public void setRemoved(){dispose();super.setRemoved();}
-    @Override public void onChunkUnloaded(){dispose();super.onChunkUnloaded();}
+    @Override public void setRemoved(){if(level!=null&&level.isClientSide)li.cil.oc.client.ComputerSounds.caseRemoved(this);dispose();super.setRemoved();}
+    @Override public void onChunkUnloaded(){if(level!=null&&level.isClientSide)li.cil.oc.client.ComputerSounds.caseRemoved(this);dispose();super.onChunkUnloaded();}
     @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){
         super.loadAdditional(tag,registries);
         if(tag.contains("oc:color"))color=tag.getInt("oc:color");

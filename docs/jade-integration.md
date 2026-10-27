@@ -132,6 +132,29 @@ historical `waila` blacklist entry enabled: Jade loaded normally but its actual
 provider registry contained no OC information provider. Earlier ProjectRed runs
 also started OC successfully without installing Jade.
 
-Client acceptance still needs the three toggles, crosshair-side selection and
-rendered formatting. Busy assembler progress/output-name serialization and
-remote multiplayer synchronization were not exercised by this scenario.
+The Windows integrated-client run client-20261027-h4 passed JadeClientContract
+with the real Chinese HUD. The
+[client report](../build/api-compat-addon/integration-client/client-20261027-h4/client-results.txt)
+records all eight independent address/energy/component-name combinations,
+actual crosshair-side selection and suppression of the closed Case front.
+Jade's public tooltip-collected and after-render callbacks observed the actual
+IBoxElement message and BlockAccessor server data after the normal network
+exchange.
+
+A real assembler consumed case/CPU/RAM inputs through its start callback with an
+actual Case machine Context. The HUD displayed its real integer progress,
+minutes/seconds and serialized custom robot output name BB-8. The original
+client option values were restored afterward.
+
+The three actual 1280×720 rendered frames were visually reviewed:
+
+- [Node information](../build/api-compat-addon/integration-client/client-20261027-h4/jade-case-node.png).
+- [Closed Case front](../build/api-compat-addon/integration-client/client-20261027-h4/jade-case-front-closed.png).
+- [Working assembler and BB-8 output](../build/api-compat-addon/integration-client/client-20261027-h4/jade-assembler-working.png).
+
+This client check reuses the existing dedicated provider, blacklist and device
+data results. It creates no substitute accessor, plugin configuration, tooltip,
+pending output or expected network node state.
+
+Remote TCP multiplayer synchronization and the shared rendering/font acceptance
+remain tracked separately under C19/C20/C21.

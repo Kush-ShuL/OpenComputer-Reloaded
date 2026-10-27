@@ -148,7 +148,48 @@ with positive amounts retain those amounts. Multipart adapters keep the original
 highest-priority name and aggregate all part callbacks on one visible component;
 their hidden child nodes are not additional public devices.
 
-This does not establish remote multiplayer, AE client screens, fuzzy export,
-active-job cancellation, cold-process recovery of a pending crafting link or
-spatial moves. Those behaviors still need their own representative acceptance.
+Remote multiplayer, AE client screens and spatial moves remain outside these
+server scenarios.
 OC-only server scenarios also started successfully without AE installed.
+
+## Focused completion results
+
+The existing appeng-20261027-084828 results are retained for the five driver
+surfaces, ordinary import/export, database configuration, cells, power queries
+and normal native crafting. AppliedEnergisticsPersistenceContract passed the
+remaining three paths in the separate Windows game JVMs of ae2-20261027-h2:
+
+- An undamaged pickaxe filter rejected a real damaged pickaxe. Installing the
+  actual fuzzy card with IGNORE_ALL exported exactly that stack into the
+  requested chest slot, retaining its damage and conserving the ME contents.
+- A request acquired a real link on a busy crafting CPU. Calling the original
+  status cancel changed that actual link to canceled.
+- A second request sent real ore from a Pattern Provider into a vanilla
+  furnace. Native Lua retained the actual Craftable and CraftingStatus in local
+  variables while its VM was paused and Minecraft saved the world. A different
+  server JVM reloaded that same world and resumed the native VM. The saved
+  furnace and bottom-side Import Bus produced and returned the actual ingot,
+  completing the original request UUID without another BIOS boot.
+
+The observation component is installed through a public item driver in a real
+Adapter and persists with that Adapter. It does not replace the AE requester,
+crafting link, machine Context, furnace, output items or native userdata.
+Preparation and resumption produce separate reports, and the preparation report
+is finalized only after normal server shutdown. This contract reuses the
+existing driver/cell/configuration evidence rather than repeating its matrix.
+
+The [prepare report](../build/api-compat-addon/appeng-persistence/ae2-20261027-h2/prepare-results.txt)
+passed after 251 ticks, and the
+[resume report](../build/api-compat-addon/appeng-persistence/ae2-20261027-h2/resume-results.txt)
+passed after 215 ticks. Both retained request UUID
+982267ce-2c0c-46ee-9cb9-85953eb7dd1f and one native BIOS boot. The restored
+Craftable requesting/getItemStack methods and completed status/cancel forms
+also passed.
+
+The only correction required by this completion run was the fixture's furnace
+layout: vanilla furnaces accept ore from above, fuel from horizontal sides and
+output extraction below. The Pattern Provider now feeds the furnace's top and
+the Import Bus extracts from its bottom. The original production integration
+already implemented fuzzy export, active cancellation and persistent requester
+links correctly; no AE production change or repeat of the earlier interface
+matrix was needed.

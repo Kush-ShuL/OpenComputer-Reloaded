@@ -13,6 +13,6 @@ public final class BrewingStand extends VanillaBlockDriver<BrewingStandBlockEnti
     @Override protected Class<?> environmentType(){return Environment.class;}
     public static final class Environment extends VanillaBlockEnvironment<BrewingStandBlockEntity> {
         Environment(Level level,BlockPos pos,Direction side,BrewingStandBlockEntity tile){super(level,pos,side,"brewing_stand",tile);}
-        @Callback(doc="function():number -- Get the number of ticks remaining of the current brewing operation.") public Object[] getBrewTime(Context context,Arguments args){return permitted()?new Object[]{target().brewTime}:denied();}
+        @Callback(doc="function():number -- Get the number of ticks remaining of the current brewing operation.") public Object[] getBrewTime(Context context,Arguments args){return new Object[]{target().brewTime};}
     }
 }

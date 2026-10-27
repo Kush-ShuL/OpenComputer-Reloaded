@@ -13,6 +13,6 @@ public final class Comparator extends VanillaBlockDriver<ComparatorBlockEntity> 
     @Override protected Class<?> environmentType(){return Environment.class;}
     public static final class Environment extends VanillaBlockEnvironment<ComparatorBlockEntity> {
         Environment(Level level,BlockPos pos,Direction side,ComparatorBlockEntity tile){super(level,pos,side,"comparator",tile);}
-        @Callback(doc="function():number -- Get the strength of the comparators output signal.") public Object[] getOutputSignal(Context context,Arguments args){return permitted()?new Object[]{target().getOutputSignal()}:denied();}
+        @Callback(doc="function():number -- Get the strength of the comparators output signal.") public Object[] getOutputSignal(Context context,Arguments args){return new Object[]{target().getOutputSignal()};}
     }
 }
