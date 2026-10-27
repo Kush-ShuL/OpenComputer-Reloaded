@@ -3,16 +3,19 @@ package li.cil.oc.common.block.entity;
 import li.cil.oc.Constants;
 import li.cil.oc.Settings;
 import li.cil.oc.api.driver.DeviceInfo;
+import li.cil.oc.api.network.Analyzable;
+import li.cil.oc.api.network.Node;
 import li.cil.oc.common.capabilities.EnergyProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import java.util.Map;
 
 /** Accepts FE into the complete OC network, preserving Common.tryChangeBuffer throughput. */
-public final class PowerConverterBlockEntity extends NetworkPowerBlockEntity implements EnergyProvider, DeviceInfo {
+public final class PowerConverterBlockEntity extends NetworkPowerBlockEntity implements EnergyProvider, DeviceInfo, Analyzable {
     public PowerConverterBlockEntity(BlockEntityType<?> type, BlockPos position, BlockState state) { super(type, position, state); }
     @Override protected double initialCapacity() { return Settings.get().bufferConverter; }
     public double energyThroughput() { return Settings.get().powerConverterRate; }
@@ -38,6 +41,7 @@ public final class PowerConverterBlockEntity extends NetworkPowerBlockEntity imp
         @Override public boolean canReceive() { return isPowerAvailable() && !Settings.get().ignorePower && ratio() > 0 && energyThroughput() > 0; }
     };
     @Override public IEnergyStorage energy(Direction side) { return energy; }
+    @Override public Node[] onAnalyze(Player player, Direction side, float x, float y, float z) { return null; }
     @Override public Map<String, String> getDeviceInfo() {
         return Map.of(DeviceAttribute.Class, DeviceClass.Power, DeviceAttribute.Description, "Power converter",
                 DeviceAttribute.Vendor, Constants.DeviceInfo.DefaultVendor, DeviceAttribute.Product, "Transgizer-PX5",

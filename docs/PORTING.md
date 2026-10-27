@@ -421,6 +421,36 @@ were completed. These close D09, D22, D41, D44, D45, D59 and T07 in the fixed
 120-item checklist. See [flight upgrades](flight-upgrades.md),
 [chunkloader](chunkloader-upgrade.md) and [data/linked cards](data-and-linked-cards.md).
 
+The device batch restores the missing installable Geolyzer and Transposer item
+drivers. Inventory-controller database writes copy the real cargo stack before
+the database normalizes its count; sucking now follows the original selected
+slot through the end before wrapping. Transposer callbacks retain the original
+slot errors, per-operation costs and real item/fluid transfer paths.
+
+Network devices now retain cable color/item state and survival dyeing, original
+non-tickable splitter input timing, complete saved port/queue restoration and
+wireless movement indexing. Relay hardware creates and preserves its private
+driver environments without adding them to its six forwarding graphs, and
+hardware changes retain the relay's configured strength. Power-device changes
+restore modern cats to the original ocelot group, charger tablet disconnect and
+remount behavior, non-analyzable converters/distributors and double-valued timing.
+MFU distance uses target centers, and remote environments disconnect before
+their state is saved into a removed or dropped upgrade. Its missing client
+target overlay is restored; visual acceptance stays under C20.
+
+Windows NeoForge 21.1.224 run `device-batch-20261027-c3` passed after twenty world
+ticks using actual Case/Robot/Adapter contexts and real inventory, fluid, energy
+and network state. It covers both wireless-card tiers, splitter redstone graph
+isolation, relay hardware state, capacitor adjacency/removal, independent power
+balancing, charger tablet storage remount, live motion signals, waypoint
+rotation/labels, mounted geolyzer costs/events, cargo/database copying and MFU
+connection/removal/remount at the configured three-block boundary. The report
+closes D05, D06, D08, D17, D25, D26, D27, D28, D29, D35, D40, D49, D51, D60
+and D61 together with the fixed-source comparisons in
+[network devices](network-devices.md), [power devices](power-devices.md),
+[world sensors](world-sensors.md), [inventory control](inventory-control.md)
+and [remote adapter](remote-adapter.md).
+
 The external-addon fixture also passed an end-to-end IMC production contract:
 the real assembler validates and consumes addon inputs, applies energy over
 multiple work ticks and produces the requested item; the real disassembler

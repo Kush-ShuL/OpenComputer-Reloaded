@@ -112,7 +112,8 @@ public final class AdapterBlockEntity extends BlockEntity implements li.cil.oc.a
         var driver = Driver.driverFor(items.getFirst(), getClass());
         if (driver != null) { CompoundTag data = driver.dataTag(items.getFirst()); upgrade.save(data, level.registryAccess()); driver.saveDataTag(items.getFirst(), data); }
     }
-    private void releaseUpgrade() { flushUpgrade(); if (upgrade != null && upgrade.node() != null) upgrade.node().remove(); upgrade = null; }
+    private void releaseUpgrade() { if (upgrade != null && upgrade.node() != null) upgrade.node().remove(); flushUpgrade(); upgrade = null; }
+    public void prepareDrops() { releaseUpgrade(); }
     private void inventoryChanged() { mountUpgrade(); setChanged(); if (level != null && !level.isClientSide) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3); }
     @Override public void onConnect(Node connected) { if (connected == node) { if (upgrade != null && upgrade.node() != null) node.connect(upgrade.node()); refreshNeighbors(); } }
     @Override public void onDisconnect(Node disconnected) { if (disconnected == node) { for (int i = 0; i < 6; i++) release(i); if (upgrade != null && upgrade.node() != null) upgrade.node().remove(); } }

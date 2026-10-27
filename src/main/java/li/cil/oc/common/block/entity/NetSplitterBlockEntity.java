@@ -18,8 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class NetSplitterBlockEntity extends NetworkDeviceBlockEntity implements SidedEnvironment,RedstoneHost,DeviceInfo {
     private volatile int openSides;
     private volatile boolean inverted;
-    private final RedstoneState redstone=new RedstoneState(this,change->updateInversion(change.newValue()>0));
-    public NetSplitterBlockEntity(BlockEntityType<?> type,BlockPos pos,BlockState state){super(type,pos,state);}
+    private final RedstoneState redstone=new RedstoneState(this,change->{if(change.color()<0)updateInversion(change.newValue()>0);});
+    public NetSplitterBlockEntity(BlockEntityType<?> type,BlockPos pos,BlockState state){super(type,pos,state);redstone.setEnabled(true);}
     @Override protected Node createNode(){return Network.newNode(this,Visibility.Network).withComponent("net_splitter",Visibility.Network).create();}
     @Override public RedstoneState redstoneState(){return redstone;}
     public boolean isInverted(){return inverted;}
@@ -40,9 +40,9 @@ public final class NetSplitterBlockEntity extends NetworkDeviceBlockEntity imple
         Node value=node();if(value!=null)value.remove();Network.joinOrCreateNetwork(this);
         BlockState state=getBlockState(),next=state;
         for(Direction side:Direction.values())next=next.setValue(NetSplitterBlock.SIDES[side.get3DDataValue()],isSideOpen(side));
-        level.setBlock(worldPosition,next,3);level.sendBlockUpdated(worldPosition,state,next,3);
+        level.setBlock(worldPosition,next,2);level.sendBlockUpdated(worldPosition,state,next,3);
         level.playSound(null,worldPosition,inversion?SoundEvents.PISTON_CONTRACT:SoundEvents.PISTON_EXTEND,SoundSource.BLOCKS,.5f,.7f+level.random.nextFloat()*.25f);
-        level.updateNeighborsAt(worldPosition,next.getBlock());
+        if(!inversion)level.updateNeighborsAt(worldPosition,next.getBlock());
     }
     private Map<Integer,Boolean> currentStatus(){Map<Integer,Boolean> status=new LinkedHashMap<>();for(Direction side:Direction.values())status.put(side.get3DDataValue(),isSideOpen(side));return status;}
     private boolean setSide(Direction side,boolean value){boolean old=isSideOpen(side);setSideOpen(side,value^inverted);return old!=value;}
@@ -55,9 +55,9 @@ public final class NetSplitterBlockEntity extends NetworkDeviceBlockEntity imple
     public Object[] open(Context context,Arguments args){return setSide(args,true);}
     @Callback(doc="function(side:number):boolean -- Close a side; return whether its state changed.")
     public Object[] close(Context context,Arguments args){return setSide(args,false);}
-    @Override public void neighborChanged(){redstone.rescan();super.neighborChanged();}
+    @Override public void neighborChanged(){redstone.rescan();super.neighborChanged();if(server()&&!detached&&!isRemoved())redstone.tick();}
     @Override public void serverTick(){super.serverTick();redstone.setEnabled(true);redstone.tick();}
-    @Override protected void onInitialize(){redstone.rescan();if(level.hasNeighborSignal(worldPosition)!=inverted)updateInversion(level.hasNeighborSignal(worldPosition));}
+    @Override protected void onInitialize(){redstone.rescan();redstone.tick();}
     @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){super.loadAdditional(tag,registries);if(tag.contains("oc:openSides"))openSides=tag.getByte("oc:openSides")&63;inverted=tag.getBoolean("oc:isInverted");redstone.load(tag);}
     @Override protected void saveAdditional(CompoundTag tag,HolderLookup.Provider registries){super.saveAdditional(tag,registries);tag.putByte("oc:openSides",(byte)openSides);tag.putBoolean("oc:isInverted",inverted);redstone.save(tag);}
     @Override public CompoundTag getUpdateTag(HolderLookup.Provider registries){var tag=new CompoundTag();tag.putByte("oc:openSides",(byte)openSides);tag.putBoolean("oc:isInverted",inverted);return tag;}

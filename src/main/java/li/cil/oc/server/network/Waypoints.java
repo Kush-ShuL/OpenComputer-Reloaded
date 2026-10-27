@@ -4,7 +4,9 @@ import java.util.*;
 import li.cil.oc.common.block.entity.WaypointBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 
 /** Loaded waypoints are scoped to the actual server level, never a global server lookup. */
@@ -21,4 +23,5 @@ public final class Waypoints {
     }
     @SubscribeEvent public static void onLevelUnload(LevelEvent.Unload event){if(event.getLevel() instanceof Level level)synchronized(Waypoints.class){LEVELS.remove(level);}}
     @SubscribeEvent public static void onLevelLoad(LevelEvent.Load event){if(event.getLevel() instanceof Level level)synchronized(Waypoints.class){LEVELS.remove(level);}}
+    @SubscribeEvent public static void onChunkUnload(ChunkEvent.Unload event){if(event.getChunk() instanceof LevelChunk chunk)for(var block:chunk.getBlockEntities().values())if(block instanceof WaypointBlockEntity waypoint)remove(waypoint);}
 }

@@ -119,6 +119,7 @@ neoForge {
             systemProperty 'ocfixture.tis3dOnly', providers.gradleProperty('ocTis3dOnly').getOrElse('false')
             systemProperty 'ocfixture.upgradeStorageOnly', providers.gradleProperty('ocUpgradeStorageOnly').getOrElse('false')
             systemProperty 'ocfixture.agentActionsOnly', providers.gradleProperty('ocAgentActionsOnly').getOrElse('false')
+            systemProperty 'ocfixture.deviceBatchOnly', providers.gradleProperty('ocDeviceBatchOnly').getOrElse('false')
             systemProperty 'ocfixture.vanillaOnly', providers.gradleProperty('ocVanillaOnly').getOrElse('false')
         }
         hostPersistenceServer {

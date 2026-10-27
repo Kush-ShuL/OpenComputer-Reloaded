@@ -25,7 +25,7 @@ public final class NetworkBlocks {
     private static final DeferredRegister<MenuType<?>> MENUS=DeferredRegister.create(Registries.MENU,"opencomputers");
     public static final Supplier<RelayBlock> RELAY=BLOCKS.register("relay",()->new RelayBlock(metal(),()->NetworkBlocks.RELAY_TYPE.get()));
     public static final Supplier<NetSplitterBlock> NET_SPLITTER=BLOCKS.register("netsplitter",()->new NetSplitterBlock(metal().noOcclusion(),()->NetworkBlocks.NET_SPLITTER_TYPE.get()));
-    public static final Supplier<WaypointBlock> WAYPOINT=BLOCKS.register("waypoint",()->new WaypointBlock(metal(),()->NetworkBlocks.WAYPOINT_TYPE.get()));
+    public static final Supplier<WaypointBlock> WAYPOINT=BLOCKS.register("waypoint",()->new WaypointBlock(metal().isValidSpawn((state,level,pos,type)->false),()->NetworkBlocks.WAYPOINT_TYPE.get()));
     public static final Supplier<BlockEntityType<RelayBlockEntity>> RELAY_TYPE=TYPES.register("relay",()->BlockEntityType.Builder.of((pos,state)->new RelayBlockEntity(NetworkBlocks.RELAY_TYPE.get(),pos,state),RELAY.get()).build(null));
     public static final Supplier<BlockEntityType<NetSplitterBlockEntity>> NET_SPLITTER_TYPE=TYPES.register("netsplitter",()->BlockEntityType.Builder.of((pos,state)->new NetSplitterBlockEntity(NetworkBlocks.NET_SPLITTER_TYPE.get(),pos,state),NET_SPLITTER.get()).build(null));
     public static final Supplier<BlockEntityType<WaypointBlockEntity>> WAYPOINT_TYPE=TYPES.register("waypoint",()->BlockEntityType.Builder.of((pos,state)->new WaypointBlockEntity(NetworkBlocks.WAYPOINT_TYPE.get(),pos,state),WAYPOINT.get()).build(null));

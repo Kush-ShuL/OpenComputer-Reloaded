@@ -39,7 +39,6 @@ public final class WirelessNetworkCard extends NetworkCard implements WirelessEn
     @Callback(doc="function(strength:number):number -- Set transmission range.")
     public synchronized Object[] setStrength(Context context, Arguments args) {
         double value = args.checkDouble(0);
-        if (!Double.isFinite(value)) throw new IllegalArgumentException("invalid signal strength");
         strength = Math.max(0, Math.min(maxRange(), value)); host.markChanged(); return new Object[]{strength};
     }
     @Override public Object[] isWireless(Context context, Arguments args) { return new Object[]{true}; }

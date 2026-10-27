@@ -131,6 +131,7 @@ public final class OpenComputersJeiPlugin implements IModPlugin {
     private static boolean hiddenBase(ItemStack stack) {
         var info = Items.get(stack);
         return info != null && (li.cil.oc.common.recipe.RecipeConfigLoader.hidden(info.name())
+                || li.cil.oc.Settings.get().ignorePower && info.name().equals("powerconverter")
                 || HIDDEN.contains(info.name()) && ItemStack.isSameItemSameComponents(stack, info.createItemStack(1)));
     }
 

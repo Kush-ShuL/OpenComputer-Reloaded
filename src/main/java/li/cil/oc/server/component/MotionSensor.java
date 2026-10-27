@@ -20,9 +20,9 @@ public final class MotionSensor extends AbstractManagedEnvironment implements De
     private final Map<LivingEntity,Vec3> tracked=new IdentityHashMap<>();
     public MotionSensor(EnvironmentHost host){this.host=host;setNode(li.cil.oc.api.Network.newNode(this,Visibility.Network).withComponent("motion_sensor").withConnector().create());}
     @Override public Map<String,String> getDeviceInfo(){return Map.of("class","generic","description","Motion sensor","vendor","MightyPirates GmbH & Co. KG","product","Blinker M1K0","capacity","8");}
-    @Override public boolean canUpdate(){return host.world()!=null&&!host.world().isClientSide;}
+    @Override public boolean canUpdate(){return host.world()!=null?!host.world().isClientSide:li.cil.oc.util.SideTracker.isServer();}
     private Vec3 origin(){return new Vec3(host.xPosition(),host.yPosition(),host.zPosition());}
-    private boolean clear(Vec3 target){Vec3 origin=origin(),eye=origin.add(target.subtract(origin).normalize());return host.world().clip(new ClipContext(eye,target,ClipContext.Block.COLLIDER,ClipContext.Fluid.NONE,CollisionContext.empty())).getType()==HitResult.Type.MISS;}
+    private boolean clear(Vec3 target){Vec3 origin=origin(),eye=origin.add(target.subtract(origin).normalize());return host.world().clip(new ClipContext(eye,target,ClipContext.Block.OUTLINE,ClipContext.Fluid.NONE,CollisionContext.empty())).getType()==HitResult.Type.MISS;}
     @Override public void update(){
         if(!canUpdate()||host.world().getGameTime()%10!=0)return;
         // Preserve the original sensorBounds/isInRange/signal reference point;
@@ -33,8 +33,8 @@ public final class MotionSensor extends AbstractManagedEnvironment implements De
             if(previous==null||entity.distanceToSqr(previous)>sensitivity*sensitivity*2){Vec3 offset=entity.position().subtract(origin);if(Settings.get().inputUsername)node().sendToReachable("computer.signal","motion",offset.x,offset.y,offset.z,entity.getName().getString());else node().sendToReachable("computer.signal","motion",offset.x,offset.y,offset.z);}
         }tracked.keySet().retainAll(visible);
     }
-    @Callback(direct=true,doc="function():number -- Get sensor sensitivity.") public Object[] getSensitivity(Context context,Arguments args){return new Object[]{sensitivity};}
-    @Callback(direct=true,doc="function(value:number):number -- Set sensor sensitivity and return its old value.") public Object[] setSensitivity(Context context,Arguments args){double value=args.checkDouble(0);if(!Double.isFinite(value))throw new IllegalArgumentException("invalid sensitivity");double old=sensitivity;sensitivity=Math.max(.2,value);host.markChanged();return new Object[]{old};}
-    @Override public void load(CompoundTag tag){super.load(tag);if(tag.contains("oc:sensitivity"))sensitivity=Math.max(.2,tag.getDouble("oc:sensitivity"));}
+    @Callback(direct=true,doc="function():number -- Gets the current sensor sensitivity.") public Object[] getSensitivity(Context context,Arguments args){return new Object[]{sensitivity};}
+    @Callback(direct=true,doc="function(value:number):number -- Sets the sensor's sensitivity. Returns the old value.") public Object[] setSensitivity(Context context,Arguments args){double old=sensitivity;sensitivity=Math.max(.2,args.checkDouble(0));host.markChanged();return new Object[]{old};}
+    @Override public void load(CompoundTag tag){super.load(tag);sensitivity=tag.getDouble("oc:sensitivity");}
     @Override public void save(CompoundTag tag){super.save(tag);tag.putDouble("oc:sensitivity",sensitivity);}
 }

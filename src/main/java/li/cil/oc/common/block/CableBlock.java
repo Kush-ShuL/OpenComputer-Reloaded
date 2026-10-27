@@ -1,9 +1,12 @@
 package li.cil.oc.common.block;
 
 import li.cil.oc.common.block.entity.CableBlockEntity;
-import li.cil.oc.util.ItemUtils;
 import net.minecraft.core.*;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.block.*;
@@ -13,6 +16,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.shapes.*;
+import net.minecraft.world.phys.BlockHitResult;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -31,8 +35,15 @@ public final class CableBlock extends Block implements EntityBlock {
     @Override protected VoxelShape getShape(BlockState state,BlockGetter level,BlockPos pos,CollisionContext context){int mask=0;for(int bit=0;bit<6;bit++)if(state.getValue(CONNECTIONS[bit]))mask|=1<<bit;return SHAPES[mask];}
     @Override public BlockEntity newBlockEntity(BlockPos pos,BlockState state){return type.get().create(pos,state);}
     @Override protected void neighborChanged(BlockState state,Level level,BlockPos pos,Block neighbor,BlockPos from,boolean moved){if(level.getBlockEntity(pos) instanceof CableBlockEntity cable)cable.rebuildConnections();}
-    @Override public void setPlacedBy(Level level,BlockPos pos,BlockState state,LivingEntity placer,ItemStack stack){if(level.getBlockEntity(pos) instanceof CableBlockEntity cable){var data=ItemUtils.customData(stack);if(data.contains("oc:color"))cable.setColor(data.getInt("oc:color"));cable.rebuildConnections();}}
-    private ItemStack stack(CableBlockEntity cable){ItemStack stack=new ItemStack(this);var data=ItemUtils.customData(stack);data.putInt("oc:color",cable.getColor());ItemUtils.saveCustomData(stack,data);return stack;}
+    @Override protected ItemInteractionResult useItemOn(ItemStack stack,BlockState state,Level level,BlockPos pos,Player player,InteractionHand hand,BlockHitResult hit){
+        DyeColor dye=DyeColor.getColor(stack);
+        if(dye==null&&stack.is(DyeColor.BLACK.getTag()))dye=DyeColor.BLACK;
+        if(dye==null||!(level.getBlockEntity(pos) instanceof CableBlockEntity cable))return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        if(!level.isClientSide){cable.setColor(CableBlockEntity.colorForDye(dye));if(!player.getAbilities().instabuild)stack.shrink(1);}
+        return ItemInteractionResult.sidedSuccess(level.isClientSide);
+    }
+    @Override public void setPlacedBy(Level level,BlockPos pos,BlockState state,LivingEntity placer,ItemStack stack){if(level.getBlockEntity(pos) instanceof CableBlockEntity cable){cable.fromItemStack(stack);cable.rebuildConnections();}}
+    private ItemStack stack(CableBlockEntity cable){return cable.createItemStack();}
     @Override public ItemStack getCloneItemStack(LevelReader level,BlockPos pos,BlockState state){return level.getBlockEntity(pos) instanceof CableBlockEntity cable?stack(cable):new ItemStack(this);}
     @Override protected List<ItemStack> getDrops(BlockState state,LootParams.Builder params){return params.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof CableBlockEntity cable?List.of(stack(cable)):List.of(new ItemStack(this));}
 }

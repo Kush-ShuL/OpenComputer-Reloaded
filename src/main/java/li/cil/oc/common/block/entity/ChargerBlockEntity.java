@@ -14,6 +14,7 @@ import li.cil.oc.api.Driver;
 import li.cil.oc.api.driver.DeviceInfo;
 import li.cil.oc.api.driver.DriverItem;
 import li.cil.oc.api.internal.Agent;
+import li.cil.oc.api.internal.Rotatable;
 import li.cil.oc.api.network.Analyzable;
 import li.cil.oc.api.network.Connector;
 import li.cil.oc.api.network.ManagedEnvironment;
@@ -50,7 +51,7 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 
 /** Original charger: redstone-scaled power transfer, adjacent agents and nearby player equipment. */
 public final class ChargerBlockEntity extends NetworkPowerBlockEntity implements SidedEnvironment, EnergyProvider,
-        WorldlyContainer, MenuProvider, Analyzable, StateAware, DeviceInfo {
+        WorldlyContainer, MenuProvider, Analyzable, StateAware, DeviceInfo, Rotatable {
     private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
     private final List<Target> targets = new ArrayList<>();
     private final Map<ItemStack, Player> equipment = new IdentityHashMap<>();
@@ -62,10 +63,29 @@ public final class ChargerBlockEntity extends NetworkPowerBlockEntity implements
 
     public ChargerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state); }
     @Override protected double initialCapacity() { return Settings.get().bufferConverter; }
-    public Direction facing() { return getBlockState().getValue(ChargerBlock.FACING); }
+    @Override public Direction facing() { return getBlockState().getValue(ChargerBlock.FACING); }
+    @Override public Direction toGlobal(Direction side) {
+        if (side == null || side.getAxis().isVertical()) return side;
+        for (int turns = facing().get2DDataValue(); turns > 0; turns--) side = side.getClockWise();
+        return side;
+    }
+    @Override public Direction toLocal(Direction side) {
+        if (side == null || side.getAxis().isVertical()) return side;
+        for (int turns = facing().get2DDataValue(); turns > 0; turns--) side = side.getCounterClockWise();
+        return side;
+    }
     @Override public boolean canConnect(Direction side) { return side != facing(); }
     @Override public Node sidedNode(Direction side) { return canConnect(side) ? node() : null; }
-    @Override public void onConnect(Node node) { if (node == node()) rescan = true; }
+    @Override public void onConnect(Node node) {
+        if (node == node()) {
+            rescan = true;
+            if (component != null && component.node() != null) node().connect(component.node());
+        }
+    }
+    @Override public void onDisconnect(Node node) {
+        super.onDisconnect(node);
+        if (node == node()) releaseComponent();
+    }
     public void neighborChanged() { rescan = true; }
     public void invert() { invertSignal = !invertSignal; chargeSpeed = 1 - chargeSpeed; setChanged(); sync(); }
     @Override public void serverTick() {
@@ -178,8 +198,13 @@ public final class ChargerBlockEntity extends NetworkPowerBlockEntity implements
             public int receiveEnergy(int maximum, boolean simulate) {
                 double ratio = Settings.get().ratioForgeEnergy;
                 if (maximum <= 0 || !server() || !isPowerAvailable() || Settings.get().ignorePower || !(ratio > 0)) return 0;
-                int used = (int) Math.max(0, Math.min(maximum, Math.floor(Math.min(Settings.get().chargerRate, node().globalBufferSize() - node().globalBuffer()) / ratio)));
-                if (!simulate && used > 0) { node().changeBuffer(used * ratio); markChanged(); } return used;
+                Connector connector = node();
+                Object lock = connector.network() == null ? connector : connector.network();
+                synchronized (lock) {
+                    int used = (int) Math.max(0, Math.min(maximum, Math.floor(Math.min(Settings.get().chargerRate, connector.globalBufferSize() - connector.globalBuffer()) / ratio)));
+                    if (!simulate && used > 0) { connector.changeBuffer(used * ratio); markChanged(); }
+                    return used;
+                }
             }
             public int extractEnergy(int maximum, boolean simulate) { return 0; }
             public int getEnergyStored() { return node() == null ? 0 : (int) Math.min(Integer.MAX_VALUE, node().globalBuffer() / Settings.get().ratioForgeEnergy); }

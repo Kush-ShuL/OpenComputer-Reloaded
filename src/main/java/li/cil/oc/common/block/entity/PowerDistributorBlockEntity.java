@@ -2,7 +2,9 @@ package li.cil.oc.common.block.entity;
 
 import li.cil.oc.Settings;
 import li.cil.oc.api.Network;
+import li.cil.oc.api.network.Analyzable;
 import li.cil.oc.api.network.Connector;
+import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.SidedEnvironment;
 import li.cil.oc.api.network.Visibility;
 import net.minecraft.core.BlockPos;
@@ -12,6 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.api.distmarker.Dist;
@@ -23,7 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 /** Six isolated OC networks share their fill ratio; no packets or components cross between sides. */
-public final class PowerDistributorBlockEntity extends NetworkPowerBlockEntity implements SidedEnvironment {
+public final class PowerDistributorBlockEntity extends NetworkPowerBlockEntity implements SidedEnvironment, Analyzable {
     private final Connector[] connectors = new Connector[6];
     private ListTag savedConnectors;
     private double globalBuffer, globalBufferSize;
@@ -53,11 +56,12 @@ public final class PowerDistributorBlockEntity extends NetworkPowerBlockEntity i
     }
     @Override public Connector sidedNode(Direction side) { ensureConnectors(); return side == null ? null : connectors[side.get3DDataValue()]; }
     @OnlyIn(Dist.CLIENT) @Override public boolean canConnect(Direction side) { return true; }
+    @Override public Node[] onAnalyze(Player player, Direction side, float x, float y, float z) { return null; }
     public double globalBuffer() { return globalBuffer; }
     public double globalBufferSize() { return globalBufferSize; }
     @Override public void serverTick() {
         super.serverTick();
-        if (!server() || !isPowerAvailable() || level.getGameTime() % Math.max(1, (int) Settings.get().tickFrequency) != 0) return;
+        if (!server() || !isPowerAvailable() || level.getGameTime() % Settings.get().tickFrequency != 0) return;
         List<Connector> primary = new ArrayList<>(6);
         List<Object> locks = new ArrayList<>(6);
         Set<Object> networks = Collections.newSetFromMap(new IdentityHashMap<>());

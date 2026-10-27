@@ -24,14 +24,12 @@ public final class UpgradeMFItem extends Item implements Tiered {
     @Override public int tier() { return 2; }
     @Override public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         Player player = context.getPlayer();
-        if (player == null || !player.isShiftKeyDown()) return InteractionResult.PASS;
-        if (!context.getLevel().isClientSide) {
-            BlockPos position = context.getClickedPos(); ResourceKey<Level> dimension = context.getLevel().dimension();
-            int legacy = dimension.equals(Level.OVERWORLD) ? 0 : dimension.equals(Level.NETHER) ? -1 : dimension.equals(Level.END) ? 1 : Integer.MIN_VALUE;
-            CustomData.update(DataComponents.CUSTOM_DATA, stack, root -> { root.putIntArray("oc:coord", new int[]{position.getX(), position.getY(), position.getZ(), legacy, context.getClickedFace().get3DDataValue()}); root.putString("oc:dimension", dimension.location().toString()); });
-            player.getInventory().setChanged();
-        }
-        return InteractionResult.sidedSuccess(context.getLevel().isClientSide);
+        if (player == null || !player.isShiftKeyDown() || context.getLevel().isClientSide) return InteractionResult.PASS;
+        BlockPos position = context.getClickedPos(); ResourceKey<Level> dimension = context.getLevel().dimension();
+        int legacy = dimension.equals(Level.OVERWORLD) ? 0 : dimension.equals(Level.NETHER) ? -1 : dimension.equals(Level.END) ? 1 : Integer.MIN_VALUE;
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, root -> { root.putIntArray("oc:coord", new int[]{position.getX(), position.getY(), position.getZ(), legacy, context.getClickedFace().get3DDataValue()}); root.putString("oc:dimension", dimension.location().toString()); });
+        player.getInventory().setChanged();
+        return InteractionResult.SUCCESS;
     }
     public static ResourceKey<Level> dimension(CompoundTag root) {
         ResourceLocation id = ResourceLocation.tryParse(root.getString("oc:dimension"));
@@ -46,6 +44,8 @@ public final class UpgradeMFItem extends Item implements Tiered {
         tooltip.add(Component.translatable("oc:tooltip.upgrademf"));
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         tooltip.add(Component.translatable(root.getIntArray("oc:coord").length == 5 && dimension(root) != null ? "oc:tooltip.upgrademf.Linked" : "oc:tooltip.upgrademf.Unlinked"));
+        CompoundTag node=root.getCompound("oc:data").getCompound("node");
+        if(node.contains("address")){String address=node.getString("address");tooltip.add(Component.literal("§8"+address.substring(0,Math.min(13,address.length()))+"...§7"));}
         if (flag.isAdvanced()) tooltip.add(Component.translatable("oc:tooltip.tier", 3));
     }
 }

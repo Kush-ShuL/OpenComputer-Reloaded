@@ -2,9 +2,8 @@ package li.cil.oc.common.block.entity;
 
 import li.cil.oc.Settings;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.animal.Ocelot;
 import net.minecraft.world.entity.animal.Sheep;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -22,7 +21,8 @@ public final class CarpetedCapacitorBlockEntity extends CapacitorBlockEntity {
         if (!server() || !isPowerAvailable() || Math.floorMod(level.getGameTime() + hashCode(), 20) != 0) return;
         var entities = level.getEntitiesOfClass(LivingEntity.class, new AABB(worldPosition.above()), LivingEntity::isAlive);
         double power = energyFromGroup(entities.stream().filter(Sheep.class::isInstance).toList(), Settings.get().sheepPower)
-                + energyFromGroup(entities.stream().filter(Ocelot.class::isInstance).toList(), Settings.get().ocelotPower);
+                // Minecraft 1.12's EntityOcelot represented both wild ocelots and domestic cats.
+                + energyFromGroup(entities.stream().filter(entity -> entity instanceof Ocelot || entity instanceof Cat).toList(), Settings.get().ocelotPower);
         if (power > 0 && node() != null) { node().changeBuffer(power); setChanged(); }
     }
     private double energyFromGroup(List<LivingEntity> entities, double power) {
@@ -33,12 +33,9 @@ public final class CarpetedCapacitorBlockEntity extends CapacitorBlockEntity {
                 entity.setLastHurtByMob(entity);
                 entity.knockback(0, 0.25, 0);
                 nextChanceTime = level.getGameTime() + 20 * 60;
-                setChanged();
                 break;
             }
         }
         return power;
     }
-    @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.loadAdditional(tag, registries); nextChanceTime = tag.getLong("oc:nextChanceTime"); }
-    @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) { super.saveAdditional(tag, registries); tag.putLong("oc:nextChanceTime", nextChanceTime); }
 }

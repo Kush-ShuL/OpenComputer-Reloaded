@@ -2,7 +2,6 @@ package li.cil.oc.server.component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -35,8 +34,8 @@ public class NetworkCard extends AbstractManagedEnvironment implements RackBusCo
     public NetworkCard(EnvironmentHost host) { this(host, -1); }
     protected NetworkCard(EnvironmentHost host, int wirelessTier) {
         this.host = Objects.requireNonNull(host); this.wirelessTier = wirelessTier;
-        visibility = wirelessTier >= 0 ? Visibility.Network : host instanceof Rack ? Visibility.Neighbors : Visibility.Network;
-        var builder = Network.newNode(this, visibility).withComponent("modem", Visibility.Neighbors);
+        visibility = host instanceof Rack ? Visibility.Neighbors : Visibility.Network;
+        var builder = Network.newNode(this, wirelessTier >= 0 ? Visibility.Network : visibility).withComponent("modem", Visibility.Neighbors);
         setNode(wirelessTier >= 0 ? builder.withConnector().create() : builder.create());
     }
     protected int maxOpenPorts() { return Settings.get().maxOpenPorts[wirelessTier + 1]; }
@@ -117,7 +116,7 @@ public class NetworkCard extends AbstractManagedEnvironment implements RackBusCo
     private static Object[] tail(Arguments args, int offset) { Object[] data = new Object[args.count() - offset]; for (int i=0;i<data.length;i++) data[i]=args.checkAny(i+offset); return data; }
     @Override public synchronized void load(CompoundTag tag) {
         super.load(tag); ports.clear();
-        for (int port : tag.getIntArray("openPorts")) if (port >= 1 && port <= 65535 && ports.size() < maxOpenPorts()) ports.add(port);
+        for (int port : tag.getIntArray("openPorts")) ports.add(port);
         wakeMessage = tag.contains("wakeMessage") ? tag.getString("wakeMessage") : null; fuzzy = tag.getBoolean("wakeMessageFuzzy");
     }
     @Override public synchronized void save(CompoundTag tag) {

@@ -23,7 +23,7 @@ public final class UpgradeMF implements DriverItem, HostAware, EnvironmentProvid
     @Override public ManagedEnvironment createEnvironment(ItemStack stack, EnvironmentHost host) {
         if (host.world() == null || host.world().isClientSide || host.world().getServer() == null) return null;
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag(); int[] coord = root.getIntArray("oc:coord"); var dimension = UpgradeMFItem.dimension(root);
-        if (coord.length != 5 || coord[4] < 0 || coord[4] > 5 || dimension == null || host.world().getServer().getLevel(dimension) == null) return null;
+        if (coord.length != 5 || dimension == null || host.world().getServer().getLevel(dimension) == null) return null;
         return new li.cil.oc.server.component.UpgradeMF(host, dimension, new BlockPos(coord[0], coord[1], coord[2]), Direction.from3DDataValue(coord[4]));
     }
     @Override public Class<?> getEnvironment(ItemStack stack) { return worksWith(stack) ? li.cil.oc.server.component.UpgradeMF.class : null; }

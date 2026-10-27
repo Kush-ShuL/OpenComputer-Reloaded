@@ -42,7 +42,7 @@ public final class AdapterBlock extends Block implements EntityBlock {
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof AdapterBlockEntity adapter) adapter.refreshNeighbors();
     }
     @Override protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState next, boolean moving) {
-        if (state.getBlock() != next.getBlock() && level.getBlockEntity(pos) instanceof AdapterBlockEntity adapter) { adapter.flushUpgrade(); Containers.dropContents(level, pos, adapter); }
+        if (state.getBlock() != next.getBlock() && level.getBlockEntity(pos) instanceof AdapterBlockEntity adapter) { adapter.prepareDrops(); Containers.dropContents(level, pos, adapter); }
         super.onRemove(state, level, pos, next, moving);
     }
 }

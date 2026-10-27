@@ -21,13 +21,21 @@ public final class WaypointBlockEntity extends NetworkDeviceBlockEntity implemen
     public WaypointBlockEntity(BlockEntityType<?> type,BlockPos pos,BlockState state){super(type,pos,state);}
     @Override protected Node createNode(){return Network.newNode(this,Visibility.Network).withComponent("waypoint").create();}
     @Override public Direction facing(){return WaypointBlock.facing(getBlockState());}
+    @Override public Direction toGlobal(Direction side){
+        if(side==null)return null;
+        Direction pitch=getBlockState().getValue(WaypointBlock.PITCH),yaw=getBlockState().getValue(WaypointBlock.YAW);
+        Direction up=pitch==Direction.UP?yaw.getOpposite():pitch==Direction.DOWN?yaw:Direction.UP;
+        Direction front=facing(),right=Direction.fromDelta(up.getStepY()*front.getStepZ()-up.getStepZ()*front.getStepY(),up.getStepZ()*front.getStepX()-up.getStepX()*front.getStepZ(),up.getStepX()*front.getStepY()-up.getStepY()*front.getStepX());
+        return switch(side){case SOUTH->front;case NORTH->front.getOpposite();case UP->up;case DOWN->up.getOpposite();case EAST->right;case WEST->right.getOpposite();};
+    }
+    @Override public Direction toLocal(Direction side){if(side==null)return null;for(Direction local:Direction.values())if(toGlobal(local)==side)return local;throw new IllegalArgumentException("side");}
     @Override public RedstoneState redstoneState(){return redstone;}
     public String label(){return label;}
     public int maxInput(){return Arrays.stream(redstone.inputs()).max().orElse(0);}
     public void label(String value){label=value.substring(0,Math.min(32,value.length()));setChanged();if(server())level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),3);}
-    @Callback(doc="function():string -- Get this waypoint's label.")
+    @Callback(doc="function(): string -- Get the current label of this waypoint.")
     public Object[] getLabel(Context context,Arguments args){return new Object[]{label};}
-    @Callback(doc="function(value:string) -- Set this waypoint's label, up to 32 characters.")
+    @Callback(doc="function(value:string) -- Set the label for this waypoint.")
     public Object[] setLabel(Context context,Arguments args){label(args.checkString(0));context.pause(.5);return null;}
     @Override protected void onInitialize(){node();Waypoints.add(this);redstone.rescan();}
     @Override protected void onDetach(){Waypoints.remove(this);}

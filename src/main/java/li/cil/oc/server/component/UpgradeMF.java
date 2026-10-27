@@ -32,25 +32,37 @@ public final class UpgradeMF extends AbstractManagedEnvironment implements Devic
     private net.minecraft.world.level.block.entity.BlockEntity target;
     private String savedName;
     private CompoundTag savedData;
+    private boolean powered=true;
     public UpgradeMF(EnvironmentHost host, ResourceKey<Level> dimension, BlockPos position, Direction side) {
         this.host = host; this.dimension = dimension; this.position = position.immutable(); this.side = side;
         setNode(li.cil.oc.api.Network.newNode(this, Visibility.None).withConnector().create());
     }
     @Override public boolean canUpdate() { return true; }
     @Override public Map<String, String> getDeviceInfo() { return Map.of("class", "bus", "description", "Remote Adapter", "vendor", "Scummtech, Inc.", "product", "ERR NAME NOT FOUND"); }
-    private double distance() { return Vec3.atLowerCornerOf(position).distanceTo(new Vec3(host.xPosition(), host.yPosition(), host.zPosition())); }
+    private double distance() { return Vec3.atCenterOf(position).distanceTo(new Vec3(host.xPosition(), host.yPosition(), host.zPosition())); }
     private boolean inRange() { return host.world() != null && !host.world().isClientSide && host.world().dimension().equals(dimension) && host.world().hasChunkAt(position) && distance() <= Settings.get().mfuRange; }
-    private void saveAdapted() { if (adapted != null) { savedName = adapted.getClass().getName(); savedData = new CompoundTag(); adapted.save(savedData, host.world().registryAccess()); } }
+    private void saveAdapted(ManagedEnvironment environment) {
+        if(environment==null)return;
+        savedName=environment.getClass().getName();
+        savedData=new CompoundTag();
+        environment.save(savedData,host.world().registryAccess());
+    }
     private void disconnect() {
-        if (nativeNode != null) { node().disconnect(nativeNode); nativeNode = null; }
-        saveAdapted();
-        if (adapted != null && adapted.node() != null) adapted.node().remove();
-        adapted = null; driver = null; target = null;
+        Node nativePrevious=nativeNode;
+        ManagedEnvironment previous=adapted;
+        nativeNode=null;adapted=null;driver=null;target=null;
+        if(nativePrevious!=null)node().disconnect(nativePrevious);
+        if(previous!=null){
+            if(previous.node()!=null)node().disconnect(previous.node());
+            saveAdapted(previous);
+            if(previous.node()!=null)previous.node().remove();
+        }
     }
     public void refresh() {
-        if (node().network() == null || !inRange()) { disconnect(); return; }
+        if (node().network() == null || !powered || !inRange()) { disconnect(); return; }
         var level = host.world(); var entity = level.getBlockEntity(position);
         Node remote = li.cil.oc.server.network.Network.getNetworkNode(entity, side);
+        if (entity instanceof Environment && remote == null) { disconnect(); return; }
         if (remote != null && remote != node()) {
             if (nativeNode == remote) return;
             disconnect(); nativeNode = remote; node().connect(remote); return;
@@ -71,18 +83,22 @@ public final class UpgradeMF extends AbstractManagedEnvironment implements Devic
     }
     @Override public void update() {
         if (host.world() == null || host.world().isClientSide) return;
+        // Modern neighbor events do not cover every state/BE replacement or flags=2 update.
+        refresh();
         if (adapted != null && adapted.canUpdate()) adapted.update();
-        if (host.world().getGameTime() % Math.max(1, Settings.get().tickFrequency) == 0) {
-            if (!inRange() || !((Connector) node()).tryChangeBuffer(-Settings.get().mfuCost * Math.max(1, Settings.get().tickFrequency) * distance())) disconnect(); else refresh();
+        double frequency=Math.max(1,Settings.get().tickFrequency);
+        if (host.world().getGameTime() % frequency == 0) {
+            powered=((Connector)node()).tryChangeBuffer(-Settings.get().mfuCost*frequency*distance());
+            if(powered)refresh();else disconnect();
         }
     }
     @Override public void onConnect(Node connected) {
-        if (connected == node()) { ACTIVE.removeIf(reference -> reference.get() == null || reference.get() == this); ACTIVE.add(new WeakReference<>(this)); refresh(); }
+        if (connected == node()) { powered=true;ACTIVE.removeIf(reference -> reference.get() == null || reference.get() == this); ACTIVE.add(new WeakReference<>(this)); refresh(); }
     }
     @Override public void onDisconnect(Node disconnected) {
         if (disconnected == node()) { ACTIVE.removeIf(reference -> reference.get() == null || reference.get() == this); disconnect(); }
         else if (disconnected == nativeNode) nativeNode = null;
-        else if (adapted != null && disconnected == adapted.node()) { saveAdapted(); adapted = null; driver = null; target = null; }
+        else if (adapted != null && disconnected == adapted.node()) disconnect();
     }
     @SubscribeEvent public static void blockChanged(BlockEvent.NeighborNotifyEvent event) {
         for (WeakReference<UpgradeMF> reference : ACTIVE) { UpgradeMF upgrade = reference.get(); if (upgrade == null) { ACTIVE.remove(reference); continue; } if (event.getLevel() == upgrade.host.world() && event.getPos().equals(upgrade.position)) upgrade.refresh(); }
@@ -90,5 +106,5 @@ public final class UpgradeMF extends AbstractManagedEnvironment implements Devic
     @Override public void load(CompoundTag tag) { load(tag, null); }
     @Override public void save(CompoundTag tag) { save(tag, null); }
     @Override public void load(CompoundTag tag, HolderLookup.Provider registries) { super.load(tag); CompoundTag block = tag.getCompound("oc:adapter.block"); if (block.contains("name") && block.contains("data")) { savedName = block.getString("name"); savedData = block.getCompound("data").copy(); } }
-    @Override public void save(CompoundTag tag, HolderLookup.Provider registries) { super.save(tag); saveAdapted(); CompoundTag block = new CompoundTag(); if (savedName != null && savedData != null) { block.putString("name", savedName); block.put("data", savedData.copy()); } tag.put("oc:adapter.block", block); }
+    @Override public void save(CompoundTag tag, HolderLookup.Provider registries) { super.save(tag); saveAdapted(adapted); CompoundTag block = new CompoundTag(); if (savedName != null && savedData != null) { block.putString("name", savedName); block.put("data", savedData.copy()); } tag.put("oc:adapter.block", block); }
 }

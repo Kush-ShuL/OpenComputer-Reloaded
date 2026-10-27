@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 52 项，剩余 68 项。**
+**总计 120 项，已闭合 67 项，剩余 53 项。**
 
-剩余包括：已有实现待核对/验收 60 项，有明确缺口 8 项。
+剩余包括：已有实现待核对/验收 45 项，有明确缺口 8 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -28,7 +28,7 @@
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
 | 基础与交付 | 24 | 13 | 11 |
-| 设备与组件 | 61 | 25 | 36 |
+| 设备与组件 | 61 | 40 | 21 |
 | 工具与附加玩法 | 16 | 8 | 8 |
 | 可选集成 | 19 | 6 | 13 |
 
@@ -327,25 +327,25 @@
 
 闭合依据：[docs/processors.md](../docs/processors.md)、[src/main/java/li/cil/oc/server/driver/item/Processor.java](../src/main/java/li/cil/oc/server/driver/item/Processor.java)、[src/main/java/li/cil/oc/common/item/ComponentItem.java](../src/main/java/li/cil/oc/common/item/ComponentItem.java)
 
-### D05 · 线缆 · 已有实现，待核对/验收
+### D05 · 线缆 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Cable.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/CableBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/CableBlockEntity.java)
 
-### D06 · 普通及地毯电容 · 已有实现，待核对/验收
+闭合依据：[docs/network-devices.md](../docs/network-devices.md)、[src/main/java/li/cil/oc/common/block/CableBlock.java](../src/main/java/li/cil/oc/common/block/CableBlock.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
+
+### D06 · 普通及地毯电容 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Capacitor.scala`、`src/main/scala/li/cil/oc/common/tileentity/CarpetedCapacitor.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/CapacitorBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/CapacitorBlockEntity.java)、[src/main/java/li/cil/oc/common/block/entity/CarpetedCapacitorBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/CarpetedCapacitorBlockEntity.java)
+
+闭合依据：[docs/power-devices.md](../docs/power-devices.md)、[src/main/java/li/cil/oc/common/block/entity/CapacitorBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/CapacitorBlockEntity.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
 ### D07 · 机箱 · 已有实现，待核对/验收
 
@@ -357,15 +357,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/CaseBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/CaseBlockEntity.java)
 
-### D08 · 充电器 · 已有实现，待核对/验收
+### D08 · 充电器 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Charger.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/ChargerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/ChargerBlockEntity.java)
+
+闭合依据：[docs/power-devices.md](../docs/power-devices.md)、[src/main/java/li/cil/oc/common/block/entity/ChargerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/ChargerBlockEntity.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
 ### D09 · 数据卡 · 已闭合
 
@@ -447,15 +447,15 @@
 
 闭合依据：[docs/eeprom.md](../docs/eeprom.md)、[src/main/java/li/cil/oc/server/component/EEPROM.java](../src/main/java/li/cil/oc/server/component/EEPROM.java)、[src/main/java/li/cil/oc/common/init/Items.java](../src/main/java/li/cil/oc/common/init/Items.java)
 
-### D17 · 地质分析仪 · 已有实现，待核对/验收
+### D17 · 地质分析仪 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
-
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Geolyzer.scala`、`src/main/scala/li/cil/oc/server/component/Geolyzer.scala`
 
-当前接入：[src/main/java/li/cil/oc/common/block/entity/GeolyzerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/GeolyzerBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Geolyzer.java](../src/main/java/li/cil/oc/server/component/Geolyzer.java)
+当前接入：[src/main/java/li/cil/oc/common/block/entity/GeolyzerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/GeolyzerBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Geolyzer.java](../src/main/java/li/cil/oc/server/component/Geolyzer.java)、[src/main/java/li/cil/oc/server/driver/item/Geolyzer.java](../src/main/java/li/cil/oc/server/driver/item/Geolyzer.java)
+
+闭合依据：[docs/world-sensors.md](../docs/world-sensors.md)、[src/main/java/li/cil/oc/server/driver/item/Geolyzer.java](../src/main/java/li/cil/oc/server/driver/item/Geolyzer.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
 ### D18 · 显卡及显存 · 已有实现，待核对/验收
 
@@ -527,55 +527,55 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/MicrocontrollerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/MicrocontrollerBlockEntity.java)
 
-### D25 · 运动传感器 · 已有实现，待核对/验收
+### D25 · 运动传感器 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/MotionSensor.scala`、`src/main/scala/li/cil/oc/server/component/MotionSensor.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/MotionSensorBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/MotionSensorBlockEntity.java)、[src/main/java/li/cil/oc/server/component/MotionSensor.java](../src/main/java/li/cil/oc/server/component/MotionSensor.java)
 
-### D26 · 网络分离器 · 已有实现，待核对/验收
+闭合依据：[docs/world-sensors.md](../docs/world-sensors.md)、[src/main/java/li/cil/oc/server/component/MotionSensor.java](../src/main/java/li/cil/oc/server/component/MotionSensor.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
+
+### D26 · 网络分离器 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/NetSplitter.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/NetSplitterBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/NetSplitterBlockEntity.java)
 
-### D27 · 有线网卡 · 已有实现，待核对/验收
+闭合依据：[docs/network-devices.md](../docs/network-devices.md)、[src/main/java/li/cil/oc/common/block/entity/NetSplitterBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/NetSplitterBlockEntity.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
+
+### D27 · 有线网卡 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/NetworkCard.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/NetworkCard.java](../src/main/java/li/cil/oc/server/component/NetworkCard.java)
 
-### D28 · 能源转换器 · 已有实现，待核对/验收
+闭合依据：[docs/network-devices.md](../docs/network-devices.md)、[src/main/java/li/cil/oc/server/component/NetworkCard.java](../src/main/java/li/cil/oc/server/component/NetworkCard.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
+
+### D28 · 能源转换器 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/PowerConverter.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/PowerConverterBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/PowerConverterBlockEntity.java)
 
-### D29 · 能源分配器 · 已有实现，待核对/验收
+闭合依据：[docs/power-devices.md](../docs/power-devices.md)、[src/main/java/li/cil/oc/common/block/entity/PowerConverterBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/PowerConverterBlockEntity.java)、[build/launch-support/windows-hardware-build.log](../build/launch-support/windows-hardware-build.log)
+
+### D29 · 能源分配器 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/PowerDistributor.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/PowerDistributorBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/PowerDistributorBlockEntity.java)
+
+闭合依据：[docs/power-devices.md](../docs/power-devices.md)、[src/main/java/li/cil/oc/common/block/entity/PowerDistributorBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/PowerDistributorBlockEntity.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
 ### D30 · 打印方块 · 已有实现，待核对/验收
 
@@ -627,15 +627,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/RedstoneBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RedstoneBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Redstone.java](../src/main/java/li/cil/oc/server/component/Redstone.java)、[src/main/java/li/cil/oc/server/component/RedstoneBundled.java](../src/main/java/li/cil/oc/server/component/RedstoneBundled.java)
 
-### D35 · 中继器 · 已有实现，待核对/验收
+### D35 · 中继器 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Relay.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/RelayBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RelayBlockEntity.java)
+
+闭合依据：[docs/network-devices.md](../docs/network-devices.md)、[src/main/java/li/cil/oc/common/block/entity/RelayBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RelayBlockEntity.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
 ### D36 · 机器人 · 已有实现，待核对/验收
 
@@ -677,15 +677,15 @@
 
 当前接入：[src/main/java/li/cil/oc/server/portable/TabletHost.java](../src/main/java/li/cil/oc/server/portable/TabletHost.java)
 
-### D40 · 转运器 · 已有实现，待核对/验收
+### D40 · 转运器 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：外部储罐显式nil参数已恢复原版严格校验；转运器物品/流体搬运及数据库的整族实际操作验收仍待闭合。
-
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Transposer.scala`、`src/main/scala/li/cil/oc/server/component/Transposer.scala`
 
-当前接入：[src/main/java/li/cil/oc/common/block/entity/TransposerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/TransposerBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Transposer.java](../src/main/java/li/cil/oc/server/component/Transposer.java)
+当前接入：[src/main/java/li/cil/oc/common/block/entity/TransposerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/TransposerBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Transposer.java](../src/main/java/li/cil/oc/server/component/Transposer.java)、[src/main/java/li/cil/oc/server/driver/item/Transposer.java](../src/main/java/li/cil/oc/server/driver/item/Transposer.java)
+
+闭合依据：[docs/inventory-control.md](../docs/inventory-control.md)、[src/main/java/li/cil/oc/server/driver/item/Transposer.java](../src/main/java/li/cil/oc/server/driver/item/Transposer.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
 ### D41 · 天使升级 · 已闭合
 
@@ -767,15 +767,15 @@
 
 闭合依据：[build/api-compat-addon/devices/generator-20261027-115447/device-results.txt](../build/api-compat-addon/devices/generator-20261027-115447/device-results.txt)、[tools/api-compat-addon/src/main/java/ocfixture/GeneratorContract.java](../tools/api-compat-addon/src/main/java/ocfixture/GeneratorContract.java)、[src/main/java/li/cil/oc/server/component/UpgradeGenerator.java](../src/main/java/li/cil/oc/server/component/UpgradeGenerator.java)、[docs/PORTING.md](../docs/PORTING.md)
 
-### D49 · 物品栏控制器 · 已有实现，待核对/验收
+### D49 · 物品栏控制器 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeInventoryController.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeInventoryController.java](../src/main/java/li/cil/oc/server/component/UpgradeInventoryController.java)
+
+闭合依据：[docs/inventory-control.md](../docs/inventory-control.md)、[src/main/java/li/cil/oc/server/component/UpgradeInventoryController.java](../src/main/java/li/cil/oc/server/component/UpgradeInventoryController.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
 ### D50 · 拴绳升级 · 已闭合
 
@@ -787,15 +787,15 @@
 
 闭合依据：[docs/interaction-upgrades.md](../docs/interaction-upgrades.md)、[src/main/java/li/cil/oc/server/component/UpgradeLeash.java](../src/main/java/li/cil/oc/server/component/UpgradeLeash.java)
 
-### D51 · 多功能升级 · 已有实现，待核对/验收
+### D51 · 多功能升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
-
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeMF.scala`
 
-当前接入：[src/main/java/li/cil/oc/server/component/UpgradeMF.java](../src/main/java/li/cil/oc/server/component/UpgradeMF.java)
+当前接入：[src/main/java/li/cil/oc/server/component/UpgradeMF.java](../src/main/java/li/cil/oc/server/component/UpgradeMF.java)、[src/main/java/li/cil/oc/common/item/UpgradeMFItem.java](../src/main/java/li/cil/oc/common/item/UpgradeMFItem.java)、[src/main/java/li/cil/oc/server/driver/item/UpgradeMF.java](../src/main/java/li/cil/oc/server/driver/item/UpgradeMF.java)、[src/main/java/li/cil/oc/client/renderer/MFUTargetRenderer.java](../src/main/java/li/cil/oc/client/renderer/MFUTargetRenderer.java)
+
+闭合依据：[docs/remote-adapter.md](../docs/remote-adapter.md)、[src/main/java/li/cil/oc/server/component/UpgradeMF.java](../src/main/java/li/cil/oc/server/component/UpgradeMF.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
 ### D52 · 导航升级 · 已闭合
 
@@ -877,25 +877,25 @@
 
 闭合依据：[docs/crafting-and-trading.md](../docs/crafting-and-trading.md)、[src/main/java/li/cil/oc/server/component/UpgradeTrading.java](../src/main/java/li/cil/oc/server/component/UpgradeTrading.java)、[src/main/java/li/cil/oc/server/machine/luac/UserdataAPI.java](../src/main/java/li/cil/oc/server/machine/luac/UserdataAPI.java)、[build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt](../build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt)
 
-### D60 · 航点 · 已有实现，待核对/验收
+### D60 · 航点 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Waypoint.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/WaypointBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/WaypointBlockEntity.java)
 
-### D61 · 无线网卡 · 已有实现，待核对/验收
+闭合依据：[docs/world-sensors.md](../docs/world-sensors.md)、[src/main/java/li/cil/oc/common/block/entity/WaypointBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/WaypointBlockEntity.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
+
+### D61 · 无线网卡 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/WirelessNetworkCard.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/WirelessNetworkCard.java](../src/main/java/li/cil/oc/server/component/WirelessNetworkCard.java)
+
+闭合依据：[docs/network-devices.md](../docs/network-devices.md)、[src/main/java/li/cil/oc/server/component/WirelessNetworkCard.java](../src/main/java/li/cil/oc/server/component/WirelessNetworkCard.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
 
 ## 工具与附加玩法

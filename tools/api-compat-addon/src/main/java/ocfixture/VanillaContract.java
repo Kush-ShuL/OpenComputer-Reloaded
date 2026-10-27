@@ -104,7 +104,7 @@ public final class VanillaContract {
                 require(((Number)tag.get("number")).intValue()==7 && payload.get("item") instanceof Map<?,?>,"Core NBT/item conversion missing");
             } else require(!(payload.get("filled") instanceof Map<?,?>) && !(payload.get("tag") instanceof Map<?,?>) && !(payload.get("item") instanceof Map<?,?>),"Blacklisted core vanilla converters still ran");
             var event=new GeolyzerEvent.Analyze(machineHost.machine().host(),Map.of(),pos.south(2)); NeoForge.EVENT_BUS.post(event);
-            require(enabled ? "minecraft:stone".equals(event.data.get("name")) : event.data.isEmpty(),"Real vanilla geolyzer event ignored its integration gate");
+            require(enabled ? net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("minecraft","stone").equals(event.data.get("name")) : event.data.isEmpty(),"Real vanilla geolyzer event ignored its integration gate");
             int input=((Number)io.invoke("getInput",machineHost.machine(),Direction.EAST.get3DDataValue())[0]).intValue();
             require(input==(enabled?15:0),"Real redstone input provider ignored its integration gate: "+input);
             results.add("PASS I12.vanilla real Case-context callback flattens all three actual server worlds to original UUID/name without seed; tank/NBT/item converters, geolyzer event and actual redstone input gate enabled="+enabled);

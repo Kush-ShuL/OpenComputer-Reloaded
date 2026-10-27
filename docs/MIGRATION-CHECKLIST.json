@@ -609,7 +609,7 @@
       "id": "D05",
       "group": "设备与组件",
       "name": "线缆",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Cable.scala"
       ],
@@ -619,14 +619,18 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/network-devices.md",
+        "src/main/java/li/cil/oc/common/block/CableBlock.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D06",
       "group": "设备与组件",
       "name": "普通及地毯电容",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Capacitor.scala",
         "src/main/scala/li/cil/oc/common/tileentity/CarpetedCapacitor.scala"
@@ -638,8 +642,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/power-devices.md",
+        "src/main/java/li/cil/oc/common/block/entity/CapacitorBlockEntity.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D07",
@@ -662,7 +670,7 @@
       "id": "D08",
       "group": "设备与组件",
       "name": "充电器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Charger.scala"
       ],
@@ -672,8 +680,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/power-devices.md",
+        "src/main/java/li/cil/oc/common/block/entity/ChargerBlockEntity.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D09",
@@ -832,20 +844,25 @@
       "id": "D17",
       "group": "设备与组件",
       "name": "地质分析仪",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Geolyzer.scala",
         "src/main/scala/li/cil/oc/server/component/Geolyzer.scala"
       ],
       "implementation": [
         "src/main/java/li/cil/oc/common/block/entity/GeolyzerBlockEntity.java",
-        "src/main/java/li/cil/oc/server/component/Geolyzer.java"
+        "src/main/java/li/cil/oc/server/component/Geolyzer.java",
+        "src/main/java/li/cil/oc/server/driver/item/Geolyzer.java"
       ],
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/world-sensors.md",
+        "src/main/java/li/cil/oc/server/driver/item/Geolyzer.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D18",
@@ -986,7 +1003,7 @@
       "id": "D25",
       "group": "设备与组件",
       "name": "运动传感器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/MotionSensor.scala",
         "src/main/scala/li/cil/oc/server/component/MotionSensor.scala"
@@ -998,14 +1015,18 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/world-sensors.md",
+        "src/main/java/li/cil/oc/server/component/MotionSensor.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D26",
       "group": "设备与组件",
       "name": "网络分离器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/NetSplitter.scala"
       ],
@@ -1015,14 +1036,18 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/network-devices.md",
+        "src/main/java/li/cil/oc/common/block/entity/NetSplitterBlockEntity.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D27",
       "group": "设备与组件",
       "name": "有线网卡",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/NetworkCard.scala"
       ],
@@ -1032,14 +1057,18 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/network-devices.md",
+        "src/main/java/li/cil/oc/server/component/NetworkCard.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D28",
       "group": "设备与组件",
       "name": "能源转换器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/PowerConverter.scala"
       ],
@@ -1049,14 +1078,18 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/power-devices.md",
+        "src/main/java/li/cil/oc/common/block/entity/PowerConverterBlockEntity.java",
+        "build/launch-support/windows-hardware-build.log"
+      ]
     },
     {
       "id": "D29",
       "group": "设备与组件",
       "name": "能源分配器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/PowerDistributor.scala"
       ],
@@ -1066,8 +1099,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/power-devices.md",
+        "src/main/java/li/cil/oc/common/block/entity/PowerDistributorBlockEntity.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D30",
@@ -1166,7 +1203,7 @@
       "id": "D35",
       "group": "设备与组件",
       "name": "中继器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Relay.scala"
       ],
@@ -1176,8 +1213,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/network-devices.md",
+        "src/main/java/li/cil/oc/common/block/entity/RelayBlockEntity.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D36",
@@ -1255,20 +1296,25 @@
       "id": "D40",
       "group": "设备与组件",
       "name": "转运器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Transposer.scala",
         "src/main/scala/li/cil/oc/server/component/Transposer.scala"
       ],
       "implementation": [
         "src/main/java/li/cil/oc/common/block/entity/TransposerBlockEntity.java",
-        "src/main/java/li/cil/oc/server/component/Transposer.java"
+        "src/main/java/li/cil/oc/server/component/Transposer.java",
+        "src/main/java/li/cil/oc/server/driver/item/Transposer.java"
       ],
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "外部储罐显式nil参数已恢复原版严格校验；转运器物品/流体搬运及数据库的整族实际操作验收仍待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/inventory-control.md",
+        "src/main/java/li/cil/oc/server/driver/item/Transposer.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D41",
@@ -1449,7 +1495,7 @@
       "id": "D49",
       "group": "设备与组件",
       "name": "物品栏控制器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/UpgradeInventoryController.scala"
       ],
@@ -1459,8 +1505,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/inventory-control.md",
+        "src/main/java/li/cil/oc/server/component/UpgradeInventoryController.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D50",
@@ -1486,18 +1536,25 @@
       "id": "D51",
       "group": "设备与组件",
       "name": "多功能升级",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/UpgradeMF.scala"
       ],
       "implementation": [
-        "src/main/java/li/cil/oc/server/component/UpgradeMF.java"
+        "src/main/java/li/cil/oc/server/component/UpgradeMF.java",
+        "src/main/java/li/cil/oc/common/item/UpgradeMFItem.java",
+        "src/main/java/li/cil/oc/server/driver/item/UpgradeMF.java",
+        "src/main/java/li/cil/oc/client/renderer/MFUTargetRenderer.java"
       ],
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/remote-adapter.md",
+        "src/main/java/li/cil/oc/server/component/UpgradeMF.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D52",
@@ -1675,7 +1732,7 @@
       "id": "D60",
       "group": "设备与组件",
       "name": "航点",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Waypoint.scala"
       ],
@@ -1685,14 +1742,18 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/world-sensors.md",
+        "src/main/java/li/cil/oc/common/block/entity/WaypointBlockEntity.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "D61",
       "group": "设备与组件",
       "name": "无线网卡",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/WirelessNetworkCard.scala"
       ],
@@ -1702,8 +1763,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/network-devices.md",
+        "src/main/java/li/cil/oc/server/component/WirelessNetworkCard.java",
+        "build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt"
+      ]
     },
     {
       "id": "T01",

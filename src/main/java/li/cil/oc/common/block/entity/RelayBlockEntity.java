@@ -12,6 +12,7 @@ import li.cil.oc.common.menu.RelayMenu;
 import li.cil.oc.common.network.NetworkBlockNetworking;
 import li.cil.oc.server.network.QuantumNetwork;
 import net.minecraft.core.*;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -19,6 +20,7 @@ import net.minecraft.world.*;
 import net.minecraft.world.entity.player.*;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.energy.IEnergyStorage;
@@ -35,6 +37,7 @@ public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements 
     private record Queued(Direction source,Packet packet){}
     private final ArrayDeque<Queued> queue=new ArrayDeque<>();
     private final NonNullList<ItemStack> items=NonNullList.withSize(4,ItemStack.EMPTY);
+    private final ManagedEnvironment[] hardwareEnvironments=new ManagedEnvironment[4];
     private final Plug[] plugs=new Plug[6];
     private final Node[] componentNodes=new Node[6];
     /** Six world-side addresses without creating or reconnecting component nodes. */
@@ -47,7 +50,8 @@ public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements 
     private int historyIndex;
     private volatile int packetsPerCycle;
     private volatile int wirelessTier=-1;
-    private volatile double strength;
+    // In the original constructor, maxWirelessRange sees wirelessTier's JVM default (tier one).
+    private volatile double strength=Settings.get().maxWirelessRange[0];
     private volatile boolean repeater=true,linked;
     private String channel="creative";
     public long lastMessage;
@@ -62,8 +66,8 @@ public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements 
             if(componentNodes[index]==null){componentNodes[index]=Network.newNode(this,Visibility.Network).withComponent("relay").create();if(index<savedComponents.size())componentNodes[index].load(savedComponents.getCompound(index));}
         }
     }
-    @Override protected void onInitialize(){ensurePlugs();updateHardware();Network.joinOrCreateNetwork(this);updateComponents();}
-    @Override protected void onDetach(){for(var listener:packetListeners)listener.removed();packetListeners.clear();Network.leaveWirelessNetwork(this);QuantumNetwork.remove(this);for(Node node:componentNodes)if(node!=null)node.remove();for(Plug plug:plugs)if(plug!=null)plug.node.remove();}
+    @Override protected void onInitialize(){ensurePlugs();updateHardware();for(int slot=0;slot<items.size();slot++)createHardwareEnvironment(slot);Network.joinOrCreateNetwork(this);updateComponents();}
+    @Override protected void onDetach(){for(var listener:packetListeners)listener.removed();packetListeners.clear();Network.leaveWirelessNetwork(this);QuantumNetwork.remove(this);for(int slot=0;slot<items.size();slot++)removeHardwareEnvironment(slot);for(Node node:componentNodes)if(node!=null)node.remove();for(Plug plug:plugs)if(plug!=null)plug.node.remove();}
     @Override public Node sidedNode(Direction side){if(side==null)return null;ensurePlugs();return plugs[side.get3DDataValue()]==null?null:plugs[side.get3DDataValue()].node;}
     @Override public boolean canConnect(Direction side){return side!=null;}
     private final class Plug implements Environment {
@@ -129,7 +133,7 @@ public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements 
     @Callback(direct=true,doc="function():number -- Wireless relay signal strength.")
     public Object[] getStrength(Context context,Arguments args){return new Object[]{strength};}
     @Callback(doc="function(strength:number):number -- Set the wireless relay range.")
-    public Object[] setStrength(Context context,Arguments args){double value=args.checkDouble(0);strength=Double.isNaN(value)?0:Math.max(0,Math.min(value,maxWirelessRange()));setChanged();return new Object[]{strength};}
+    public Object[] setStrength(Context context,Arguments args){strength=Math.max(0,Math.min(args.checkDouble(0),maxWirelessRange()));setChanged();return new Object[]{strength};}
     @Callback(direct=true,doc="function():boolean -- Whether wireless packets are repeated wirelessly.")
     public Object[] isRepeater(Context context,Arguments args){return new Object[]{repeater};}
     @Callback(doc="function(enabled:boolean):boolean -- Enable or disable wireless repeating.")
@@ -146,12 +150,44 @@ public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements 
                 case 3 -> {var descriptor=li.cil.oc.api.Items.get(stack);if(descriptor!=null){if(descriptor.name().equals("wlancard1"))wirelessTier=0;else if(descriptor.name().equals("wlancard2"))wirelessTier=1;else if(descriptor.name().equals("linkedcard")){var data=driver.dataTag(stack);if(data!=null&&data.contains("oc:tunnel")){channel=data.getString("oc:tunnel");linked=true;}}}}
             }
         }
-        // A newly inserted wireless card starts at its usable maximum; an existing setting remains bounded.
-        strength=Math.max(0,Math.min(strength,maxWirelessRange()));
         if(linked&&server()&&!detached&&!isRemoved())QuantumNetwork.add(this);
         if(initialized)updateComponents();
     }
-    private void inventoryChanged(int slot,boolean hadWireless){updateHardware();if(slot==3&&wirelessTier>=0&&!hadWireless)strength=maxWirelessRange();setChanged();if(server())level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),3);}
+    private static void hardwareLifecycle(ManagedEnvironment environment,li.cil.oc.api.util.Lifecycle.LifecycleState state){
+        if(environment instanceof li.cil.oc.api.util.Lifecycle lifecycle)lifecycle.onLifecycleStateChange(state);
+    }
+    private void createHardwareEnvironment(int slot){
+        if(!server()||detached||isRemoved()||hardwareEnvironments[slot]!=null||items.get(slot).isEmpty())return;
+        ItemStack stack=items.get(slot);var driver=Driver.driverFor(stack,getClass());if(driver==null)return;
+        ManagedEnvironment environment=driver.createEnvironment(stack,this);if(environment==null)return;
+        hardwareEnvironments[slot]=environment;
+        hardwareLifecycle(environment,li.cil.oc.api.util.Lifecycle.LifecycleState.Constructing);
+        CompoundTag data=driver.dataTag(stack);
+        if(data==null)data=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getCompound("oc:data");
+        environment.load(data,level.registryAccess());
+        hardwareLifecycle(environment,li.cil.oc.api.util.Lifecycle.LifecycleState.Initializing);
+        // Relay has no main node, so its original inventory environments stay off the six plug networks.
+        hardwareLifecycle(environment,li.cil.oc.api.util.Lifecycle.LifecycleState.Initialized);
+        saveHardwareEnvironment(slot,environment);
+    }
+    private void saveHardwareEnvironment(int slot,ManagedEnvironment environment){
+        if(!server()||environment==null||items.get(slot).isEmpty())return;
+        ItemStack stack=items.get(slot);var driver=Driver.driverFor(stack,getClass());if(driver==null)return;
+        CompoundTag data=new CompoundTag();environment.save(data,level.registryAccess());
+        if(driver.dataTag(stack)!=null)driver.saveDataTag(stack,data);
+        else CustomData.update(DataComponents.CUSTOM_DATA,stack,root->root.put("oc:data",data));
+    }
+    private void removeHardwareEnvironment(int slot){
+        ManagedEnvironment environment=hardwareEnvironments[slot];if(environment==null)return;
+        hardwareEnvironments[slot]=null;
+        hardwareLifecycle(environment,li.cil.oc.api.util.Lifecycle.LifecycleState.Disposing);
+        if(environment.node()!=null)environment.node().remove();
+        saveHardwareEnvironment(slot,environment);
+        if(environment.node()!=null&&environment.node().network()!=null)environment.node().remove();
+        hardwareLifecycle(environment,li.cil.oc.api.util.Lifecycle.LifecycleState.Disposed);
+    }
+    public void prepareDrops(){for(int slot=0;slot<items.size();slot++)saveHardwareEnvironment(slot,hardwareEnvironments[slot]);}
+    private void inventoryChanged(){updateHardware();setChanged();if(server())level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),3);}
     @Override public int getContainerSize(){return 4;}
     @Override public int getMaxStackSize(){return 1;}
     @Override public boolean isEmpty(){return items.stream().allMatch(ItemStack::isEmpty);}
@@ -162,10 +198,10 @@ public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements 
         if(!kinds[slot].equals(driver.slot(stack)))return false;
         if(slot!=3)return true;var descriptor=li.cil.oc.api.Items.get(stack);return descriptor!=null&&Set.of("wlancard1","wlancard2","linkedcard").contains(descriptor.name());
     }
-    @Override public ItemStack removeItem(int slot,int count){if(slot<0||slot>=4||count<=0)return ItemStack.EMPTY;boolean had=wirelessTier>=0;ItemStack removed=ContainerHelper.removeItem(items,slot,count);inventoryChanged(slot,had);return removed;}
+    @Override public ItemStack removeItem(int slot,int count){if(slot<0||slot>=4||count<=0)return ItemStack.EMPTY;removeHardwareEnvironment(slot);ItemStack removed=ContainerHelper.removeItem(items,slot,count);inventoryChanged();return removed;}
     @Override public ItemStack removeItemNoUpdate(int slot){return removeItem(slot,1);}
-    @Override public void setItem(int slot,ItemStack stack){if(slot<0||slot>=4)return;boolean had=wirelessTier>=0;items.set(slot,stack.isEmpty()?ItemStack.EMPTY:stack.copyWithCount(1));inventoryChanged(slot,had);}
-    @Override public void clearContent(){items.replaceAll(stack->ItemStack.EMPTY);updateHardware();setChanged();}
+    @Override public void setItem(int slot,ItemStack stack){if(slot<0||slot>=4)return;removeHardwareEnvironment(slot);items.set(slot,stack.isEmpty()?ItemStack.EMPTY:stack.copyWithCount(1));createHardwareEnvironment(slot);inventoryChanged();}
+    @Override public void clearContent(){for(int slot=0;slot<items.size();slot++)removeHardwareEnvironment(slot);items.replaceAll(stack->ItemStack.EMPTY);updateHardware();setChanged();}
     @Override public boolean stillValid(Player player){return level!=null&&level.getBlockEntity(worldPosition)==this&&player.distanceToSqr(xPosition(),yPosition(),zPosition())<=64;}
     @Override public Component getDisplayName(){return Component.translatable("block.opencomputers.relay");}
     @Override public AbstractContainerMenu createMenu(int id,Inventory inventory,Player player){return stillValid(player)?new RelayMenu(id,inventory,this):null;}
@@ -185,17 +221,18 @@ public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements 
     }
     @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){
         super.loadAdditional(tag,registries);
-        if(tag.contains("oc:items")){items.replaceAll(stack->ItemStack.EMPTY);for(Tag raw:tag.getList("oc:items",Tag.TAG_COMPOUND)){var entry=(CompoundTag)raw;int slot=entry.getInt("slot");if(slot>=0&&slot<4)items.set(slot,ItemStack.parseOptional(registries,entry.getCompound("item")));}}
+        if(tag.contains("oc:items")){for(int slot=0;slot<items.size();slot++)removeHardwareEnvironment(slot);items.replaceAll(stack->ItemStack.EMPTY);for(Tag raw:tag.getList("oc:items",Tag.TAG_COMPOUND)){var entry=(CompoundTag)raw;int slot=entry.getInt("slot");if(slot>=0&&slot<4)items.set(slot,ItemStack.parseOptional(registries,entry.getCompound("item")));}}
         savedPlugs=tag.getList("oc:plugs",Tag.TAG_COMPOUND).copy();savedComponents=tag.getList("oc:componentNodes",Tag.TAG_COMPOUND).copy();
         updateHardware();
+        for(int slot=0;slot<items.size();slot++)createHardwareEnvironment(slot);
         if(server()){ensurePlugs();for(int i=0;i<6;i++){if(i<savedPlugs.size())plugs[i].node.load(savedPlugs.getCompound(i));if(i<savedComponents.size())componentNodes[i].load(savedComponents.getCompound(i));}}
         if(tag.contains("oc:strength"))strength=Math.max(0,Math.min(tag.getDouble("oc:strength"),maxWirelessRange()));
         if(tag.contains("oc:isRepeater"))repeater=tag.getBoolean("oc:isRepeater");
         relayCooldown=tag.contains("oc:relayCooldown")?tag.getInt("oc:relayCooldown"):-1;
-        synchronized(queue){queue.clear();for(Tag raw:tag.getList("oc:queue",Tag.TAG_COMPOUND)){var entry=(CompoundTag)raw;int side=entry.getInt("side");Packet packet=Network.newPacket(entry);if(packet!=null&&queue.size()<maxQueueSize)queue.addLast(new Queued(side>=0&&side<6?Direction.from3DDataValue(side):null,packet));}}
+        synchronized(queue){queue.clear();for(Tag raw:tag.getList("oc:queue",Tag.TAG_COMPOUND)){var entry=(CompoundTag)raw;int side=entry.getInt("side");Packet packet=Network.newPacket(entry);if(packet!=null)queue.addLast(new Queued(side>=0&&side<6?Direction.from3DDataValue(side):null,packet));}}
     }
     @Override protected void saveAdditional(CompoundTag tag,HolderLookup.Provider registries){
-        super.saveAdditional(tag,registries);var inventory=new ListTag();for(int i=0;i<4;i++)if(!items.get(i).isEmpty()){var entry=new CompoundTag();entry.putInt("slot",i);entry.put("item",items.get(i).save(registries));inventory.add(entry);}tag.put("oc:items",inventory);
+        super.saveAdditional(tag,registries);prepareDrops();var inventory=new ListTag();for(int i=0;i<4;i++)if(!items.get(i).isEmpty()){var entry=new CompoundTag();entry.putInt("slot",i);entry.put("item",items.get(i).save(registries));inventory.add(entry);}tag.put("oc:items",inventory);
         var plugTags=new ListTag();var componentTags=new ListTag();for(int i=0;i<6;i++){var p=new CompoundTag();var c=new CompoundTag();if(plugs[i]!=null)plugs[i].node.save(p);else if(i<savedPlugs.size())p=savedPlugs.getCompound(i).copy();if(componentNodes[i]!=null)componentNodes[i].save(c);else if(i<savedComponents.size())c=savedComponents.getCompound(i).copy();plugTags.add(p);componentTags.add(c);}tag.put("oc:plugs",plugTags);tag.put("oc:componentNodes",componentTags);
         tag.putDouble("oc:strength",strength);tag.putBoolean("oc:isRepeater",repeater);
         synchronized(queue){var saved=new ListTag();for(var queued:queue){var entry=new CompoundTag();queued.packet.save(entry);entry.putInt("side",queued.source==null?-1:queued.source.get3DDataValue());saved.add(entry);}tag.put("oc:queue",saved);if(relayCooldown>0)tag.putInt("oc:relayCooldown",relayCooldown);}

@@ -34,7 +34,12 @@ public final class ChargerBlock extends Block implements EntityBlock {
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return type.get().create(pos, state); }
     @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> requested) { return requested == type.get() ? (world, pos, value, entity) -> { if (world.isClientSide) ((ChargerBlockEntity) entity).clientTick(); else ((ChargerBlockEntity) entity).serverTick(); } : null; }
     @Override public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, Direction side) { return true; }
-    @Override protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos from, boolean moving) { if (level.getBlockEntity(pos) instanceof ChargerBlockEntity charger) charger.neighborChanged(); }
+    @Override protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos from, boolean moving) {
+        if (level.getBlockEntity(pos) instanceof ChargerBlockEntity charger) {
+            charger.neighborChanged();
+            if (!level.isClientSide) li.cil.oc.api.Network.joinOrCreateNetwork(charger);
+        }
+    }
     @Override protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (WrenchTools.holdsApplicableWrench(player, pos) && level.getBlockEntity(pos) instanceof ChargerBlockEntity charger) {
             if (!level.isClientSide) { charger.invert(); WrenchTools.wrenchUsed(player, pos); }
