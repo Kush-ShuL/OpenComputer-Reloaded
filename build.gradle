@@ -33,6 +33,11 @@ repositories {
         url = 'https://api.modrinth.com/maven'
         content { includeModule 'maven.modrinth', 'jade' }
     }
+    maven {
+        name = 'Tis3dOfficialDistribution'
+        url = 'https://api.modrinth.com/maven'
+        content { includeModule 'maven.modrinth', 'tis3d'; includeModule 'maven.modrinth', 'markdownmanual' }
+    }
     ivy {
         name = 'OriginalOpenComputersLuaLibraries'
         url = 'https://asie.pl/javadeps'
@@ -89,6 +94,8 @@ dependencies {
     compileOnly 'mezz.jei:jei-1.21.1-neoforge-api:19.21.0.247'
     compileOnly('org.appliedenergistics:appliedenergistics2:19.2.14') { transitive = false }
     compileOnly('maven.modrinth:jade:15.10.0+neoforge') { transitive = false }
+    compileOnly('maven.modrinth:tis3d:MC1.21.1-neoforge-2.0.0') { transitive = false }
+    compileOnly('maven.modrinth:markdownmanual:MC1.21.1-neoforge-1.2.7') { transitive = false }
     if (providers.gradleProperty('ocWithJade').map { it.toBoolean() }.getOrElse(false)) {
         localRuntime 'maven.modrinth:jade:15.10.0+neoforge'
     }

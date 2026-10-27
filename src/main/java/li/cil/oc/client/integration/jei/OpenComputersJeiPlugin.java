@@ -130,7 +130,8 @@ public final class OpenComputersJeiPlugin implements IModPlugin {
 
     private static boolean hiddenBase(ItemStack stack) {
         var info = Items.get(stack);
-        return info != null && HIDDEN.contains(info.name()) && ItemStack.isSameItemSameComponents(stack, info.createItemStack(1));
+        return info != null && (li.cil.oc.common.recipe.RecipeConfigLoader.hidden(info.name())
+                || HIDDEN.contains(info.name()) && ItemStack.isSameItemSameComponents(stack, info.createItemStack(1)));
     }
 
     private static CompoundTag data(ItemStack stack) { return stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag(); }

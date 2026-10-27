@@ -220,7 +220,7 @@ public final class Items implements ItemAPI {
         List<ItemStack> hardware = new ArrayList<>();
         List<ItemStack> other = new ArrayList<>();
         for (BaseDescriptor descriptor : catalog) {
-            if (HIDDEN_BASE_ITEMS.contains(descriptor.name)) continue;
+            if (HIDDEN_BASE_ITEMS.contains(descriptor.name) || li.cil.oc.common.recipe.RecipeConfigLoader.hidden(descriptor.name)) continue;
             ItemStack stack = descriptor.createItemStack(1);
             (stack.getItem() instanceof ComponentItem ? hardware : other).add(stack);
         }
@@ -239,6 +239,7 @@ public final class Items implements ItemAPI {
         }
         hardware.addAll(extras);
         if (registries != null) hardware.addAll(CreativeDevices.all(registries));
+        hardware.removeIf(stack -> { var info = get(stack); return info != null && li.cil.oc.common.recipe.RecipeConfigLoader.hidden(info.name()); });
         return List.copyOf(hardware);
     }
 

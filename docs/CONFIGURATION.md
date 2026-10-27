@@ -83,6 +83,39 @@ Jade 设置界面还可分别控制 OC 地址、能量和组件名的显示。
 `integration.modBlacklist` 中的 `forge` 或 `neoforge` 也可禁用这组接入；单独禁用
 `minecraft` 的原版驱动不会关闭 FE 接入。
 
+## 修改配方
+
+首次启动会在 `config/opencomputers/` 生成 `user.recipes` 和四套原版配方档案。
+直接编辑 `user.recipes`；四个内置档案会在启动时恢复，适合作为参考。
+默认包含 `default.recipes`，也可以按顺序包含 `hardmode.recipes`、`peaceful.recipes`
+或自己的文件，后面的定义覆盖前面的定义。
+
+例如，将分析仪改为使用一颗钻石制作，并禁用晶体管配方：
+
+```hocon
+include file("default.recipes")
+
+analyzer {
+  type: shapeless
+  input: ["minecraft:diamond"]
+}
+transistor = false
+```
+
+`false` 同时隐藏创造物品栏和 JEI 中的该物品；`true` 只禁用配方，保留物品展示。
+支持 `shaped`（二维材料列表）、`shapeless` 和 `furnace`，以及原档案中的
+`lootdisks`、`generic` 条目。材料可用现代物品 ID、`#命名空间:标签`，或保留的
+原版 OC 材料别名，例如 `oc:materialTransistor`。旧模组的数字 ID / metadata
+请改为对应的现代物品 ID。
+
+服务器执行 `/reload` 后重新读取配方文件；修改物品的隐藏状态后重启客户端。
+数据包仍可通过同名配方覆盖这些定义，例如
+`data/opencomputers/recipe/default/analyzer.json`。
+GregTech 档案需要对应的机器配方集成提供处理器，不能仅通过切换档案启用。
+
+配方档案、自定义覆盖和数据包重载已在 Windows 服务端验证，验证入口为
+`tools/api-compat-addon/src/main/java/ocfixture/RecipeConfigContract.java`。
+
 ## 从旧配置迁移
 
 迁移会补齐缺少的默认项，保留未知键和原有自定义值。原版历史版本中语义发生变化的项目按原迁移规则处理；已有的 `0.1.x` 移植版配置不按早期 OC 版本重置。

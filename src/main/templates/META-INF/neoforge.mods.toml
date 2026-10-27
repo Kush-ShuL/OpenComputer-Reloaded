@@ -65,3 +65,17 @@ type="optional"
 versionRange="[15.10.0,16)"
 ordering="AFTER"
 side="BOTH"
+
+[[dependencies.opencomputers]]
+modId="enderio"
+type="optional"
+versionRange="[8.2.12-beta,9)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.opencomputers]]
+modId="tis3d"
+type="optional"
+versionRange="[2.0.0,3)"
+ordering="AFTER"
+side="BOTH"

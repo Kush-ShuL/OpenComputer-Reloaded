@@ -656,6 +656,10 @@ def conditionally_registered(data):
 
 
 def recipes(profile='default'):
+    write_json(ASSETS / 'recipes/ingredient-mapping.json', {
+        name: ('#' if kind == 'tag' else '') + identifier
+        for name, (kind, identifier) in ORE_INGREDIENTS.items()
+    })
     aliases = source_registration_aliases(constants())
     config = RecipeConfig(ASSETS / 'recipes').load(profile + '.recipes')
     generated = []

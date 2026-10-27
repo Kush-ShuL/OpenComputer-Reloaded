@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 23 项，剩余 97 项。**
+**总计 120 项，已闭合 24 项，剩余 96 项。**
 
-剩余包括：已有实现待核对/验收 87 项，有明确缺口 10 项。
+剩余包括：已有实现待核对/验收 88 项，有明确缺口 8 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -30,7 +30,7 @@
 | 基础与交付 | 24 | 13 | 11 |
 | 设备与组件 | 61 | 6 | 55 |
 | 工具与附加玩法 | 16 | 0 | 16 |
-| 可选集成 | 19 | 4 | 15 |
+| 可选集成 | 19 | 5 | 14 |
 
 ## 范围归属
 
@@ -206,11 +206,13 @@
 
 完成条件：原配方档案、动态配方、装配/拆解材料与重合成保留；数据包覆盖及许可资源一致。
 
-剩余：部分生产链已通过；尚需按原配方集合闭合动态和档案差异。
+剩余：原HOCON档案、user.recipes include、自定义shaped/shapeless/furnace、布尔禁用/隐藏、generic/lootdisks和数据包重载已接入；实际自定义与重载通过。尚需闭合GregTech机器配方处理器、流体材料和其余生产/拆解动态配方差异。
 
 原版范围：`src/main/scala/li/cil/oc/common/recipe/`、`src/main/resources/assets/opencomputers/recipes/`
 
 当前接入：[src/main/java/li/cil/oc/common/recipe/](../src/main/java/li/cil/oc/common/recipe/)、[src/main/resources/data/opencomputers/](../src/main/resources/data/opencomputers/)
+
+闭合依据：[docs/CONFIGURATION.md](../docs/CONFIGURATION.md)、[tools/api-compat-addon/src/main/java/ocfixture/RecipeConfigContract.java](../tools/api-compat-addon/src/main/java/ocfixture/RecipeConfigContract.java)、[build/api-compat-addon/devices/recipe-config-20261027-1249/device-results.txt](../build/api-compat-addon/devices/recipe-config-20261027-1249/device-results.txt)
 
 ### C18 · 创造物品栏与四类预配置设备 · 已闭合
 
@@ -1105,13 +1107,15 @@
 
 原版范围：`src/main/scala/li/cil/oc/integration/ec/`
 
-### I06 · enderio · 有明确缺口
+### I06 · enderio · 已闭合
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。
-
 原版范围：`src/main/scala/li/cil/oc/integration/enderio/`
+
+当前接入：[src/main/java/li/cil/oc/common/integration/enderio/](../src/main/java/li/cil/oc/common/integration/enderio/)
+
+闭合依据：[docs/enderio-integration.md](../docs/enderio-integration.md)、[tools/api-compat-addon/src/main/java/ocfixture/EnderIOContract.java](../tools/api-compat-addon/src/main/java/ocfixture/EnderIOContract.java)、[build/api-compat-addon/devices/enderio-20261027-1234/device-results.txt](../build/api-compat-addon/devices/enderio-20261027-1234/device-results.txt)、[build/api-compat-addon/devices/enderio-disabled-20261027-1238/device-results.txt](../build/api-compat-addon/devices/enderio-disabled-20261027-1238/device-results.txt)
 
 ### I07 · enderstorage · 已闭合
 
@@ -1207,13 +1211,17 @@
 
 原版范围：`src/main/scala/li/cil/oc/integration/thaumcraft/`
 
-### I17 · tis3d · 有明确缺口
+### I17 · tis3d · 已有实现，待核对/验收
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。
+剩余：串行接口注册、16位收发队列、读取开关、重置、持久化和手册桥已用Java接入；官方TIS-3D 2.0.0要求NeoForge至少21.1.248，待在兼容版本完成实际串行收发及手册验证。
 
 原版范围：`src/main/scala/li/cil/oc/integration/tis3d/`
+
+当前接入：[src/main/java/li/cil/oc/common/integration/tis3d/](../src/main/java/li/cil/oc/common/integration/tis3d/)
+
+闭合依据：[docs/tis3d-integration.md](../docs/tis3d-integration.md)
 
 ### I18 · waila → Jade · 已有实现，待核对/验收
 

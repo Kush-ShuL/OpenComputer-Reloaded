@@ -374,8 +374,12 @@
       "acceptance": [
         "原配方档案、动态配方、装配/拆解材料与重合成保留；数据包覆盖及许可资源一致。"
       ],
-      "remaining": "部分生产链已通过；尚需按原配方集合闭合动态和档案差异。",
-      "evidence": []
+      "remaining": "原HOCON档案、user.recipes include、自定义shaped/shapeless/furnace、布尔禁用/隐藏、generic/lootdisks和数据包重载已接入；实际自定义与重载通过。尚需闭合GregTech机器配方处理器、流体材料和其余生产/拆解动态配方差异。",
+      "evidence": [
+        "docs/CONFIGURATION.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/RecipeConfigContract.java",
+        "build/api-compat-addon/devices/recipe-config-20261027-1249/device-results.txt"
+      ]
     },
     {
       "id": "C18",
@@ -1998,16 +2002,23 @@
       "id": "I06",
       "group": "可选集成",
       "name": "enderio",
-      "status": "gap",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/integration/enderio/"
       ],
-      "implementation": [],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/integration/enderio/"
+      ],
       "acceptance": [
         "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
       ],
-      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/enderio-integration.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/EnderIOContract.java",
+        "build/api-compat-addon/devices/enderio-20261027-1234/device-results.txt",
+        "build/api-compat-addon/devices/enderio-disabled-20261027-1238/device-results.txt"
+      ]
     },
     {
       "id": "I07",
@@ -2196,16 +2207,20 @@
       "id": "I17",
       "group": "可选集成",
       "name": "tis3d",
-      "status": "gap",
+      "status": "review",
       "upstream": [
         "src/main/scala/li/cil/oc/integration/tis3d/"
       ],
-      "implementation": [],
+      "implementation": [
+        "src/main/java/li/cil/oc/common/integration/tis3d/"
+      ],
       "acceptance": [
         "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
       ],
-      "remaining": "原版专属集成尚缺现代Java接入；现代官方目标/API待确认，仍计入剩余，未自行排除。",
-      "evidence": []
+      "remaining": "串行接口注册、16位收发队列、读取开关、重置、持久化和手册桥已用Java接入；官方TIS-3D 2.0.0要求NeoForge至少21.1.248，待在兼容版本完成实际串行收发及手册验证。",
+      "evidence": [
+        "docs/tis3d-integration.md"
+      ]
     },
     {
       "id": "I18",

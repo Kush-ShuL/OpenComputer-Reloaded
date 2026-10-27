@@ -104,6 +104,8 @@ neoForge {
             systemProperty 'ocfixture.forgeEnergyOnly', providers.gradleProperty('ocForgeEnergyOnly').getOrElse('false')
             systemProperty 'ocfixture.experienceOnly', providers.gradleProperty('ocExperienceOnly').getOrElse('false')
             systemProperty 'ocfixture.generatorOnly', providers.gradleProperty('ocGeneratorOnly').getOrElse('false')
+            systemProperty 'ocfixture.recipeConfigOnly', providers.gradleProperty('ocRecipeConfigOnly').getOrElse('false')
+            systemProperty 'ocfixture.enderIOOnly', providers.gradleProperty('ocEnderIOOnly').getOrElse('false')
             systemProperty 'ocfixture.vanillaOnly', providers.gradleProperty('ocVanillaOnly').getOrElse('false')
         }
         hostPersistenceServer {
@@ -180,6 +182,7 @@ dependencies {
     if (providers.gradleProperty('ocAppliedEnergisticsJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocAppliedEnergisticsJar').get())
     if (providers.gradleProperty('ocGuideMeJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocGuideMeJar').get())
     if (providers.gradleProperty('ocEnderStorageJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocEnderStorageJar').get())
+    if (providers.gradleProperty('ocEnderIOJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocEnderIOJar').get())
     if (providers.gradleProperty('ocCodeChickenLibJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocCodeChickenLibJar').get())
     if (providers.gradleProperty('ocJadeJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocJadeJar').get())
     for (String property : ['ocProjectRedCoreJar', 'ocProjectRedTransmissionJar', 'ocCBMultipartJar'])
@@ -504,6 +507,18 @@ def prepareDeviceRun = tasks.register('prepareDeviceRun') {
         settings.text = fixtureConfiguration('real-device-fixture') +
             '\nopencomputers.power.modBlacklist = ' + groovy.json.JsonOutput.toJson(powerBlacklist) +
             '\nopencomputers.integration.modBlacklist = ' + groovy.json.JsonOutput.toJson(integrationBlacklist) + '\n'
+        if (providers.gradleProperty('ocRecipeConfigOnly').getOrElse('false') == 'true') {
+            new File(settings.parentFile, 'user.recipes').text = 'include file("default.recipes")\ninclude file("fixture.recipes")\n'
+            new File(settings.parentFile, 'fixture.recipes').text = '''
+analyzer { type: shapeless, input: ["minecraft:diamond"] }
+disk { type: shapeless, input: ["minecraft:copper_ingot"], output: 2 }
+manual = true
+transistor = false
+wrench { type: shapeless, input: ["minecraft:diamond"] }
+luabios { type: shapeless, input: ["oc:eeprom", "minecraft:book"] }
+generic = [{ type: furnace, input: { item: coal, subID: 1 }, result: "minecraft:iron_nugget" }]
+'''
+        }
         def propertiesFile = new File(deviceDirectory, 'server.properties')
         if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-device-world
 level-type=minecraft\\:flat

@@ -64,6 +64,7 @@ public final class OpenComputers {
         li.cil.oc.common.init.RackDisks.register(modBus);
         li.cil.oc.common.init.DebugDevices.register(modBus);
         li.cil.oc.common.integration.computercraft.ComputerCraftIntegration.register(modBus);
+        li.cil.oc.common.integration.tis3d.Tis3dIntegration.register(modBus);
         li.cil.oc.common.integration.LootIntegration.register(modBus);
         li.cil.oc.common.network.PetNetworking.register(modBus);
         li.cil.oc.common.LightUpdateEvents.register();
@@ -104,6 +105,7 @@ public final class OpenComputers {
             li.cil.oc.common.integration.computercraft.ComputerCraftIntegration.initializeDrivers();
             li.cil.oc.common.integration.mekanism.MekanismIntegration.initializeDrivers();
             li.cil.oc.common.integration.enderstorage.EnderStorageIntegration.initializeDrivers();
+            li.cil.oc.common.integration.enderio.EnderIOIntegration.initializeDrivers();
             li.cil.oc.common.integration.appeng.AE2Integration.initializeDrivers();
             li.cil.oc.common.integration.projectred.ProjectRedIntegration.initializeDrivers();
             li.cil.oc.common.template.BuiltinAssemblyTemplates.initialize();
@@ -113,6 +115,7 @@ public final class OpenComputers {
             li.cil.oc.common.integration.UpdateChecker.initialize();
             Recipes.setLootRecraftingSupplier(() -> Settings.get().lootRecrafting);
             Recipes.setRecipeSetSupplier(() -> Settings.get().config.hasPath("recipes.profile") ? Settings.get().config.getString("recipes.profile") : "default");
+            li.cil.oc.common.recipe.RecipeConfigLoader.initialize(FMLPaths.CONFIGDIR.get().resolve("opencomputers"));
         });
         LOGGER.info("{}: Java migration is in development; a complete playable port has not been released", NAME);
     }
