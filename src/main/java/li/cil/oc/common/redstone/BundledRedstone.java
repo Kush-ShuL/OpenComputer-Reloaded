@@ -21,8 +21,11 @@ public final class BundledRedstone {
     }
 
     private static final CopyOnWriteArrayList<Provider> PROVIDERS = new CopyOnWriteArrayList<>();
-    static { PROVIDERS.add(new VanillaProvider()); }
+    private static final Provider VANILLA = new VanillaProvider();
     private BundledRedstone() {}
+    public static void initializeVanilla() {
+        if (li.cil.oc.common.integration.VanillaDrivers.integrationEnabled("minecraft")) addProvider(VANILLA);
+    }
     public static void addProvider(Provider provider) { PROVIDERS.addIfAbsent(Objects.requireNonNull(provider)); }
     public static List<Provider> providers() { return List.copyOf(PROVIDERS); }
     public static boolean isAvailable() { return !PROVIDERS.isEmpty(); }

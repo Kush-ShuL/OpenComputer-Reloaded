@@ -126,7 +126,7 @@ public final class AgentRuntime implements MultiTank {
         for (var environment : environments.values()) if (environment.node() != null) environment.node().remove();
         if (control != null) control.node().remove(); saveComponents(); initialized = false;
     }
-    public int componentSlot(String address) { for (var entry : environments.entrySet()) if (entry.getValue().node() != null && address.equals(entry.getValue().node().address())) return entry.getKey(); return -1; }
+    public int componentSlot(String address) { if (address == null) return -1; for (var entry : environments.entrySet()) if (entry.getValue().node() != null && address.equals(entry.getValue().node().address())) return entry.getKey(); return -1; }
     @Override public int tankCount() { return tanks().size(); }
     @Override public IFluidTank getFluidTank(int index) { return tanks().get(index); }
     private List<IFluidTank> tanks() { List<IFluidTank> tanks = new ArrayList<>(); for (var environment : environments.values()) if (environment instanceof IFluidTank tank) tanks.add(tank); return tanks; }

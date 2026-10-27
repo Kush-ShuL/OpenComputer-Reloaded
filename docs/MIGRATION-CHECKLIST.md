@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 21 项，剩余 99 项。**
+**总计 120 项，已闭合 23 项，剩余 97 项。**
 
-剩余包括：已有实现待核对/验收 88 项，有明确缺口 11 项。
+剩余包括：已有实现待核对/验收 87 项，有明确缺口 10 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -28,7 +28,7 @@
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
 | 基础与交付 | 24 | 13 | 11 |
-| 设备与组件 | 61 | 4 | 57 |
+| 设备与组件 | 61 | 6 | 55 |
 | 工具与附加玩法 | 16 | 0 | 16 |
 | 可选集成 | 19 | 4 | 15 |
 
@@ -745,25 +745,25 @@
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeDatabase.java](../src/main/java/li/cil/oc/server/component/UpgradeDatabase.java)
 
-### D47 · 经验升级 · 已有实现，待核对/验收
+### D47 · 经验升级 · 已闭合
 
-完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：原机器人分析事件和统计、物品分数等级已接齐且Windows编译通过；尚需经验瓶消耗、分析仪可见提示、满级与存储电量恢复的实际验收。
+完成条件：原经验获得/公式/组件可见性与容量、consume完整吞掉物品、满级拒绝、保存恢复、分析仪事件和物品分数等级接齐；真实原生机器人验证消耗、两个等级状态、XP/地址/1234.5电量恢复、一次真实分析入口及实际物品tooltip。C19多人/C23实屏显示统一跟踪。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeExperience.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeExperience.java](../src/main/java/li/cil/oc/server/component/UpgradeExperience.java)
 
-### D48 · 发电机升级 · 已有实现，待核对/验收
+闭合依据：[build/api-compat-addon/devices/experience-20261027-120333/device-results.txt](../build/api-compat-addon/devices/experience-20261027-120333/device-results.txt)、[tools/api-compat-addon/src/main/java/ocfixture/ExperienceContract.java](../tools/api-compat-addon/src/main/java/ocfixture/ExperienceContract.java)、[src/main/java/li/cil/oc/server/component/UpgradeExperience.java](../src/main/java/li/cil/oc/server/component/UpgradeExperience.java)、[src/main/java/li/cil/oc/common/init/AgentUpgrades.java](../src/main/java/li/cil/oc/common/init/AgentUpgrades.java)、[docs/PORTING.md](../docs/PORTING.md)
 
-完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
+### D48 · 发电机升级 · 已闭合
 
-剩余：本批已修燃料容器实际接收/回退、选中槽顺序、零数量插入及燃烧脏标记；尚需实际容量/容器/燃烧保存流程闭合。
+完成条件：原燃料队列、容量/类型/零数量参数、容器部分回收和拒绝回退、燃烧/满缓冲计时、原始状态保存及物理移除行为完成。真实原生机器人16库存阶段/世界燃烧/热拔验证，另用真实driver环境的公开update和独立实际connector图证明发电能量，避开创造机器人自动满电干扰。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeGenerator.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeGenerator.java](../src/main/java/li/cil/oc/server/component/UpgradeGenerator.java)
+
+闭合依据：[build/api-compat-addon/devices/generator-20261027-115447/device-results.txt](../build/api-compat-addon/devices/generator-20261027-115447/device-results.txt)、[tools/api-compat-addon/src/main/java/ocfixture/GeneratorContract.java](../tools/api-compat-addon/src/main/java/ocfixture/GeneratorContract.java)、[src/main/java/li/cil/oc/server/component/UpgradeGenerator.java](../src/main/java/li/cil/oc/server/component/UpgradeGenerator.java)、[docs/PORTING.md](../docs/PORTING.md)
 
 ### D49 · 物品栏控制器 · 已有实现，待核对/验收
 
@@ -1159,15 +1159,17 @@
 
 闭合依据：[docs/mekanism-integration.md](../docs/mekanism-integration.md)
 
-### I12 · minecraft · 有明确缺口
+### I12 · minecraft · 已有实现，待核对/验收
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：已有部分原版驱动；ConverterWorld/WorldProvider等原模块功能尚未闭合。
+剩余：已补World/WorldProvider与现代储罐转换，保留原版三个维度UUID/名称并修复minecraft黑名单在转换、地质事件和普通红石输入的门控；启用/禁用真实场景已过。其他原版驱动、配方平台及自定义维度/客户端级别的整项验收仍待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/integration/minecraft/`
 
-当前接入：[src/main/java/li/cil/oc/common/integration/VanillaDrivers.java](../src/main/java/li/cil/oc/common/integration/VanillaDrivers.java)
+当前接入：[src/main/java/li/cil/oc/common/integration/VanillaDrivers.java](../src/main/java/li/cil/oc/common/integration/VanillaDrivers.java)、[src/main/java/li/cil/oc/server/driver/converter/World.java](../src/main/java/li/cil/oc/server/driver/converter/World.java)、[src/main/java/li/cil/oc/server/driver/converter/WorldProvider.java](../src/main/java/li/cil/oc/server/driver/converter/WorldProvider.java)、[src/main/java/li/cil/oc/server/driver/converter/FluidTank.java](../src/main/java/li/cil/oc/server/driver/converter/FluidTank.java)
+
+闭合依据：[build/api-compat-addon/devices/vanilla-20261027-115447/device-results.txt](../build/api-compat-addon/devices/vanilla-20261027-115447/device-results.txt)、[build/api-compat-addon/devices/vanilla-disabled-20261027-115447/device-results.txt](../build/api-compat-addon/devices/vanilla-disabled-20261027-115447/device-results.txt)、[tools/api-compat-addon/src/main/java/ocfixture/VanillaContract.java](../tools/api-compat-addon/src/main/java/ocfixture/VanillaContract.java)
 
 ### I13 · minecraftforge · 已闭合
 

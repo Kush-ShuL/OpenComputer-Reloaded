@@ -182,6 +182,14 @@ published SDK/full-runtime properties above:
 - `-PocFluidOnly=true` runs actual native Lua 5.3 robot/tank/controller operations.
 - `-PocForgeEnergyOnly=true` runs a real charger, a separately registered FE item
   and the registered energy driver against the charger's real capability.
+- `-PocExperienceOnly=true` runs two real native robots for XP consumption,
+  max-level refusal, stored-energy recovery, analyzer events and fractional item
+  tooltips through the actual entrypoints.
+- `-PocGeneratorOnly=true` uses the real upgrade bay, native fuel/container
+  operations and physical removal; a separate actual driver instance measures
+  generation through the public managed-environment update lifecycle.
+- `-PocVanillaOnly=true` verifies callback conversions of actual server worlds,
+  tanks/NBT/items, plus geolyzer and redstone-provider blacklist gates.
 
 Both use `build/api-compat-addon/devices/<id>` and localhost port 25579. They
 reuse existing EULA acceptance, reject an existing world/report, restore their

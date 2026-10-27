@@ -102,6 +102,9 @@ neoForge {
             systemProperty 'ocfixture.driveConcurrencyOnly', providers.gradleProperty('ocDriveConcurrencyOnly').getOrElse('false')
             systemProperty 'ocfixture.fluidOnly', providers.gradleProperty('ocFluidOnly').getOrElse('false')
             systemProperty 'ocfixture.forgeEnergyOnly', providers.gradleProperty('ocForgeEnergyOnly').getOrElse('false')
+            systemProperty 'ocfixture.experienceOnly', providers.gradleProperty('ocExperienceOnly').getOrElse('false')
+            systemProperty 'ocfixture.generatorOnly', providers.gradleProperty('ocGeneratorOnly').getOrElse('false')
+            systemProperty 'ocfixture.vanillaOnly', providers.gradleProperty('ocVanillaOnly').getOrElse('false')
         }
         hostPersistenceServer {
             server()

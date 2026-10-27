@@ -59,7 +59,10 @@ public final class UpgradeExperience extends UpgradeBase {
     private void updateLevel() {
         int previous = level;
         level = calculateLevelFromExperience(experience);
-        if (level != previous && agent instanceof li.cil.oc.api.internal.Robot robot) robot.synchronizeSlot(agent.componentSlot(node().address()));
+        if (level != previous && node().address() != null && agent instanceof li.cil.oc.api.internal.Robot robot) {
+            int slot = agent.componentSlot(node().address());
+            if (slot >= 0) robot.synchronizeSlot(slot);
+        }
         connector().setLocalBufferSize(level * Settings.get().bufferPerLevel);
     }
 

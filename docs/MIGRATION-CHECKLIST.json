@@ -1342,7 +1342,7 @@
       "id": "D47",
       "group": "设备与组件",
       "name": "经验升级",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/UpgradeExperience.scala"
       ],
@@ -1350,16 +1350,22 @@
         "src/main/java/li/cil/oc/server/component/UpgradeExperience.java"
       ],
       "acceptance": [
-        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+        "原经验获得/公式/组件可见性与容量、consume完整吞掉物品、满级拒绝、保存恢复、分析仪事件和物品分数等级接齐；真实原生机器人验证消耗、两个等级状态、XP/地址/1234.5电量恢复、一次真实分析入口及实际物品tooltip。C19多人/C23实屏显示统一跟踪。"
       ],
-      "remaining": "原机器人分析事件和统计、物品分数等级已接齐且Windows编译通过；尚需经验瓶消耗、分析仪可见提示、满级与存储电量恢复的实际验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "build/api-compat-addon/devices/experience-20261027-120333/device-results.txt",
+        "tools/api-compat-addon/src/main/java/ocfixture/ExperienceContract.java",
+        "src/main/java/li/cil/oc/server/component/UpgradeExperience.java",
+        "src/main/java/li/cil/oc/common/init/AgentUpgrades.java",
+        "docs/PORTING.md"
+      ]
     },
     {
       "id": "D48",
       "group": "设备与组件",
       "name": "发电机升级",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/UpgradeGenerator.scala"
       ],
@@ -1367,10 +1373,15 @@
         "src/main/java/li/cil/oc/server/component/UpgradeGenerator.java"
       ],
       "acceptance": [
-        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+        "原燃料队列、容量/类型/零数量参数、容器部分回收和拒绝回退、燃烧/满缓冲计时、原始状态保存及物理移除行为完成。真实原生机器人16库存阶段/世界燃烧/热拔验证，另用真实driver环境的公开update和独立实际connector图证明发电能量，避开创造机器人自动满电干扰。"
       ],
-      "remaining": "本批已修燃料容器实际接收/回退、选中槽顺序、零数量插入及燃烧脏标记；尚需实际容量/容器/燃烧保存流程闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "build/api-compat-addon/devices/generator-20261027-115447/device-results.txt",
+        "tools/api-compat-addon/src/main/java/ocfixture/GeneratorContract.java",
+        "src/main/java/li/cil/oc/server/component/UpgradeGenerator.java",
+        "docs/PORTING.md"
+      ]
     },
     {
       "id": "D49",
@@ -2087,18 +2098,25 @@
       "id": "I12",
       "group": "可选集成",
       "name": "minecraft",
-      "status": "gap",
+      "status": "review",
       "upstream": [
         "src/main/scala/li/cil/oc/integration/minecraft/"
       ],
       "implementation": [
-        "src/main/java/li/cil/oc/common/integration/VanillaDrivers.java"
+        "src/main/java/li/cil/oc/common/integration/VanillaDrivers.java",
+        "src/main/java/li/cil/oc/server/driver/converter/World.java",
+        "src/main/java/li/cil/oc/server/driver/converter/WorldProvider.java",
+        "src/main/java/li/cil/oc/server/driver/converter/FluidTank.java"
       ],
       "acceptance": [
         "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
       ],
-      "remaining": "已有部分原版驱动；ConverterWorld/WorldProvider等原模块功能尚未闭合。",
-      "evidence": []
+      "remaining": "已补World/WorldProvider与现代储罐转换，保留原版三个维度UUID/名称并修复minecraft黑名单在转换、地质事件和普通红石输入的门控；启用/禁用真实场景已过。其他原版驱动、配方平台及自定义维度/客户端级别的整项验收仍待闭合。",
+      "evidence": [
+        "build/api-compat-addon/devices/vanilla-20261027-115447/device-results.txt",
+        "build/api-compat-addon/devices/vanilla-disabled-20261027-115447/device-results.txt",
+        "tools/api-compat-addon/src/main/java/ocfixture/VanillaContract.java"
+      ]
     },
     {
       "id": "I13",

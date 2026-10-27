@@ -215,8 +215,38 @@ items; additional host/mod-container coverage does not claim D15 or D36 complete
 Experience upgrades now fire the original robot-analysis event on the real
 persistent robot host and display the original XP/level summary. Item tooltips
 and Lua use the same fractional-level formula. These D47/T01 changes pass the
-Windows build; consuming XP, visible analysis and stored-energy recovery still
-need their bounded acceptance before D47 closes.
+Windows build. D47 subsequently closed in the Windows native run
+`experience-20261027-120333`: actual bottles and registry-enchanted tools were
+consumed, maximum level refused consumption, a real driver restored XP/fractional
+level/address and 1234.5 local energy, and the real analyzer entrypoint emitted
+one persistent-host event and one correctly formatted XP message. Actual item
+tooltip data matched native fractional level. This exposed and fixed null-address
+slot lookup during initial placement of a valid saved-XP upgrade before its node
+joined a network. Actual remote transport and screen rendering remain C19/C23.
+
+D48 closed in `generator-20261027-115447`: a real installed generator completed
+16 native inventory/resource stages, including container partial acceptance,
+drop remainders, full refusal/rollback and partial fuel removal. The world ticker
+consumed priming fuel and advanced its timer; an independent actual driver and
+connector graph verified configured generation and continuing to burn at full
+capacity through the public update lifecycle. Creative robots automatically
+refill their physical graph, so that graph was not used as generation evidence.
+Registry-aware driver save/load retained the queue/timer/address, and physical
+equipment removal dropped exactly three queued fuels and cleared the removed
+item's saved queue/timer without duplicating containers.
+
+I12 now includes world/provider and per-tank conversions plus the original
+`minecraft` blacklist gates for converters, vanilla geolyzer events and vanilla
+redstone input. The world's `id`/`name` table retains the original double-MD5
+identity for vanilla dimension IDs 0/-1/1. Modern custom dimensions use stable
+namespaced keys in place of removed numeric IDs. The remote-level seed-zero
+fallback follows the original [Forge join-game construction](https://github.com/MinecraftForge/MinecraftForge/blob/1.12.x/patches/minecraft/net/minecraft/client/network/NetHandlerPlayClient.java.patch).
+The Windows `vanilla-20261027-115447` and `vanilla-disabled-20261027-115447` runs
+passed actual callbacks with all three real server dimensions, original UUID/name
+fields, tank/NBT/item conversions, published geolyzer events and real redstone
+input, including explicit blacklist suppression. Provider snapshots additionally
+checked custom key/seed identity without manufacturing test worlds. I12 stays
+open for remaining driver and recipe-platform acceptance.
 
 Program-disk chest generation preserves the original vanilla pool objects and
 enchantment holder ownership. A Windows real-world run generated all four target
