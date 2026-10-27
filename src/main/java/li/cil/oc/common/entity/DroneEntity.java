@@ -48,7 +48,7 @@ public final class DroneEntity extends Entity implements li.cil.oc.api.internal.
     public int energy(){return entityData.get(ENERGY);}
     public int energyCapacity(){return entityData.get(MAX_ENERGY);}
     public int inventoryCapacity(){return entityData.get(CAPACITY);}
-    private void updateCapacity(){int capacity=0;for(ItemStack stack:info.components){var driver=Driver.driverFor(stack,getClass());if(driver instanceof li.cil.oc.api.driver.item.Inventory inventory)capacity+=inventory.inventoryCapacity(stack);}entityData.set(CAPACITY,Math.min(8,capacity));}
+    private void updateCapacity(){int capacity=0;for(ItemStack stack:info.components){var driver=Driver.driverFor(stack,getClass());if(driver instanceof li.cil.oc.api.driver.item.Inventory inventory)capacity+=Math.max(1,inventory.inventoryCapacity(stack)/4);}entityData.set(CAPACITY,Math.min(8,capacity));}
     public String statusText(){return entityData.get(STATUS);}
     public void setStatusText(String text){entityData.set(STATUS,text.lines().limit(2).map(line->line.substring(0,Math.min(10,line.length()))).reduce((a,b)->a+"\n"+b).orElse(""));}
     public int lightColor(){return entityData.get(LIGHT);}

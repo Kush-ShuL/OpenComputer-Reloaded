@@ -51,6 +51,7 @@ repositories {
     mavenCentral()
     maven { url = 'https://maven.squiddev.cc' }
     maven { url = 'https://api.modrinth.com/maven'; content { includeModule 'maven.modrinth', 'jade' } }
+    maven { url = 'https://api.modrinth.com/maven'; content { includeModule 'maven.modrinth', 'tis3d'; includeModule 'maven.modrinth', 'markdownmanual' } }
     maven { url = uri(providers.gradleProperty('ocApiMaven').getOrElse("${repositoryRoot}/build/jitpack-maven")) }
 }
 
@@ -62,12 +63,15 @@ def sdkFile = providers.provider {
 }
 def legacyFile = file(providers.gradleProperty('legacyApiJar').getOrElse("${repositoryRoot}/build/api-compat-addon/legacy-sdk/opencomputers-api-two-arg.jar"))
 def runtimeFile = file(providers.gradleProperty('ocModJar').getOrElse("${repositoryRoot}/build/libs/OpenComputer-Reloaded-0.1.0-SNAPSHOT.jar"))
+def tis3dClientId = providers.gradleProperty('ocTis3dClientRunId').getOrElse('not-selected')
+def tis3dClientDirectory = file("${repositoryRoot}/build/api-compat-addon/tis3d-client/${tis3dClientId}")
+def tis3dClientReport = new File(tis3dClientDirectory, 'manual-results.txt')
 sourceSets {
     legacy { java.srcDir 'src/legacy/java'; resources.srcDirs = [] }
     main { compileClasspath += sourceSets.legacy.output; runtimeClasspath += sourceSets.legacy.output }
 }
 neoForge {
-    version = '21.1.224'
+    version = providers.gradleProperty('ocNeoVersion').getOrElse('21.1.224')
     addModdingDependenciesTo sourceSets.legacy
     runs {
         server {
@@ -82,6 +86,12 @@ neoForge {
             systemProperty 'ocfixture.computerCraftOnly', computerCraftScenario.toString()
         }
         client { client(); gameDirectory = file("${repositoryRoot}/build/api-compat-addon/client-run") }
+        tis3dClient {
+            client()
+            gameDirectory = tis3dClientDirectory
+            systemProperty 'ocfixture.tis3dClient', 'true'
+            systemProperty 'ocfixture.tis3dClientReport', tis3dClientReport.absolutePath
+        }
         persistenceServer {
             server()
             gameDirectory = persistenceDirectory
@@ -106,6 +116,7 @@ neoForge {
             systemProperty 'ocfixture.generatorOnly', providers.gradleProperty('ocGeneratorOnly').getOrElse('false')
             systemProperty 'ocfixture.recipeConfigOnly', providers.gradleProperty('ocRecipeConfigOnly').getOrElse('false')
             systemProperty 'ocfixture.enderIOOnly', providers.gradleProperty('ocEnderIOOnly').getOrElse('false')
+            systemProperty 'ocfixture.tis3dOnly', providers.gradleProperty('ocTis3dOnly').getOrElse('false')
             systemProperty 'ocfixture.vanillaOnly', providers.gradleProperty('ocVanillaOnly').getOrElse('false')
         }
         hostPersistenceServer {
@@ -175,6 +186,8 @@ dependencies {
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-forge-api:1.120.2'
     compileOnly('org.appliedenergistics:appliedenergistics2:19.2.14') { transitive = false }
     compileOnly('maven.modrinth:jade:15.10.0+neoforge') { transitive = false }
+    compileOnly('maven.modrinth:tis3d:MC1.21.1-neoforge-2.0.0') { transitive = false }
+    compileOnly('maven.modrinth:markdownmanual:MC1.21.1-neoforge-1.2.7') { transitive = false }
     legacyCompileOnly files(legacyFile)
     runtimeOnly files(runtimeFile)
     if (providers.gradleProperty('ocComputerCraftJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocComputerCraftJar').get())
@@ -183,10 +196,27 @@ dependencies {
     if (providers.gradleProperty('ocGuideMeJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocGuideMeJar').get())
     if (providers.gradleProperty('ocEnderStorageJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocEnderStorageJar').get())
     if (providers.gradleProperty('ocEnderIOJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocEnderIOJar').get())
+    for (String property : ['ocTis3dJar', 'ocMarkdownManualJar', 'ocArchitecturyJar'])
+        if (providers.gradleProperty(property).isPresent()) runtimeOnly files(providers.gradleProperty(property).get())
     if (providers.gradleProperty('ocCodeChickenLibJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocCodeChickenLibJar').get())
     if (providers.gradleProperty('ocJadeJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocJadeJar').get())
     for (String property : ['ocProjectRedCoreJar', 'ocProjectRedTransmissionJar', 'ocCBMultipartJar'])
         if (providers.gradleProperty(property).isPresent()) runtimeOnly files(providers.gradleProperty(property).get())
+}
+def prepareTis3dClient = tasks.register('prepareTis3dClient') {
+    doLast {
+        if (!providers.gradleProperty('ocTis3dClientRunId').isPresent() || !(tis3dClientId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a fresh -PocTis3dClientRunId=NAME')
+        if (tis3dClientReport.exists() || new File(tis3dClientDirectory, 'logs/latest.log').exists()) throw new GradleException('This TIS-3D client run already exists; select a new run id')
+        tis3dClientDirectory.mkdirs()
+    }
+}
+tasks.matching { it.name == 'runTis3dClient' }.configureEach {
+    dependsOn prepareTis3dClient
+    doLast {
+        if (!tis3dClientReport.isFile() || tis3dClientReport.readLines('UTF-8').first() != 'status=PASS')
+            throw new GradleException("The TIS-3D manual client did not pass; see ${tis3dClientReport}")
+    }
 }
 def prepareJadeRun = tasks.register('prepareJadeRun') {
     outputs.upToDateWhen { false }

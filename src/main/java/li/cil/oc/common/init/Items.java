@@ -312,7 +312,7 @@ public final class Items implements ItemAPI {
         if (existing != null) return existing.createItemStack(1);
         try (InputStream stream = Items.class.getResourceAsStream("/assets/opencomputers/lua/bios.lua")) {
             if (stream == null) throw new IllegalStateException("The original OpenComputers Lua BIOS resource is missing");
-            ItemStack bios = registerEEPROM("EEPROM (Lua BIOS)", stream.readAllBytes(), null, false);
+            ItemStack bios = registerEEPROM("EEPROM (Lua BIOS)", stream.readNBytes(4 * 1024), null, false);
             return registerStack(bios, "luabios");
         } catch (IOException error) { throw new IllegalStateException("Could not read the original Lua BIOS", error); }
     }

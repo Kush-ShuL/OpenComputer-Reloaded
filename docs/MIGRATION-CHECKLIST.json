@@ -533,7 +533,7 @@
       "id": "D01",
       "group": "设备与组件",
       "name": "APU",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/APU.scala"
       ],
@@ -543,8 +543,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/processors.md",
+        "src/main/java/li/cil/oc/server/driver/item/APU.java",
+        "src/main/java/li/cil/oc/server/component/APU.java"
+      ]
     },
     {
       "id": "D02",
@@ -584,7 +588,7 @@
       "id": "D04",
       "group": "设备与组件",
       "name": "CPU",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/CPU.scala"
       ],
@@ -594,8 +598,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/processors.md",
+        "src/main/java/li/cil/oc/server/driver/item/Processor.java",
+        "src/main/java/li/cil/oc/common/item/ComponentItem.java"
+      ]
     },
     {
       "id": "D05",
@@ -798,7 +806,7 @@
       "id": "D16",
       "group": "设备与组件",
       "name": "EEPROM",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/EEPROM.scala"
       ],
@@ -808,8 +816,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/eeprom.md",
+        "src/main/java/li/cil/oc/server/component/EEPROM.java",
+        "src/main/java/li/cil/oc/common/init/Items.java"
+      ]
     },
     {
       "id": "D17",
@@ -922,9 +934,11 @@
       "id": "D23",
       "group": "设备与组件",
       "name": "内存",
-      "status": "review",
+      "status": "complete",
       "upstream": [
-        "src/main/scala/li/cil/oc/server/component/Memory.scala"
+        "src/main/scala/li/cil/oc/server/component/Memory.scala",
+        "src/main/scala/li/cil/oc/integration/opencomputers/DriverMemory.scala",
+        "src/main/scala/li/cil/oc/common/item/Memory.scala"
       ],
       "implementation": [
         "src/main/java/li/cil/oc/server/driver/item/Memory.java"
@@ -932,8 +946,14 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/memory.md",
+        "src/main/java/li/cil/oc/server/driver/item/Memory.java",
+        "src/main/java/li/cil/oc/common/init/Items.java",
+        "src/main/java/li/cil/oc/server/machine/luac/NativeLuaArchitecture.java",
+        "src/main/java/li/cil/oc/server/machine/luaj/LuaJLuaArchitecture.java"
+      ]
     },
     {
       "id": "D24",
@@ -1713,18 +1733,23 @@
       "id": "T06",
       "group": "工具与附加玩法",
       "name": "悬浮靴",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/HoverBoots.scala"
       ],
       "implementation": [
-        "src/main/java/li/cil/oc/common/item/HoverBootsItem.java"
+        "src/main/java/li/cil/oc/common/item/HoverBootsItem.java",
+        "src/main/java/li/cil/oc/common/event/HoverBootsHandler.java"
       ],
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "充电、悬浮/跌落、耐久和装备交互待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/hoverboots.md",
+        "src/main/java/li/cil/oc/common/init/MiscDevices.java",
+        "src/main/java/li/cil/oc/common/event/HoverBootsHandler.java"
+      ]
     },
     {
       "id": "T07",
@@ -1747,7 +1772,7 @@
       "id": "T08",
       "group": "工具与附加玩法",
       "name": "物品栏升级",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/UpgradeInventory.scala"
       ],
@@ -1757,14 +1782,20 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "升级容量、插槽增减与多升级组合的原规则待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/capacity-upgrades.md",
+        "src/main/java/li/cil/oc/server/driver/item/InventoryUpgrade.java",
+        "src/main/java/li/cil/oc/server/agent/InventoryUpgradeCapacity.java",
+        "src/main/java/li/cil/oc/server/agent/RobotController.java",
+        "src/main/java/li/cil/oc/common/entity/DroneEntity.java"
+      ]
     },
     {
       "id": "T09",
       "group": "工具与附加玩法",
       "name": "扩展卡容器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/UpgradeContainerCard.scala"
       ],
@@ -1774,14 +1805,18 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "各等级合法插槽与卸载/热插拔流程待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/component-containers.md",
+        "src/main/java/li/cil/oc/server/driver/item/AgentUpgrade.java",
+        "src/main/java/li/cil/oc/common/item/AgentUpgradeItem.java"
+      ]
     },
     {
       "id": "T10",
       "group": "工具与附加玩法",
       "name": "扩展升级容器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/UpgradeContainerUpgrade.scala"
       ],
@@ -1791,14 +1826,18 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "各等级合法升级与卸载/热插拔流程待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/component-containers.md",
+        "src/main/java/li/cil/oc/server/driver/item/AgentUpgrade.java",
+        "src/main/java/li/cil/oc/common/item/AgentUpgradeItem.java"
+      ]
     },
     {
       "id": "T11",
       "group": "工具与附加玩法",
       "name": "组件总线",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/ComponentBus.scala"
       ],
@@ -1808,8 +1847,12 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "各级组件容量与服务器实际限制待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/capacity-upgrades.md",
+        "src/main/java/li/cil/oc/server/driver/item/ComponentBus.java",
+        "src/main/java/li/cil/oc/server/machine/Machine.java"
+      ]
     },
     {
       "id": "T12",
@@ -1854,7 +1897,7 @@
       "id": "T14",
       "group": "工具与附加玩法",
       "name": "季节礼物",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/Present.scala"
       ],
@@ -1864,14 +1907,18 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "原日期、概率/奖励和使用行为待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/seasonal-and-endstone.md",
+        "src/main/java/li/cil/oc/common/item/PresentItem.java",
+        "src/main/java/li/cil/oc/common/MiscEvents.java"
+      ]
     },
     {
       "id": "T15",
       "group": "工具与附加玩法",
       "name": "人工末地石",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/block/"
       ],
@@ -1881,8 +1928,13 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "原生成/特殊行为、掉落与配方闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/seasonal-and-endstone.md",
+        "src/main/java/li/cil/oc/common/init/MiscDevices.java",
+        "src/main/resources/data/opencomputers/loot_table/blocks/endstone.json",
+        "src/main/resources/data/opencomputers/recipe/default/endstone.json"
+      ]
     },
     {
       "id": "T16",
@@ -2207,7 +2259,7 @@
       "id": "I17",
       "group": "可选集成",
       "name": "tis3d",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/integration/tis3d/"
       ],
@@ -2217,9 +2269,14 @@
       "acceptance": [
         "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
       ],
-      "remaining": "串行接口注册、16位收发队列、读取开关、重置、持久化和手册桥已用Java接入；官方TIS-3D 2.0.0要求NeoForge至少21.1.248，待在兼容版本完成实际串行收发及手册验证。",
+      "remaining": "",
       "evidence": [
-        "docs/tis3d-integration.md"
+        "docs/tis3d-integration.md",
+        "tools/api-compat-addon/src/main/java/ocfixture/Tis3dContract.java",
+        "tools/api-compat-addon/src/main/java/ocfixture/Tis3dClientContract.java",
+        "build/api-compat-addon/devices/tis3d-20261027-1300/device-results.txt",
+        "build/api-compat-addon/devices/tis3d-disabled-20261027-1306/device-results.txt",
+        "build/launch-support/tis3d-client-manual-20261027-1320.txt"
       ]
     },
     {

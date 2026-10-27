@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 24 项，剩余 96 项。**
+**总计 120 项，已闭合 36 项，剩余 84 项。**
 
-剩余包括：已有实现待核对/验收 88 项，有明确缺口 8 项。
+剩余包括：已有实现待核对/验收 76 项，有明确缺口 8 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -28,9 +28,9 @@
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
 | 基础与交付 | 24 | 13 | 11 |
-| 设备与组件 | 61 | 6 | 55 |
-| 工具与附加玩法 | 16 | 0 | 16 |
-| 可选集成 | 19 | 5 | 14 |
+| 设备与组件 | 61 | 10 | 51 |
+| 工具与附加玩法 | 16 | 7 | 9 |
+| 可选集成 | 19 | 6 | 13 |
 
 ## 范围归属
 
@@ -287,15 +287,15 @@
 
 ## 设备与组件
 
-### D01 · APU · 已有实现，待核对/验收
+### D01 · APU · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/APU.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/APU.java](../src/main/java/li/cil/oc/server/component/APU.java)
+
+闭合依据：[docs/processors.md](../docs/processors.md)、[src/main/java/li/cil/oc/server/driver/item/APU.java](../src/main/java/li/cil/oc/server/driver/item/APU.java)、[src/main/java/li/cil/oc/server/component/APU.java](../src/main/java/li/cil/oc/server/component/APU.java)
 
 ### D02 · 适配器 · 已有实现，待核对/验收
 
@@ -317,15 +317,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/AssemblerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/AssemblerBlockEntity.java)
 
-### D04 · CPU · 已有实现，待核对/验收
+### D04 · CPU · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/CPU.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/driver/item/Processor.java](../src/main/java/li/cil/oc/server/driver/item/Processor.java)
+
+闭合依据：[docs/processors.md](../docs/processors.md)、[src/main/java/li/cil/oc/server/driver/item/Processor.java](../src/main/java/li/cil/oc/server/driver/item/Processor.java)、[src/main/java/li/cil/oc/common/item/ComponentItem.java](../src/main/java/li/cil/oc/common/item/ComponentItem.java)
 
 ### D05 · 线缆 · 已有实现，待核对/验收
 
@@ -437,15 +437,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/entity/DroneEntity.java](../src/main/java/li/cil/oc/common/entity/DroneEntity.java)、[src/main/java/li/cil/oc/server/component/Drone.java](../src/main/java/li/cil/oc/server/component/Drone.java)
 
-### D16 · EEPROM · 已有实现，待核对/验收
+### D16 · EEPROM · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/EEPROM.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/EEPROM.java](../src/main/java/li/cil/oc/server/component/EEPROM.java)
+
+闭合依据：[docs/eeprom.md](../docs/eeprom.md)、[src/main/java/li/cil/oc/server/component/EEPROM.java](../src/main/java/li/cil/oc/server/component/EEPROM.java)、[src/main/java/li/cil/oc/common/init/Items.java](../src/main/java/li/cil/oc/common/init/Items.java)
 
 ### D17 · 地质分析仪 · 已有实现，待核对/验收
 
@@ -507,15 +507,15 @@
 
 当前接入：[src/main/java/li/cil/oc/server/component/LinkedCard.java](../src/main/java/li/cil/oc/server/component/LinkedCard.java)
 
-### D23 · 内存 · 已有实现，待核对/验收
+### D23 · 内存 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
-
-原版范围：`src/main/scala/li/cil/oc/server/component/Memory.scala`
+原版范围：`src/main/scala/li/cil/oc/server/component/Memory.scala`、`src/main/scala/li/cil/oc/integration/opencomputers/DriverMemory.scala`、`src/main/scala/li/cil/oc/common/item/Memory.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/driver/item/Memory.java](../src/main/java/li/cil/oc/server/driver/item/Memory.java)
+
+闭合依据：[docs/memory.md](../docs/memory.md)、[src/main/java/li/cil/oc/server/driver/item/Memory.java](../src/main/java/li/cil/oc/server/driver/item/Memory.java)、[src/main/java/li/cil/oc/common/init/Items.java](../src/main/java/li/cil/oc/common/init/Items.java)、[src/main/java/li/cil/oc/server/machine/luac/NativeLuaArchitecture.java](../src/main/java/li/cil/oc/server/machine/luac/NativeLuaArchitecture.java)、[src/main/java/li/cil/oc/server/machine/luaj/LuaJLuaArchitecture.java](../src/main/java/li/cil/oc/server/machine/luaj/LuaJLuaArchitecture.java)
 
 ### D24 · 微控制器 · 已有实现，待核对/验收
 
@@ -950,15 +950,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/item/TexturePickerItem.java](../src/main/java/li/cil/oc/common/item/TexturePickerItem.java)
 
-### T06 · 悬浮靴 · 已有实现，待核对/验收
+### T06 · 悬浮靴 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
 
-剩余：充电、悬浮/跌落、耐久和装备交互待闭合。
-
 原版范围：`src/main/scala/li/cil/oc/common/item/HoverBoots.scala`
 
-当前接入：[src/main/java/li/cil/oc/common/item/HoverBootsItem.java](../src/main/java/li/cil/oc/common/item/HoverBootsItem.java)
+当前接入：[src/main/java/li/cil/oc/common/item/HoverBootsItem.java](../src/main/java/li/cil/oc/common/item/HoverBootsItem.java)、[src/main/java/li/cil/oc/common/event/HoverBootsHandler.java](../src/main/java/li/cil/oc/common/event/HoverBootsHandler.java)
+
+闭合依据：[docs/hoverboots.md](../docs/hoverboots.md)、[src/main/java/li/cil/oc/common/init/MiscDevices.java](../src/main/java/li/cil/oc/common/init/MiscDevices.java)、[src/main/java/li/cil/oc/common/event/HoverBootsHandler.java](../src/main/java/li/cil/oc/common/event/HoverBootsHandler.java)
 
 ### T07 · 悬浮升级 · 已有实现，待核对/验收
 
@@ -970,45 +970,45 @@
 
 当前接入：[src/main/java/li/cil/oc/common/item/FunctionalUpgradeItem.java](../src/main/java/li/cil/oc/common/item/FunctionalUpgradeItem.java)
 
-### T08 · 物品栏升级 · 已有实现，待核对/验收
+### T08 · 物品栏升级 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：升级容量、插槽增减与多升级组合的原规则待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/UpgradeInventory.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/agent/RobotController.java](../src/main/java/li/cil/oc/server/agent/RobotController.java)
 
-### T09 · 扩展卡容器 · 已有实现，待核对/验收
+闭合依据：[docs/capacity-upgrades.md](../docs/capacity-upgrades.md)、[src/main/java/li/cil/oc/server/driver/item/InventoryUpgrade.java](../src/main/java/li/cil/oc/server/driver/item/InventoryUpgrade.java)、[src/main/java/li/cil/oc/server/agent/InventoryUpgradeCapacity.java](../src/main/java/li/cil/oc/server/agent/InventoryUpgradeCapacity.java)、[src/main/java/li/cil/oc/server/agent/RobotController.java](../src/main/java/li/cil/oc/server/agent/RobotController.java)、[src/main/java/li/cil/oc/common/entity/DroneEntity.java](../src/main/java/li/cil/oc/common/entity/DroneEntity.java)
+
+### T09 · 扩展卡容器 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：各等级合法插槽与卸载/热插拔流程待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/UpgradeContainerCard.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/init/Agents.java](../src/main/java/li/cil/oc/common/init/Agents.java)
 
-### T10 · 扩展升级容器 · 已有实现，待核对/验收
+闭合依据：[docs/component-containers.md](../docs/component-containers.md)、[src/main/java/li/cil/oc/server/driver/item/AgentUpgrade.java](../src/main/java/li/cil/oc/server/driver/item/AgentUpgrade.java)、[src/main/java/li/cil/oc/common/item/AgentUpgradeItem.java](../src/main/java/li/cil/oc/common/item/AgentUpgradeItem.java)
+
+### T10 · 扩展升级容器 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：各等级合法升级与卸载/热插拔流程待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/UpgradeContainerUpgrade.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/init/Agents.java](../src/main/java/li/cil/oc/common/init/Agents.java)
 
-### T11 · 组件总线 · 已有实现，待核对/验收
+闭合依据：[docs/component-containers.md](../docs/component-containers.md)、[src/main/java/li/cil/oc/server/driver/item/AgentUpgrade.java](../src/main/java/li/cil/oc/server/driver/item/AgentUpgrade.java)、[src/main/java/li/cil/oc/common/item/AgentUpgradeItem.java](../src/main/java/li/cil/oc/common/item/AgentUpgradeItem.java)
+
+### T11 · 组件总线 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：各级组件容量与服务器实际限制待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/ComponentBus.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/item/ComponentBusItem.java](../src/main/java/li/cil/oc/common/item/ComponentBusItem.java)
+
+闭合依据：[docs/capacity-upgrades.md](../docs/capacity-upgrades.md)、[src/main/java/li/cil/oc/server/driver/item/ComponentBus.java](../src/main/java/li/cil/oc/server/driver/item/ComponentBus.java)、[src/main/java/li/cil/oc/server/machine/Machine.java](../src/main/java/li/cil/oc/server/machine/Machine.java)
 
 ### T12 · 无线终端及终端服务器 · 已有实现，待核对/验收
 
@@ -1030,25 +1030,25 @@
 
 当前接入：[src/main/java/li/cil/oc/common/nanomachines/](../src/main/java/li/cil/oc/common/nanomachines/)
 
-### T14 · 季节礼物 · 已有实现，待核对/验收
+### T14 · 季节礼物 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：原日期、概率/奖励和使用行为待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/Present.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/item/PresentItem.java](../src/main/java/li/cil/oc/common/item/PresentItem.java)
 
-### T15 · 人工末地石 · 已有实现，待核对/验收
+闭合依据：[docs/seasonal-and-endstone.md](../docs/seasonal-and-endstone.md)、[src/main/java/li/cil/oc/common/item/PresentItem.java](../src/main/java/li/cil/oc/common/item/PresentItem.java)、[src/main/java/li/cil/oc/common/MiscEvents.java](../src/main/java/li/cil/oc/common/MiscEvents.java)
+
+### T15 · 人工末地石 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：原生成/特殊行为、掉落与配方闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/block/`
 
 当前接入：[src/main/java/li/cil/oc/common/init/MiscDevices.java](../src/main/java/li/cil/oc/common/init/MiscDevices.java)
+
+闭合依据：[docs/seasonal-and-endstone.md](../docs/seasonal-and-endstone.md)、[src/main/java/li/cil/oc/common/init/MiscDevices.java](../src/main/java/li/cil/oc/common/init/MiscDevices.java)、[src/main/resources/data/opencomputers/loot_table/blocks/endstone.json](../src/main/resources/data/opencomputers/loot_table/blocks/endstone.json)、[src/main/resources/data/opencomputers/recipe/default/endstone.json](../src/main/resources/data/opencomputers/recipe/default/endstone.json)
 
 ### T16 · 合成材料、机壳与墨盒耗材 · 已有实现，待核对/验收
 
@@ -1211,17 +1211,15 @@
 
 原版范围：`src/main/scala/li/cil/oc/integration/thaumcraft/`
 
-### I17 · tis3d · 已有实现，待核对/验收
+### I17 · tis3d · 已闭合
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
-
-剩余：串行接口注册、16位收发队列、读取开关、重置、持久化和手册桥已用Java接入；官方TIS-3D 2.0.0要求NeoForge至少21.1.248，待在兼容版本完成实际串行收发及手册验证。
 
 原版范围：`src/main/scala/li/cil/oc/integration/tis3d/`
 
 当前接入：[src/main/java/li/cil/oc/common/integration/tis3d/](../src/main/java/li/cil/oc/common/integration/tis3d/)
 
-闭合依据：[docs/tis3d-integration.md](../docs/tis3d-integration.md)
+闭合依据：[docs/tis3d-integration.md](../docs/tis3d-integration.md)、[tools/api-compat-addon/src/main/java/ocfixture/Tis3dContract.java](../tools/api-compat-addon/src/main/java/ocfixture/Tis3dContract.java)、[tools/api-compat-addon/src/main/java/ocfixture/Tis3dClientContract.java](../tools/api-compat-addon/src/main/java/ocfixture/Tis3dClientContract.java)、[build/api-compat-addon/devices/tis3d-20261027-1300/device-results.txt](../build/api-compat-addon/devices/tis3d-20261027-1300/device-results.txt)、[build/api-compat-addon/devices/tis3d-disabled-20261027-1306/device-results.txt](../build/api-compat-addon/devices/tis3d-disabled-20261027-1306/device-results.txt)、[build/launch-support/tis3d-client-manual-20261027-1320.txt](../build/launch-support/tis3d-client-manual-20261027-1320.txt)
 
 ### I18 · waila → Jade · 已有实现，待核对/验收
 

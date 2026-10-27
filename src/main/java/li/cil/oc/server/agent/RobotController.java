@@ -66,7 +66,7 @@ public final class RobotController implements li.cil.oc.api.internal.Robot,Agent
     @Override public Container mainInventory(){return inventory;}
     @Override public MultiTank tank(){return runtime;}
     @Override public int selectedSlot(){return selected;}
-    @Override public void setSelectedSlot(int slot){selected=Math.max(0,Math.min(inventory.getContainerSize()-1,slot));synchronize();}
+    @Override public void setSelectedSlot(int slot){selected=Math.min(Math.max(0,slot),inventory.getContainerSize()-1);synchronize();}
     @Override public int selectedTank(){return tank;}
     @Override public void setSelectedTank(int index){tank=index;markChanged();}
     @Override public Player player(){return runtime.player().orient(facing(),false);}
@@ -87,14 +87,14 @@ public final class RobotController implements li.cil.oc.api.internal.Robot,Agent
     @Override public int componentSlot(String address){return runtime.componentSlot(address);}
     @Override public void inventoryChanged(){markChanged();if(machine()!=null)machine().signal("inventory_changed",selected+1);}
     private void beforeEquipmentChange(int slot){if(slot>0&&!loading&&runtime.initialized()){equipmentMutation=true;runtime.removeComponent(slot);}}
-    private void equipmentChanged(){boolean componentsChanged=equipmentMutation;equipmentMutation=false;for(int slot=1;slot<4;slot++){ItemStack current=equipment.items.get(slot);if(installedEquipment[slot-1]!=current){componentsChanged=true;installedEquipment[slot-1]=current;}}if(componentsChanged&&!loading&&runtime.initialized())runtime.rebuild();inventoryChanged();synchronize();}
+    private void equipmentChanged(){boolean componentsChanged=equipmentMutation;equipmentMutation=false;for(int slot=1;slot<4;slot++){ItemStack current=equipment.items.get(slot);if(installedEquipment[slot-1]!=current){componentsChanged=true;installedEquipment[slot-1]=current;}}if(componentsChanged&&!loading&&runtime.initialized())runtime.rebuild();InventoryUpgradeCapacity.reconcileRobot(this);inventoryChanged();synchronize();}
     @Override public void synchronize(){markChanged();if(world()!=null&&!world().isClientSide)proxy.synchronize();}
     @Override public void animate(double seconds,int kind){animationTotal=animationTicks=Math.max(1,(int)Math.ceil(seconds*20));animationKind=kind;synchronize();}
     public void tick(){
         if(animationTicks>0&&--animationTicks==0){animationKind=0;moveFrom=null;}
         if(world()==null||world().isClientSide)return;
         if(dirty.getAndSet(false))proxy.setChanged();runtime.tick();redstone.tick();
-        for(int slot=inventoryCapacityRaw();slot<inventory.items.size();slot++)if(!inventory.items.get(slot).isEmpty()){li.cil.oc.util.InventoryUtils.spawnStackInWorld(world(),blockPosition(),inventory.items.get(slot),null);inventory.items.set(slot,ItemStack.EMPTY);markChanged();}
+        InventoryUpgradeCapacity.reconcileRobot(this);
         boolean running=machine().isRunning();proxy.clientRunning=running;
         redstone.setEnabled(running&&componentStacks().stream().anyMatch(slot->Driver.driverFor(slot.stack(),getClass()) instanceof li.cil.oc.server.driver.item.RedstoneCard));
         if(tier()==3&&runtime.control()!=null)runtime.control().node().changeBuffer(Double.POSITIVE_INFINITY);

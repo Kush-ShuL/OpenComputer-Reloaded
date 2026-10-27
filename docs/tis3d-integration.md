@@ -45,8 +45,8 @@ transfer completion and cancellation.
 
 ## Optional loading and registration
 
-Root startup must call this once in the OC constructor, after loading settings
-and before registry events:
+OC calls this once in its constructor, after loading settings and before
+registry events:
 
 ```java
 li.cil.oc.common.integration.tis3d.Tis3dIntegration.register(modBus);
@@ -134,11 +134,25 @@ tis3d-MC1.21.1-neoforge-2.0.0+fff58fd.jar
 a54c0089453195bdb49d24fc0c18ff510a3fb01d8a9e411621f83c4f3ad496512d0fb34a251423621c8abf04051fe7fc6c491560d0e535a91065c038a96ac237
 ```
 
-## Validation boundary
+## Validation
 
 I17 has compiled in the Windows Java 21 build against the official TIS-3D and
-MarkdownManual releases. Runtime acceptance must use a compatible
-NeoForge version of at least 21.1.248 with the required Architectury and
-MarkdownManual runtimes. No base project version was changed. Serial transfer,
-queue pressure, reset/reconnect, persistence and the manual link still require
-their finite runtime acceptance before I17 is marked complete.
+MarkdownManual releases. Windows NeoForge 21.1.250 loaded the official TIS-3D
+2.0.0, Architectury 13.0.11 and MarkdownManual 1.2.7 runtimes.
+
+The real server run `tis3d-20261027-1300` passed registered provider discovery,
+all adapter sides, actual OC case-context callbacks, signed 16-bit values,
+128-entry FIFO pressure, read enable/cancellation, non-consuming peek, skip,
+reset, node/queue persistence, graph reconnection and removal invalidation.
+`tis3d-disabled-20261027-1306` confirmed that `integration.modBlacklist=[tis3d]`
+omits OC's provider from the actual TIS-3D registry.
+
+Reports are in `build/api-compat-addon/devices/<run>/device-results.txt`.
+The base mod still supports NeoForge 21.1.224; TIS-3D's own dependency metadata
+requires NeoForge 21.1.248 or later.
+
+The Windows client run `manual-20261027-1320` passed actual OC document-provider
+registration and matching against `tis3d:manual`, provider/manual reads of the
+English, Chinese and Russian protocol pages, and the generated TIS-3D protocol
+index link through `manual.resolve` and `manual.documentFor`. The client closed
+normally after writing `build/launch-support/tis3d-client-manual-20261027-1320.txt`.

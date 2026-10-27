@@ -1,7 +1,6 @@
 package li.cil.oc.common.init;
 
 import java.util.function.Supplier;
-import li.cil.oc.Settings;
 import li.cil.oc.common.item.HoverBootsItem;
 import li.cil.oc.common.item.PresentItem;
 import net.minecraft.core.registries.Registries;
@@ -12,14 +11,13 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /** The original remaining ordinary block, seasonal item and wearable hardware. */
 public final class MiscDevices {
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, "opencomputers");
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, "opencomputers");
-    public static final Supplier<Block> ENDSTONE = BLOCKS.register("endstone", () -> new Block(BlockBehaviour.Properties.of().strength(3, net.minecraft.world.level.block.Blocks.END_STONE.getExplosionResistance()).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+    public static final Supplier<Block> ENDSTONE = BLOCKS.register("endstone", () -> new Block(BlockBehaviour.Properties.of().strength(3, net.minecraft.world.level.block.Blocks.END_STONE.getExplosionResistance()).sound(SoundType.STONE).isValidSpawn((state, level, pos, type) -> false)));
     public static final Supplier<BlockItem> ENDSTONE_ITEM = ITEMS.register("endstone", () -> new BlockItem(ENDSTONE.get(), new Item.Properties()));
     public static final Supplier<HoverBootsItem> HOVER_BOOTS = ITEMS.register("hoverboots", () -> new HoverBootsItem(new Item.Properties()));
     public static final Supplier<PresentItem> PRESENT = ITEMS.register("present", () -> new PresentItem(new Item.Properties()));
@@ -36,25 +34,12 @@ public final class MiscDevices {
         BLOCKS.register(bus); ITEMS.register(bus);
         bus.addListener(MiscDevices::capabilities);
         NeoForge.EVENT_BUS.register(li.cil.oc.common.MiscEvents.class);
+        NeoForge.EVENT_BUS.register(li.cil.oc.common.event.HoverBootsHandler.class);
         if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) li.cil.oc.client.MiscClient.register(bus);
     }
     private static void capabilities(RegisterCapabilitiesEvent event) {
-        event.registerItem(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM, (stack, context) -> li.cil.oc.common.capabilities.ExternalPower.expose(() -> new IEnergyStorage() {
-            private double ratio() { return Settings.get().ratioForgeEnergy; }
-            @Override public int receiveEnergy(int amount, boolean simulate) {
-                synchronized (stack) {
-                    if (amount <= 0 || ratio() <= 0) return 0;
-                    HoverBootsItem item = HOVER_BOOTS.get();
-                    int accepted = (int) Math.min(amount, Math.floor((item.maxCharge(stack) - item.getCharge(stack)) * ratio() + 1e-9));
-                    if (!simulate && accepted > 0) item.charge(stack, accepted / ratio(), false);
-                    return Math.max(0, accepted);
-                }
-            }
-            @Override public int extractEnergy(int amount, boolean simulate) { return 0; }
-            @Override public int getEnergyStored() { return (int) Math.min(Integer.MAX_VALUE, HOVER_BOOTS.get().getCharge(stack) * ratio()); }
-            @Override public int getMaxEnergyStored() { return (int) Math.min(Integer.MAX_VALUE, HOVER_BOOTS.get().maxCharge(stack) * ratio()); }
-            @Override public boolean canExtract() { return false; }
-            @Override public boolean canReceive() { return true; }
-        }), HOVER_BOOTS.get());
+        event.registerItem(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM,
+                (stack, context) -> li.cil.oc.common.capabilities.ExternalPower.expose(() -> HOVER_BOOTS.get().energyStorage(stack)),
+                HOVER_BOOTS.get());
     }
 }

@@ -15,7 +15,8 @@ import net.minecraft.world.item.ItemStack;
 public final class Memory extends ItemDriver implements li.cil.oc.api.driver.item.Memory, CallBudget {
     @Override protected boolean supports(ComponentItem item) { return item.kind() == ComponentItem.Kind.MEMORY; }
     @Override public String slot(ItemStack stack) { return Slot.Memory; }
-    @Override public double amount(ItemStack stack) { return Settings.get().ramSizes[item(stack).level()]; }
+    @Override public double amount(ItemStack stack) { return worksWith(stack) ? Settings.get().ramSizes[item(stack).level()] : 0; }
+    @Override public int tier(ItemStack stack) { return worksWith(stack) ? item(stack).tier() : 0; }
     @Override public double getCallBudget(ItemStack stack) { return Settings.get().callBudgets[tier(stack)]; }
     @Override public ManagedEnvironment createEnvironment(ItemStack stack, EnvironmentHost host) { return new MemoryEnvironment(tier(stack)); }
     private static final class MemoryEnvironment extends AbstractManagedEnvironment implements DeviceInfo {

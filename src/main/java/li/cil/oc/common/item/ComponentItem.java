@@ -118,9 +118,10 @@ public final class ComponentItem extends Item implements Tiered {
                     int index = architectures.indexOf(processor.architecture(stack));
                     var next = architectures.get((index + 1) % architectures.size());
                     processor.setArchitecture(stack, next);
+                    player.getInventory().setChanged();
                     player.displayClientMessage(Component.translatable("oc:tooltip.cpu.Architecture", li.cil.oc.api.Machine.getArchitectureName(next)), false);
-                    player.swing(hand);
                 }
+                player.swing(hand);
             }
         } else if (storage() && !player.isShiftKeyDown() && level.isClientSide
                 && !stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag().contains("oc:lootFactory")) {

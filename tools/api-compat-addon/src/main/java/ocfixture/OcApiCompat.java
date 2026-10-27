@@ -33,6 +33,8 @@ public final class OcApiCompat {
     private static final AtomicBoolean AUTOMATED = new AtomicBoolean();
     private static boolean finished;
     public OcApiCompat(IEventBus bus) {
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT
+                && Boolean.getBoolean("ocfixture.tis3dClient")) Tis3dClientContract.register();
         FixtureBlocks.register(bus);
         ForgeEnergyContract.register(bus);
         GeneratorContract.register(bus);
