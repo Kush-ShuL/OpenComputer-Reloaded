@@ -11,7 +11,8 @@ import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 /** Persistent fluid storage exposed through the agent's MultiTank. */
 public final class UpgradeTank extends UpgradeBase implements IFluidTank {
     private final FluidTank tank=new FluidTank(16000);
-    public UpgradeTank(EnvironmentHost host){super(host,null,"Tank upgrade","FluidStore",false);setNode(li.cil.oc.api.Network.newNode(this,Visibility.None).create());}
+    public UpgradeTank(EnvironmentHost host){super(host,null,"Tank upgrade","Superblubb V10",false);setNode(li.cil.oc.api.Network.newNode(this,Visibility.None).create());}
+    @Override public java.util.Map<String,String> getDeviceInfo(){var info=new java.util.HashMap<>(super.getDeviceInfo());info.put("capacity",Integer.toString(getCapacity()));return java.util.Map.copyOf(info);}
     public FluidStack getFluid(){return tank.getFluid();}
     public int getFluidAmount(){return tank.getFluidAmount();}
     public int getCapacity(){return tank.getCapacity();}

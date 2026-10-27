@@ -775,7 +775,7 @@
       "id": "D15",
       "group": "设备与组件",
       "name": "无人机",
-      "status": "gap",
+      "status": "review",
       "upstream": [
         "src/main/scala/li/cil/oc/common/entity/Drone.scala",
         "src/main/scala/li/cil/oc/server/component/Drone.scala"
@@ -787,7 +787,7 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "共享 Agent 流体控制缺原版跨罐交换/空罐和默认比较语义。",
+      "remaining": "共享流体控制缺口已修，Robot原生路径通过；仍需本族其他公开飞行/动作与行为核对，未宣称Drone流体或整族验收完成。",
       "evidence": []
     },
     {
@@ -1149,7 +1149,7 @@
       "id": "D36",
       "group": "设备与组件",
       "name": "机器人",
-      "status": "gap",
+      "status": "review",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Robot.scala",
         "src/main/scala/li/cil/oc/common/tileentity/RobotProxy.scala",
@@ -1163,7 +1163,7 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "共享 Agent 流体控制缺原版跨罐交换/空罐和默认比较语义。",
+      "remaining": "跨罐交换、空罐和世界流体控制已由真实Robot原生Lua通过；其余机器人动作、交互与原版差异核对仍待闭合。",
       "evidence": []
     },
     {
@@ -1221,7 +1221,7 @@
       "id": "D40",
       "group": "设备与组件",
       "name": "转运器",
-      "status": "gap",
+      "status": "review",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Transposer.scala",
         "src/main/scala/li/cil/oc/server/component/Transposer.scala"
@@ -1233,7 +1233,7 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "外部储罐可选索引对显式nil的校验与原版不一致。",
+      "remaining": "外部储罐显式nil参数已恢复原版严格校验；转运器物品/流体搬运及数据库的整族实际操作验收仍待闭合。",
       "evidence": []
     },
     {
@@ -1342,7 +1342,7 @@
       "id": "D47",
       "group": "设备与组件",
       "name": "经验升级",
-      "status": "gap",
+      "status": "review",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/UpgradeExperience.scala"
       ],
@@ -1352,7 +1352,7 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "RobotAnalyzeEvent 发射/经验统计提示尚未接齐，物品等级提示有差异；本批已修部分公式与恢复。",
+      "remaining": "原机器人分析事件和统计、物品分数等级已接齐且Windows编译通过；尚需经验瓶消耗、分析仪可见提示、满级与存储电量恢复的实际验收。",
       "evidence": []
     },
     {
@@ -1497,7 +1497,7 @@
       "id": "D56",
       "group": "设备与组件",
       "name": "储罐升级",
-      "status": "gap",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/UpgradeTank.scala"
       ],
@@ -1505,16 +1505,21 @@
         "src/main/java/li/cil/oc/server/component/UpgradeTank.java"
       ],
       "acceptance": [
-        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+        "原16,000mB容量、产品/容量信息、模拟不变、执行正负事件（来源地址+一基索引+delta）、FluidStack组件与节点的注册表保存恢复闭合；真实原生Robot验证。跨宿主生命周期归C12，GUI/多人归C20/C23/C19。"
       ],
-      "remaining": "设备信息产品名和capacity字段与原版不同。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "build/api-compat-addon/devices/agent-fluid-20261027-112607/device-results.txt",
+        "tools/api-compat-addon/src/main/java/ocfixture/AgentFluidContract.java",
+        "src/main/java/li/cil/oc/server/component/UpgradeTank.java",
+        "docs/PORTING.md"
+      ]
     },
     {
       "id": "D57",
       "group": "设备与组件",
       "name": "流体控制器",
-      "status": "gap",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/UpgradeTankController.scala"
       ],
@@ -1522,10 +1527,15 @@
         "src/main/java/li/cil/oc/server/component/UpgradeTankController.java"
       ],
       "acceptance": [
-        "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
+        "原公开十个控制器回调的接入、参数/缺省/显式nil及空罐语义完成；原生真实Robot调用外部源水查询、内部罐查询、容器查询和桶fill/drain，模拟/资源数量与无罐分支通过。标准IFluidHandlerItem负责可处理堆叠限制，实际两桶拒绝不丢物；不要求穷举外部mod自身容器实现。"
       ],
-      "remaining": "默认无储罐查询及外部索引/自定义堆叠容器行为仍有差异。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "build/api-compat-addon/devices/agent-fluid-20261027-112607/device-results.txt",
+        "tools/api-compat-addon/src/main/java/ocfixture/AgentFluidContract.java",
+        "src/main/java/li/cil/oc/server/component/UpgradeTankController.java",
+        "docs/PORTING.md"
+      ]
     },
     {
       "id": "D58",
@@ -1600,7 +1610,7 @@
       "id": "T01",
       "group": "工具与附加玩法",
       "name": "分析仪",
-      "status": "gap",
+      "status": "review",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/Analyzer.scala"
       ],
@@ -1610,7 +1620,7 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "机器人分析事件及经验统计缺失，诊断/剪贴板/权限流程需闭合。",
+      "remaining": "原RobotAnalyzeEvent已在真实持久宿主上发射，经验统计listener已接入；诊断、剪贴板、权限及玩家可见交互仍待闭合。",
       "evidence": []
     },
     {
@@ -2094,7 +2104,7 @@
       "id": "I13",
       "group": "可选集成",
       "name": "minecraftforge",
-      "status": "gap",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/integration/minecraftforge/"
       ],
@@ -2102,10 +2112,18 @@
         "src/main/java/li/cil/oc/common/capabilities/"
       ],
       "acceptance": [
-        "该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。"
+        "原MinecraftForge三个源文件职责完成：通用标准FE物品充电、OC方块侧面/无侧FE能力、四个只读能源驱动回调。真实Charger与FE物品能量守恒、simulate不写、余量/取整/Int.MAX边界、能力拒绝与两组黑名单通过；minecraft驱动独立禁用仍可FE接入。"
       ],
-      "remaining": "已有FE方块能力；通用FE物品充电注册等原功能尚未闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "build/api-compat-addon/devices/forge-energy-20261027-110738/device-results.txt",
+        "build/api-compat-addon/devices/forge-energy-power-disabled-20261027-110738/device-results.txt",
+        "build/api-compat-addon/devices/forge-energy-integration-disabled-20261027-110738/device-results.txt",
+        "build/api-compat-addon/devices/forge-energy-minecraft-disabled-20261027-110738/device-results.txt",
+        "tools/api-compat-addon/src/main/java/ocfixture/ForgeEnergyContract.java",
+        "src/main/java/li/cil/oc/common/integration/forge/ForgeEnergyItemCharge.java",
+        "docs/PORTING.md"
+      ]
     },
     {
       "id": "I14",

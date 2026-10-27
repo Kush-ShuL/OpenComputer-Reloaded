@@ -34,6 +34,7 @@ public final class OcApiCompat {
     private static boolean finished;
     public OcApiCompat(IEventBus bus) {
         FixtureBlocks.register(bus);
+        ForgeEnergyContract.register(bus);
         WorldPersistenceContract.registerBlocks(bus);
         bus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(() -> {
             if (HostPersistenceContract.enabled()) { HostPersistenceContract.register(); return; }

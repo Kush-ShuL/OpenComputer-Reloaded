@@ -100,6 +100,8 @@ neoForge {
             systemProperty 'ocfixture.deviceRunId', deviceId
             systemProperty 'ocfixture.deviceDirectory', deviceDirectory.absolutePath
             systemProperty 'ocfixture.driveConcurrencyOnly', providers.gradleProperty('ocDriveConcurrencyOnly').getOrElse('false')
+            systemProperty 'ocfixture.fluidOnly', providers.gradleProperty('ocFluidOnly').getOrElse('false')
+            systemProperty 'ocfixture.forgeEnergyOnly', providers.gradleProperty('ocForgeEnergyOnly').getOrElse('false')
         }
         hostPersistenceServer {
             server()
@@ -494,11 +496,16 @@ def prepareDeviceRun = tasks.register('prepareDeviceRun') {
             throw new GradleException('This device run already has a world/report; choose a new run id. Existing worlds are never reset.')
         def settings = new File(deviceDirectory, 'config/opencomputers/settings.conf')
         settings.parentFile.mkdirs()
-        settings.text = fixtureConfiguration('real-device-fixture')
+        def powerBlacklist = providers.gradleProperty('ocPowerBlacklist').getOrElse('').split(',').collect { it.trim() }.findAll { !it.isEmpty() }
+        def integrationBlacklist = providers.gradleProperty('ocIntegrationBlacklist').getOrElse('').split(',').collect { it.trim() }.findAll { !it.isEmpty() }
+        settings.text = fixtureConfiguration('real-device-fixture') +
+            '\nopencomputers.power.modBlacklist = ' + groovy.json.JsonOutput.toJson(powerBlacklist) +
+            '\nopencomputers.integration.modBlacklist = ' + groovy.json.JsonOutput.toJson(integrationBlacklist) + '\n'
         def propertiesFile = new File(deviceDirectory, 'server.properties')
         if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-device-world
 level-type=minecraft\\:flat
 online-mode=false
+server-ip=127.0.0.1
 server-port=25579
 gamemode=creative
 spawn-protection=0

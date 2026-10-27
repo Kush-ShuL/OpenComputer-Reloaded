@@ -63,7 +63,7 @@ opencomputers {
 | `misc.maxClipboard` | 屏幕剪贴板输入长度上限 |
 | `power.ignorePower` | 忽略设备能耗 |
 | `power.value.ForgeEnergy` | NeoForge 能量与 OC 内部能量的换算值 |
-| `power.modBlacklist` | 禁用外部能源接入；`ForgeEnergy` / `NeoForgeEnergy` 禁用 OC 提供的 FE 能力，内部 OC 充能仍可用 |
+| `power.modBlacklist` | `ForgeEnergy` / `NeoForgeEnergy` 禁用 OC 的 FE 方块能力及通用 FE 物品充电，内部 OC 充能仍可用 |
 | `misc.serverRackSwitchTier` | 机架内置交换机的等级，影响队列、转发间隔和吞吐 |
 | `misc.threadPriority` | 机器和后台工作线程优先级；默认值使用原线程工厂规则 |
 | `misc.maxNetworkClientPacketDistance` | 普通同步包的额外距离上限；`0` 使用服务器视距范围 |
@@ -78,6 +78,10 @@ ProjectRed 束线与螺丝刀集成在安装 Core 和 Transmission 后启用；�
 `projectred-transmission`、`projectred_transmission` 或 `projectred`。
 Jade 的机器信息在双方安装 Jade 后启用，黑名单中的 `jade` 或旧名 `waila` 均可禁用。
 Jade 设置界面还可分别控制 OC 地址、能量和组件名的显示。
+
+充电器可给带标准 NeoForge Energy 能力的物品充电，换算使用 `power.value.ForgeEnergy`。
+`integration.modBlacklist` 中的 `forge` 或 `neoforge` 也可禁用这组接入；单独禁用
+`minecraft` 的原版驱动不会关闭 FE 接入。
 
 ## 从旧配置迁移
 

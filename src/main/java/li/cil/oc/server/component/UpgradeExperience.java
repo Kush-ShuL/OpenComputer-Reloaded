@@ -40,11 +40,25 @@ public final class UpgradeExperience extends UpgradeBase {
                 + Math.pow(level * Settings.get().constantXpGrowth, Settings.get().exponentialXpGrowth);
     }
 
+    public static double getExperience(CompoundTag data) {
+        return Math.max(0, data.getDouble(Settings.namespace + "xp"));
+    }
+
+    public static int calculateLevelFromExperience(double experience) {
+        // Preserve the pinned source's inverse formula, including Java/Scala's NaN-to-int conversion.
+        return Math.min(MAX_LEVEL, (int) (Math.pow(experience - Settings.get().baseXpToLevel,
+                1 / Settings.get().exponentialXpGrowth) / Settings.get().constantXpGrowth));
+    }
+
+    public static double calculateExperienceLevel(int level, double experience) {
+        double needed = xpForLevel(level + 1) - xpForLevel(level);
+        double progress = Math.max(0, experience - xpForLevel(level));
+        return level + progress / needed;
+    }
+
     private void updateLevel() {
         int previous = level;
-        // Preserve the pinned source's inverse formula, including Java/Scala's NaN-to-int conversion.
-        level = Math.min(MAX_LEVEL, (int) (Math.pow(experience - Settings.get().baseXpToLevel,
-                1 / Settings.get().exponentialXpGrowth) / Settings.get().constantXpGrowth));
+        level = calculateLevelFromExperience(experience);
         if (level != previous && agent instanceof li.cil.oc.api.internal.Robot robot) robot.synchronizeSlot(agent.componentSlot(node().address()));
         connector().setLocalBufferSize(level * Settings.get().bufferPerLevel);
     }
@@ -65,9 +79,7 @@ public final class UpgradeExperience extends UpgradeBase {
 
     @Callback(direct = true, doc = "function():number -- The current level of experience stored in this experience upgrade.")
     public Object[] level(Context context, Arguments args) {
-        double needed = xpForLevel(level + 1) - xpForLevel(level);
-        double progress = Math.max(0, experience - xpForLevel(level));
-        return new Object[]{level + progress / needed};
+        return new Object[]{calculateExperienceLevel(level, experience)};
     }
 
     @Callback(doc = "function():boolean -- Tries to consume an enchanted item to add experience to the upgrade.")
@@ -95,7 +107,7 @@ public final class UpgradeExperience extends UpgradeBase {
 
     @Override public void load(CompoundTag tag) {
         super.load(tag);
-        experience = Math.max(0, tag.getDouble(Settings.namespace + "xp"));
+        experience = getExperience(tag);
         updateLevel();
     }
 

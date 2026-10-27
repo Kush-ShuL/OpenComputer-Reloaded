@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 18 项，剩余 102 项。**
+**总计 120 项，已闭合 21 项，剩余 99 项。**
 
-剩余包括：已有实现待核对/验收 83 项，有明确缺口 19 项。
+剩余包括：已有实现待核对/验收 88 项，有明确缺口 11 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -28,9 +28,9 @@
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
 | 基础与交付 | 24 | 13 | 11 |
-| 设备与组件 | 61 | 2 | 59 |
+| 设备与组件 | 61 | 4 | 57 |
 | 工具与附加玩法 | 16 | 0 | 16 |
-| 可选集成 | 19 | 3 | 16 |
+| 可选集成 | 19 | 4 | 15 |
 
 ## 范围归属
 
@@ -425,11 +425,11 @@
 
 当前接入：[src/main/java/li/cil/oc/server/component/Drive.java](../src/main/java/li/cil/oc/server/component/Drive.java)
 
-### D15 · 无人机 · 有明确缺口
+### D15 · 无人机 · 已有实现，待核对/验收
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：共享 Agent 流体控制缺原版跨罐交换/空罐和默认比较语义。
+剩余：共享流体控制缺口已修，Robot原生路径通过；仍需本族其他公开飞行/动作与行为核对，未宣称Drone流体或整族验收完成。
 
 原版范围：`src/main/scala/li/cil/oc/common/entity/Drone.scala`、`src/main/scala/li/cil/oc/server/component/Drone.scala`
 
@@ -635,11 +635,11 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/RelayBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RelayBlockEntity.java)
 
-### D36 · 机器人 · 有明确缺口
+### D36 · 机器人 · 已有实现，待核对/验收
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：共享 Agent 流体控制缺原版跨罐交换/空罐和默认比较语义。
+剩余：跨罐交换、空罐和世界流体控制已由真实Robot原生Lua通过；其余机器人动作、交互与原版差异核对仍待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Robot.scala`、`src/main/scala/li/cil/oc/common/tileentity/RobotProxy.scala`、`src/main/scala/li/cil/oc/server/component/Robot.scala`
 
@@ -675,11 +675,11 @@
 
 当前接入：[src/main/java/li/cil/oc/server/portable/TabletHost.java](../src/main/java/li/cil/oc/server/portable/TabletHost.java)
 
-### D40 · 转运器 · 有明确缺口
+### D40 · 转运器 · 已有实现，待核对/验收
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：外部储罐可选索引对显式nil的校验与原版不一致。
+剩余：外部储罐显式nil参数已恢复原版严格校验；转运器物品/流体搬运及数据库的整族实际操作验收仍待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Transposer.scala`、`src/main/scala/li/cil/oc/server/component/Transposer.scala`
 
@@ -745,11 +745,11 @@
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeDatabase.java](../src/main/java/li/cil/oc/server/component/UpgradeDatabase.java)
 
-### D47 · 经验升级 · 有明确缺口
+### D47 · 经验升级 · 已有实现，待核对/验收
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
 
-剩余：RobotAnalyzeEvent 发射/经验统计提示尚未接齐，物品等级提示有差异；本批已修部分公式与恢复。
+剩余：原机器人分析事件和统计、物品分数等级已接齐且Windows编译通过；尚需经验瓶消耗、分析仪可见提示、满级与存储电量恢复的实际验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeExperience.scala`
 
@@ -835,25 +835,25 @@
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeSolarGenerator.java](../src/main/java/li/cil/oc/server/component/UpgradeSolarGenerator.java)
 
-### D56 · 储罐升级 · 有明确缺口
+### D56 · 储罐升级 · 已闭合
 
-完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：设备信息产品名和capacity字段与原版不同。
+完成条件：原16,000mB容量、产品/容量信息、模拟不变、执行正负事件（来源地址+一基索引+delta）、FluidStack组件与节点的注册表保存恢复闭合；真实原生Robot验证。跨宿主生命周期归C12，GUI/多人归C20/C23/C19。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeTank.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeTank.java](../src/main/java/li/cil/oc/server/component/UpgradeTank.java)
 
-### D57 · 流体控制器 · 有明确缺口
+闭合依据：[build/api-compat-addon/devices/agent-fluid-20261027-112607/device-results.txt](../build/api-compat-addon/devices/agent-fluid-20261027-112607/device-results.txt)、[tools/api-compat-addon/src/main/java/ocfixture/AgentFluidContract.java](../tools/api-compat-addon/src/main/java/ocfixture/AgentFluidContract.java)、[src/main/java/li/cil/oc/server/component/UpgradeTank.java](../src/main/java/li/cil/oc/server/component/UpgradeTank.java)、[docs/PORTING.md](../docs/PORTING.md)
 
-完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
+### D57 · 流体控制器 · 已闭合
 
-剩余：默认无储罐查询及外部索引/自定义堆叠容器行为仍有差异。
+完成条件：原公开十个控制器回调的接入、参数/缺省/显式nil及空罐语义完成；原生真实Robot调用外部源水查询、内部罐查询、容器查询和桶fill/drain，模拟/资源数量与无罐分支通过。标准IFluidHandlerItem负责可处理堆叠限制，实际两桶拒绝不丢物；不要求穷举外部mod自身容器实现。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeTankController.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeTankController.java](../src/main/java/li/cil/oc/server/component/UpgradeTankController.java)
+
+闭合依据：[build/api-compat-addon/devices/agent-fluid-20261027-112607/device-results.txt](../build/api-compat-addon/devices/agent-fluid-20261027-112607/device-results.txt)、[tools/api-compat-addon/src/main/java/ocfixture/AgentFluidContract.java](../tools/api-compat-addon/src/main/java/ocfixture/AgentFluidContract.java)、[src/main/java/li/cil/oc/server/component/UpgradeTankController.java](../src/main/java/li/cil/oc/server/component/UpgradeTankController.java)、[docs/PORTING.md](../docs/PORTING.md)
 
 ### D58 · 牵引光束升级 · 已有实现，待核对/验收
 
@@ -898,11 +898,11 @@
 
 ## 工具与附加玩法
 
-### T01 · 分析仪 · 有明确缺口
+### T01 · 分析仪 · 已有实现，待核对/验收
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
 
-剩余：机器人分析事件及经验统计缺失，诊断/剪贴板/权限流程需闭合。
+剩余：原RobotAnalyzeEvent已在真实持久宿主上发射，经验统计listener已接入；诊断、剪贴板、权限及玩家可见交互仍待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/Analyzer.scala`
 
@@ -1169,15 +1169,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/integration/VanillaDrivers.java](../src/main/java/li/cil/oc/common/integration/VanillaDrivers.java)
 
-### I13 · minecraftforge · 有明确缺口
+### I13 · minecraftforge · 已闭合
 
-完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
-
-剩余：已有FE方块能力；通用FE物品充电注册等原功能尚未闭合。
+完成条件：原MinecraftForge三个源文件职责完成：通用标准FE物品充电、OC方块侧面/无侧FE能力、四个只读能源驱动回调。真实Charger与FE物品能量守恒、simulate不写、余量/取整/Int.MAX边界、能力拒绝与两组黑名单通过；minecraft驱动独立禁用仍可FE接入。
 
 原版范围：`src/main/scala/li/cil/oc/integration/minecraftforge/`
 
 当前接入：[src/main/java/li/cil/oc/common/capabilities/](../src/main/java/li/cil/oc/common/capabilities/)
+
+闭合依据：[build/api-compat-addon/devices/forge-energy-20261027-110738/device-results.txt](../build/api-compat-addon/devices/forge-energy-20261027-110738/device-results.txt)、[build/api-compat-addon/devices/forge-energy-power-disabled-20261027-110738/device-results.txt](../build/api-compat-addon/devices/forge-energy-power-disabled-20261027-110738/device-results.txt)、[build/api-compat-addon/devices/forge-energy-integration-disabled-20261027-110738/device-results.txt](../build/api-compat-addon/devices/forge-energy-integration-disabled-20261027-110738/device-results.txt)、[build/api-compat-addon/devices/forge-energy-minecraft-disabled-20261027-110738/device-results.txt](../build/api-compat-addon/devices/forge-energy-minecraft-disabled-20261027-110738/device-results.txt)、[tools/api-compat-addon/src/main/java/ocfixture/ForgeEnergyContract.java](../tools/api-compat-addon/src/main/java/ocfixture/ForgeEnergyContract.java)、[src/main/java/li/cil/oc/common/integration/forge/ForgeEnergyItemCharge.java](../src/main/java/li/cil/oc/common/integration/forge/ForgeEnergyItemCharge.java)、[docs/PORTING.md](../docs/PORTING.md)
 
 ### I14 · projectred · 已闭合
 

@@ -33,6 +33,7 @@ public final class Charging {
         bus.addListener((net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) -> event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, TYPE.get(), (charger, side) -> new SidedInvWrapper(charger, side)));
         ItemCharge.add(new ItemCharge.Handler("OpenComputers Chargeable items", stack -> stack.getItem() instanceof li.cil.oc.api.driver.item.Chargeable item && item.canCharge(stack),
                 (stack, amount, simulate) -> ((li.cil.oc.api.driver.item.Chargeable) stack.getItem()).charge(stack, amount, simulate)));
+        li.cil.oc.common.integration.forge.ForgeEnergyItemCharge.register();
         if (FMLEnvironment.dist == Dist.CLIENT) li.cil.oc.client.ChargingClient.register(bus);
     }
 }

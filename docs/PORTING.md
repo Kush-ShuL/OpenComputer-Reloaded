@@ -174,6 +174,50 @@ blacklist run loaded Jade without registering the OC provider. Client toggles,
 rendered tooltips, busy assembler data and remote synchronization still need
 acceptance. See [Jade integration](jade-integration.md).
 
+The MinecraftForge platform bridge now registers standard NeoForge Energy item
+charging, including simulation, OC/FE conversion, integer limits and unapplied
+remainders. Both the integration and power blacklists gate OC's FE capabilities
+and this generic item handler; OC's own chargeable items retain their internal
+charging path. The existing four energy-device callbacks still use real sided
+capabilities. This corresponds to fixed checklist item I13.
+
+I13 passed four isolated Windows server runs on 2026-10-27: normal operation,
+`power.modBlacklist=["NeoForgeEnergy"]`, `integration.modBlacklist=["forge"]`,
+and independently disabling only `minecraft`. The normal charger changed an
+actual item from 0 to 3 FE and its real OC buffer from 1000 to 999.7 with the
+configured 0.1 OC/FE ratio. Actual SDK-selected energy-device callbacks matched
+the charger's real capability; the public hook also passed simulation, receive
+and capacity limits, fractional and integer-max remainders, and absent or
+extract-only capability rejection. Both blacklist runs refused charging, hid
+the OC FE capability/driver methods and retained internal energy. The four
+`forge-energy*-20261027-110738` reports are linked from the fixed checklist.
+
+Fluid control now restores the original incompatible-fluid tank exchange,
+same-target/zero no-ops, omitted versus explicit-nil arguments, no-tank defaults
+and matching-fluid world drains. A successful robot world transfer previously
+called an unsupported action delay after changing resources; that extra call is
+removed. Tank metadata again reports the original product and capacity. These
+changes belong to D15/D36/D40/D56/D57, rather than new scope.
+
+The Windows native run `agent-fluid-20261027-112607` closed D56 and D57 with two
+real preset robots: one replaces an existing hover upgrade with a second tank;
+the other removes the tank and retains its controller. Real Lua 5.3 exercised
+all ten controller callback families, strict and default nils, registry-aware
+fluid/component/node restoration, exact source-address/index/delta events,
+incompatible-fluid exchange, zero/same-target operations, real bucket transfers
+and a rejected two-bucket stack. Source-water drain/replacement/full-source
+refusal retained exactly 2000mB across the actual tanks/world/item. The initially
+incorrect fixture omitted the original signal's source address; only the fixture
+was corrected, preserving the original machine signal format. The final report
+passed after 79 world ticks. Remote networking and GUI remain shared checklist
+items; additional host/mod-container coverage does not claim D15 or D36 complete.
+
+Experience upgrades now fire the original robot-analysis event on the real
+persistent robot host and display the original XP/level summary. Item tooltips
+and Lua use the same fractional-level formula. These D47/T01 changes pass the
+Windows build; consuming XP, visible analysis and stored-energy recovery still
+need their bounded acceptance before D47 closes.
+
 Program-disk chest generation preserves the original vanilla pool objects and
 enchantment holder ownership. A Windows real-world run generated all four target
 chests with fixed seeds (256 rolls each), retained vanilla loot, produced complete

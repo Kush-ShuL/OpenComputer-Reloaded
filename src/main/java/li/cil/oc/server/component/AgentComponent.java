@@ -140,17 +140,96 @@ public abstract class AgentComponent extends AbstractManagedEnvironment implemen
             return new Object[]{false};
         }finally{player.usingSelectedMaterial=previous;player.setShiftKeyDown(false);}
     }
-    @Callback public Object[] tankCount(Context context,Arguments args){return new Object[]{agent.tank().tankCount()};}
-    private int tank(Arguments args,int index){int tank=args.count()>index?args.checkInteger(index)-1:agent.selectedTank();if(tank<0||tank>=agent.tank().tankCount())throw new IllegalArgumentException("invalid tank");return tank;}
-    @Callback public Object[] selectTank(Context context,Arguments args){if(args.count()>0)agent.setSelectedTank(tank(args,0));return new Object[]{agent.selectedTank()+1};}
-    @Callback(direct=true) public Object[] tankLevel(Context context,Arguments args){return new Object[]{agent.tank().getFluidTank(tank(args,0)).getFluidAmount()};}
-    @Callback(direct=true) public Object[] tankSpace(Context context,Arguments args){var tank=agent.tank().getFluidTank(tank(args,0));return new Object[]{tank.getCapacity()-tank.getFluidAmount()};}
-    @Callback public Object[] compareFluidTo(Context context,Arguments args){return new Object[]{FluidStack.isSameFluidSameComponents(agent.tank().getFluidTank(tank(args,0)).getFluid(),agent.tank().getFluidTank(agent.selectedTank()).getFluid())};}
-    @Callback public Object[] transferFluidTo(Context context,Arguments args){var from=agent.tank().getFluidTank(agent.selectedTank());var to=agent.tank().getFluidTank(tank(args,0));FluidStack available=from.drain(Math.max(0,args.optInteger(1,1000)),IFluidHandler.FluidAction.SIMULATE);int moved=to.fill(available,IFluidHandler.FluidAction.SIMULATE);if(moved>0)to.fill(from.drain(moved,IFluidHandler.FluidAction.EXECUTE),IFluidHandler.FluidAction.EXECUTE);return new Object[]{moved>0};}
-    @Callback public Object[] drain(Context context,Arguments args){return fluidTransfer(context,args,true);}
-    @Callback public Object[] fill(Context context,Arguments args){return fluidTransfer(context,args,false);}
-    private Object[] fluidTransfer(Context context,Arguments args,boolean drain){Direction facing=side(args,0);if(agent.tank().tankCount()==0)return new Object[]{false,"no tank selected"};var own=new SelectedTank(agent.tank().getFluidTank(agent.selectedTank()));var other=FluidUtils.fluidHandlerAt(agent.world(),agent.blockPosition().relative(facing),facing.getOpposite()).orElse(null);if(other==null)return new Object[]{false,"no tank"};int moved=drain?FluidUtils.transferBetweenFluidHandlers(other,own,Math.max(0,args.optInteger(1,1000))):FluidUtils.transferBetweenFluidHandlers(own,other,Math.max(0,args.optInteger(1,1000)));if(moved>0)delay(context,drain?"drain":"fill");agent.markChanged();return new Object[]{moved>0,moved};}
-    @Callback public Object[] compareFluid(Context context,Arguments args){Direction facing=side(args,0);var other=FluidUtils.fluidHandlerAt(agent.world(),agent.blockPosition().relative(facing),facing.getOpposite()).orElse(null);if(agent.tank().tankCount()==0||other==null)return new Object[]{false};int index=args.optInteger(1,1)-1;if(index<0||index>=other.getTanks())throw new IllegalArgumentException("invalid tank");return new Object[]{FluidStack.isSameFluidSameComponents(agent.tank().getFluidTank(agent.selectedTank()).getFluid(),other.getFluidInTank(index))};}
+    @Callback public Object[] tankCount(Context context, Arguments args) { return new Object[]{agent.tank().tankCount()}; }
+    private int checkTank(Arguments args, int index) {
+        int tank = args.checkInteger(index) - 1;
+        if (tank < 0 || tank >= agent.tank().tankCount()) throw new IllegalArgumentException("invalid tank index");
+        return tank;
+    }
+    private int selectedTank(Arguments args, int index) {
+        return args.count() > index && args.checkAny(index) != null ? checkTank(args, index) : agent.selectedTank();
+    }
+    private IFluidTank getTank(int index) {
+        return index < 0 || index >= agent.tank().tankCount() ? null : agent.tank().getFluidTank(index);
+    }
+    private static FluidStack fluid(IFluidTank tank) { return tank == null ? FluidStack.EMPTY : tank.getFluid(); }
+    @Callback public Object[] selectTank(Context context, Arguments args) {
+        if (args.count() > 0 && args.checkAny(0) != null) agent.setSelectedTank(checkTank(args, 0));
+        return new Object[]{agent.selectedTank() + 1};
+    }
+    @Callback(direct = true) public Object[] tankLevel(Context context, Arguments args) {
+        return new Object[]{fluid(getTank(selectedTank(args, 0))).getAmount()};
+    }
+    @Callback(direct = true) public Object[] tankSpace(Context context, Arguments args) {
+        var tank = getTank(selectedTank(args, 0));
+        return new Object[]{tank == null ? 0 : tank.getCapacity() - tank.getFluidAmount()};
+    }
+    @Callback public Object[] compareFluidTo(Context context, Arguments args) {
+        return new Object[]{FluidStack.isSameFluidSameComponents(fluid(getTank(checkTank(args, 0))), fluid(getTank(agent.selectedTank())))};
+    }
+    @Callback public Object[] transferFluidTo(Context context, Arguments args) {
+        int index = checkTank(args, 0), count = Math.max(0, args.optInteger(1, 1000));
+        if (index == agent.selectedTank() || count == 0) return new Object[]{true};
+        var from = getTank(agent.selectedTank()); var to = getTank(index);
+        if (from == null || to == null) return new Object[]{null, "invalid index"};
+        int moved = FluidUtils.transferBetweenFluidHandlers(new SelectedTank(from), new SelectedTank(to), count);
+        if (moved > 0) { agent.markChanged(); return new Object[]{true}; }
+        // The original exchanges two incompatible fluids when the complete contents fit.
+        if (count >= from.getFluidAmount() && to.getCapacity() >= from.getFluidAmount()
+                && from.getCapacity() >= to.getFluidAmount()) {
+            FluidStack previous = to.drain(to.getFluidAmount(), IFluidHandler.FluidAction.EXECUTE);
+            to.fill(from.drain(from.getFluidAmount(), IFluidHandler.FluidAction.EXECUTE), IFluidHandler.FluidAction.EXECUTE);
+            from.fill(previous, IFluidHandler.FluidAction.EXECUTE);
+            agent.markChanged(); return new Object[]{true};
+        }
+        return new Object[]{null, "incompatible or no fluid"};
+    }
+    @Callback public Object[] drain(Context context, Arguments args) { return fluidTransfer(args, true); }
+    @Callback public Object[] fill(Context context, Arguments args) { return fluidTransfer(args, false); }
+    private Object[] fluidTransfer(Arguments args, boolean drain) {
+        Direction facing = side(args, 0);
+        var tank = getTank(agent.selectedTank());
+        if (tank == null) return new Object[]{null, "no tank selected"};
+        int count = Math.max(0, args.optInteger(1, 1000));
+        int amount = Math.min(count, drain ? tank.getCapacity() - tank.getFluidAmount() : tank.getFluidAmount());
+        if (count > 0 && amount <= 0) return new Object[]{null, drain ? "tank is full" : "tank is empty"};
+        var other = FluidUtils.fluidHandlerAt(agent.world(), agent.blockPosition().relative(facing), facing.getOpposite()).orElse(null);
+        if (other == null) return new Object[]{null, drain ? "incompatible or no fluid" : "no space"};
+        boolean hasFluid = !tank.getFluid().isEmpty();
+        if (!drain && !hasFluid) return new Object[]{null, "tank is empty"};
+        if (amount == 0) return new Object[]{hasFluid, 0};
+        var own = new SelectedTank(tank);
+        int moved = drain && hasFluid ? drainMatching(other, tank, amount)
+                          : drain ? FluidUtils.transferBetweenFluidHandlers(other, own, amount)
+                          : FluidUtils.transferBetweenFluidHandlers(own, other, amount);
+        if (moved > 0) { agent.markChanged(); return new Object[]{true, moved}; }
+        if (drain && !hasFluid) return new Object[]{false, 0};
+        return new Object[]{null, "incompatible or no fluid"};
+    }
+    private static int drainMatching(IFluidHandler source, IFluidTank sink, int amount) {
+        FluidStack available = source.drain(sink.getFluid().copyWithAmount(amount), IFluidHandler.FluidAction.SIMULATE);
+        int accepted = sink.fill(available, IFluidHandler.FluidAction.SIMULATE);
+        if (accepted <= 0) return 0;
+        FluidStack actual = source.drain(available.copyWithAmount(accepted), IFluidHandler.FluidAction.EXECUTE);
+        int moved = sink.fill(actual, IFluidHandler.FluidAction.EXECUTE);
+        if (moved < actual.getAmount()) source.fill(actual.copyWithAmount(actual.getAmount() - moved), IFluidHandler.FluidAction.EXECUTE);
+        return moved;
+    }
+    @Callback public Object[] compareFluid(Context context, Arguments args) {
+        Direction facing = side(args, 0);
+        FluidStack selected = fluid(getTank(agent.selectedTank()));
+        if (selected.isEmpty()) return new Object[]{false};
+        var other = FluidUtils.fluidHandlerAt(agent.world(), agent.blockPosition().relative(facing), facing.getOpposite()).orElse(null);
+        if (other == null) return new Object[]{false};
+        if (args.count() > 1) {
+            int index = args.checkInteger(1) - 1;
+            if (index < 0 || index >= other.getTanks()) throw new IllegalArgumentException("invalid tank index");
+            return new Object[]{FluidStack.isSameFluidSameComponents(selected, other.getFluidInTank(index))};
+        }
+        for (int index = 0; index < other.getTanks(); index++)
+            if (FluidStack.isSameFluidSameComponents(selected, other.getFluidInTank(index))) return new Object[]{true};
+        return new Object[]{false};
+    }
     private record SelectedTank(IFluidTank tank) implements IFluidHandler {
         public int getTanks(){return 1;}public FluidStack getFluidInTank(int index){return index==0?tank.getFluid():FluidStack.EMPTY;}public int getTankCapacity(int index){return tank.getCapacity();}public boolean isFluidValid(int index,FluidStack stack){return index==0&&tank.isFluidValid(stack);}public int fill(FluidStack stack,FluidAction action){return tank.fill(stack,action);}public FluidStack drain(FluidStack stack,FluidAction action){return tank.drain(stack,action);}public FluidStack drain(int count,FluidAction action){return tank.drain(count,action);}
     }

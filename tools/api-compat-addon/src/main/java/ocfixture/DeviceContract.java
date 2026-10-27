@@ -109,6 +109,8 @@ public final class DeviceContract {
             require(directory.equals(Path.of("").toAbsolutePath().normalize())&&directory.getParent().getFileName().toString().equals("devices")&&directory.getFileName().toString().equals(runId),"Refusing a non-fixture device directory");
             require(server.getWorldPath(LevelResource.ROOT).toAbsolutePath().normalize().equals(directory.resolve("ocfixture-device-world")),"Refusing a different Minecraft world");
             if(Boolean.getBoolean("ocfixture.driveConcurrencyOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;DiskConcurrencyContract.start(level,origin.south(6),results);return;}
+            if(Boolean.getBoolean("ocfixture.fluidOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;AgentFluidContract.start(level,origin.south(12),results);return;}
+            if(Boolean.getBoolean("ocfixture.forgeEnergyOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;ForgeEnergyContract.start(level,origin.south(12),results);return;}
             require(CreativeTab.instance!=null,"OC did not publish its creative tab");
             CreativeTab.instance.buildContents(new CreativeModeTab.ItemDisplayParameters(level.enabledFeatures(),true,level.registryAccess()));
             generatedProgram=LootContract.generate(level,results);
@@ -179,7 +181,9 @@ public final class DeviceContract {
             if(!robotDone)try{tickRobot();}catch(Throwable error){robotDone=true;results.add("FAIL robot.vm: "+error);LOGGER.error("DEVICE_FIXTURE robot VM",error);}
             if(!rackDone)try{tickRack();}catch(Throwable error){rackDone=true;results.add("FAIL rack: "+error);LOGGER.error("DEVICE_FIXTURE rack behavior",error);}
             DiskConcurrencyContract.tick();
-            if(robotDone&&rackDone&&!DiskConcurrencyContract.isRunning())finish();
+            AgentFluidContract.tick();
+            ForgeEnergyContract.tick();
+            if(robotDone&&rackDone&&!DiskConcurrencyContract.isRunning()&&!AgentFluidContract.isRunning()&&!ForgeEnergyContract.isRunning())finish();
         }
         void tickRobot(){
             Machine machine=robot.machine();
@@ -250,6 +254,8 @@ public final class DeviceContract {
         }
         void cleanup(){
             DiskConcurrencyContract.close();
+            AgentFluidContract.close();
+            ForgeEnergyContract.close();
             if(player!=null)player.closeFixtureMenu();if(robot!=null){robot.machine().stop();robot.equipmentInventory().clearContent();robot.mainInventory().clearContent();}if(tablet!=null){tablet.machine().stop();tablet.machine().node().remove();}
             for(Probe probe:probes)probe.node().remove();probes.clear();
             var entries=new ArrayList<>(restored.entrySet());Collections.reverse(entries);for(var entry:entries){if(level.getBlockEntity(entry.getKey()) instanceof Rack existing)existing.clearContent();level.setBlock(entry.getKey(),entry.getValue(),3);}restored.clear();

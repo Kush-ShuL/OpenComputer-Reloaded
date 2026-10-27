@@ -174,6 +174,23 @@ are stored under `build/api-compat-addon/hosts/<host>/<id>`.
 These are distinct executable scenarios. Consult their actual stage reports and
 `docs/PORTING.md` for completed runs; a scenario's presence is not a pass result.
 
+## Fluid upgrades and Forge Energy
+
+Use a fresh `ocDeviceRunId` with the existing `runDeviceServer` task and the
+published SDK/full-runtime properties above:
+
+- `-PocFluidOnly=true` runs actual native Lua 5.3 robot/tank/controller operations.
+- `-PocForgeEnergyOnly=true` runs a real charger, a separately registered FE item
+  and the registered energy driver against the charger's real capability.
+
+Both use `build/api-compat-addon/devices/<id>` and localhost port 25579. They
+reuse existing EULA acceptance, reject an existing world/report, restore their
+temporary devices and require a successful `device-results.txt`.
+The FE scenario accepts isolated `-PocPowerBlacklist=NeoForgeEnergy` or
+`-PocIntegrationBlacklist=forge` selections; `minecraft` may be disabled separately
+to verify that the Forge bridge remains independent of vanilla drivers. These
+flags regenerate only the selected fixture's configuration, not the player's.
+
 ## Optional foreign runtimes
 
 Each named run below creates a fresh isolated world and reports actual behavior

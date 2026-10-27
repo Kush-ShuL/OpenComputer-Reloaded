@@ -11,6 +11,7 @@ public final class ExternalPower {
     private ExternalPower() {}
 
     public static boolean forgeEnergyEnabled() {
+        if (!li.cil.oc.common.integration.VanillaDrivers.integrationEnabled("forge", "neoforge")) return false;
         for (String entry : Settings.get().powerModBlacklist) {
             switch (entry.trim().toLowerCase(Locale.ROOT)) {
                 case "forge", "neoforge", "forgeenergy", "neoforgeenergy" -> { return false; }

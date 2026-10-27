@@ -10,6 +10,8 @@ import li.cil.oc.api.network.Connector;
 import li.cil.oc.api.network.Environment;
 import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.SidedEnvironment;
+import li.cil.oc.api.event.RobotAnalyzeEvent;
+import li.cil.oc.common.block.entity.RobotBlockEntity;
 import li.cil.oc.common.block.entity.ScreenBlockEntity;
 import li.cil.oc.common.capabilities.Capabilities;
 import li.cil.oc.common.network.ToolNetworking;
@@ -35,6 +37,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /** Original node diagnostics and the analyzer's in-item screen clipboard. */
@@ -89,7 +92,13 @@ public final class AnalyzerItem extends Item {
 
     public static boolean analyze(Object target, Player player, Direction side, float x, float y, float z) {
         if (target instanceof Analyzable analyzable) {
-            if (!player.level().isClientSide) analyzeNodes(analyzable.onAnalyze(player, side, x, y, z), player);
+            if (!player.level().isClientSide) {
+                // The controller is the original robot host; its moving block entity is only a proxy.
+                // Fire once before generic node diagnostics, as in the original Robot.onAnalyze.
+                if (target instanceof RobotBlockEntity robot)
+                    NeoForge.EVENT_BUS.post(new RobotAnalyzeEvent(robot.controller(), player));
+                analyzeNodes(analyzable.onAnalyze(player, side, x, y, z), player);
+            }
             return true;
         }
         SidedEnvironment sided = target instanceof SidedEnvironment environment ? environment : null;
