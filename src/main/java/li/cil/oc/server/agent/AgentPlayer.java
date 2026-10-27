@@ -17,6 +17,7 @@ public final class AgentPlayer extends FakePlayer {
     private final AgentHost host;
     private AgentInventory agentInventory;
     public boolean usingSelectedMaterial;
+    public int materialSlot=-1;
     private ItemStack previousTool=ItemStack.EMPTY;
     public AgentPlayer(ServerLevel level, AgentHost host) {
         super(level, new GameProfile(host.ownerUUID(),Settings.get().nameFormat.replace("$player$",host.ownerName()).replace("$random$",Integer.toString(level.random.nextInt(0xFFFFFF)+1))));
@@ -33,11 +34,11 @@ public final class AgentPlayer extends FakePlayer {
     @Override public void setItemSlot(EquipmentSlot slot, ItemStack stack) {
         if (host == null) { super.setItemSlot(slot, stack); return; }
         if (slot != EquipmentSlot.MAINHAND) return;
-        if (usingSelectedMaterial) host.mainInventory().setItem(host.selectedSlot(), stack);
+        if (usingSelectedMaterial) host.mainInventory().setItem(materialSlot>=0?materialSlot:host.selectedSlot(), stack);
         else if (host.equipmentInventory().getContainerSize() > 0) host.equipmentInventory().setItem(0, stack);
         host.inventoryChanged();
     }
-    private ItemStack selected() { return host.selectedSlot() >= 0 && host.selectedSlot() < host.mainInventory().getContainerSize() ? host.mainInventory().getItem(host.selectedSlot()) : ItemStack.EMPTY; }
+    private ItemStack selected() { int slot=materialSlot>=0?materialSlot:host.selectedSlot();return slot>=0&&slot<host.mainInventory().getContainerSize()?host.mainInventory().getItem(slot):ItemStack.EMPTY; }
     public AgentPlayer orient(Direction facing, boolean sneak) {
         ItemStack tool=getMainHandItem();
         if(!ItemStack.isSameItemSameComponents(previousTool,tool)){

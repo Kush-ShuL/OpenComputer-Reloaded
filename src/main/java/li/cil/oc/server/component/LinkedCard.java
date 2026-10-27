@@ -65,8 +65,8 @@ public final class LinkedCard extends AbstractManagedEnvironment implements Quan
     @Override public void onDisconnect(Node node) { if(node==node()) QuantumNetwork.remove(this); }
     @Override public synchronized void load(CompoundTag tag) {
         boolean connected=node().network()!=null; if(connected) QuantumNetwork.remove(this);
-        super.load(tag); channel=tag.contains("oc:tunnel")?tag.getString("oc:tunnel"):"creative";
-        wakeMessage=tag.contains("wakeMessage")?tag.getString("wakeMessage"):null; fuzzy=tag.getBoolean("wakeMessageFuzzy");
+        super.load(tag); if(tag.contains("oc:tunnel"))channel=tag.getString("oc:tunnel");
+        if(tag.contains("wakeMessage"))wakeMessage=tag.getString("wakeMessage"); fuzzy=tag.getBoolean("wakeMessageFuzzy");
         if(connected) QuantumNetwork.add(this);
     }
     @Override public synchronized void save(CompoundTag tag) {

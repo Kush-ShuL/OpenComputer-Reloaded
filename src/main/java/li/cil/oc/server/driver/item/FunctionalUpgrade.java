@@ -16,7 +16,9 @@ public final class FunctionalUpgrade extends li.cil.oc.api.prefab.DriverItem imp
         return switch(item(stack).kind){
             case EXPERIENCE,GENERATOR,TANK->Agent.class.isAssignableFrom(host);
             case BATTERY,SOLAR->!Adapter.class.isAssignableFrom(host);
-            case ANGEL,HOVER,CRAFTING->li.cil.oc.api.internal.Robot.class.isAssignableFrom(host);
+            case CHUNKLOADER->!Adapter.class.isAssignableFrom(host)&&!Tablet.class.isAssignableFrom(host);
+            case ANGEL->!Adapter.class.isAssignableFrom(host)&&!Microcontroller.class.isAssignableFrom(host)&&!Tablet.class.isAssignableFrom(host);
+            case HOVER,CRAFTING->li.cil.oc.api.internal.Robot.class.isAssignableFrom(host);
             case INVENTORY_CONTROLLER,TANK_CONTROLLER->Agent.class.isAssignableFrom(host)||Adapter.class.isAssignableFrom(host);
             case SIGN->Rotatable.class.isAssignableFrom(host)||Adapter.class.isAssignableFrom(host);
             case LEASH->net.minecraft.world.entity.Entity.class.isAssignableFrom(host);

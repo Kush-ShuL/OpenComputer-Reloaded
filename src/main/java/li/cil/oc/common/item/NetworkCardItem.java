@@ -27,6 +27,10 @@ public final class NetworkCardItem extends Item implements Tiered {
     }
     @Override public void appendHoverText(ItemStack stack,TooltipContext context,List<Component> tooltip,TooltipFlag flag) {
         super.appendHoverText(stack,context,tooltip,flag);
+        if(kind==Kind.DATA||kind==Kind.LINKED){
+            String key=kind==Kind.DATA?"oc:tooltip.datacard"+tier:"oc:tooltip.linkedcard";
+            for(String line:Component.translatable(key).getString().split("\\[nl\\]"))tooltip.add(Component.literal(line));
+        }
         tooltip.add(Component.translatable("tooltip.opencomputers.hardware_tier",tier+1).withStyle(ChatFormatting.GRAY));
         if(kind==Kind.LINKED) {
             var data=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getCompound("oc:data");
@@ -35,5 +39,11 @@ public final class NetworkCardItem extends Item implements Tiered {
                 tooltip.add(Component.translatable("oc:tooltip.linkedcard_channel",channel.length()>13?channel.substring(0,13)+"...":channel).withStyle(ChatFormatting.GRAY));
             }
         }
+        var node=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getCompound("oc:data").getCompound("node");
+        if(node.contains("address")){
+            String address=node.getString("address");
+            tooltip.add(Component.literal("§8"+address.substring(0,Math.min(13,address.length()))+"...§7"));
+        }
+        if(flag.isAdvanced())tooltip.add(Component.translatable("oc:tooltip.tier",tier+1));
     }
 }

@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 45 项，剩余 75 项。**
+**总计 120 项，已闭合 52 项，剩余 68 项。**
 
-剩余包括：已有实现待核对/验收 67 项，有明确缺口 8 项。
+剩余包括：已有实现待核对/验收 60 项，有明确缺口 8 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -28,8 +28,8 @@
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
 | 基础与交付 | 24 | 13 | 11 |
-| 设备与组件 | 61 | 19 | 42 |
-| 工具与附加玩法 | 16 | 7 | 9 |
+| 设备与组件 | 61 | 25 | 36 |
+| 工具与附加玩法 | 16 | 8 | 8 |
 | 可选集成 | 19 | 6 | 13 |
 
 ## 范围归属
@@ -367,15 +367,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/ChargerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/ChargerBlockEntity.java)
 
-### D09 · 数据卡 · 已有实现，待核对/验收
+### D09 · 数据卡 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/DataCard.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/DataCard.java](../src/main/java/li/cil/oc/server/component/DataCard.java)
+
+闭合依据：[docs/data-and-linked-cards.md](../docs/data-and-linked-cards.md)、[src/main/java/li/cil/oc/server/component/DataCard.java](../src/main/java/li/cil/oc/server/component/DataCard.java)、[src/main/java/li/cil/oc/common/item/NetworkCardItem.java](../src/main/java/li/cil/oc/common/item/NetworkCardItem.java)、[build/launch-support/windows-hardware-build.log](../build/launch-support/windows-hardware-build.log)
 
 ### D10 · 调试卡 · 已有实现，待核对/验收
 
@@ -497,15 +497,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/KeyboardBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/KeyboardBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Keyboard.java](../src/main/java/li/cil/oc/server/component/Keyboard.java)
 
-### D22 · 量子链接卡 · 已有实现，待核对/验收
+### D22 · 量子链接卡 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/LinkedCard.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/LinkedCard.java](../src/main/java/li/cil/oc/server/component/LinkedCard.java)
+
+闭合依据：[docs/data-and-linked-cards.md](../docs/data-and-linked-cards.md)、[src/main/java/li/cil/oc/server/component/LinkedCard.java](../src/main/java/li/cil/oc/server/component/LinkedCard.java)、[src/main/java/li/cil/oc/server/network/QuantumNetwork.java](../src/main/java/li/cil/oc/server/network/QuantumNetwork.java)、[build/launch-support/windows-hardware-build.log](../build/launch-support/windows-hardware-build.log)
 
 ### D23 · 内存 · 已闭合
 
@@ -687,15 +687,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/TransposerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/TransposerBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Transposer.java](../src/main/java/li/cil/oc/server/component/Transposer.java)
 
-### D41 · 天使升级 · 已有实现，待核对/验收
+### D41 · 天使升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeAngel.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeAngel.java](../src/main/java/li/cil/oc/server/component/UpgradeAngel.java)
+
+闭合依据：[docs/flight-upgrades.md](../docs/flight-upgrades.md)、[src/main/java/li/cil/oc/server/component/AgentComponent.java](../src/main/java/li/cil/oc/server/component/AgentComponent.java)、[build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt](../build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt)
 
 ### D42 · 条码读取升级 · 已闭合
 
@@ -717,25 +717,25 @@
 
 闭合依据：[docs/power-upgrades.md](../docs/power-upgrades.md)、[src/main/java/li/cil/oc/common/capabilities/BatteryEnergyStorage.java](../src/main/java/li/cil/oc/common/capabilities/BatteryEnergyStorage.java)、[src/main/java/li/cil/oc/server/component/UpgradeBattery.java](../src/main/java/li/cil/oc/server/component/UpgradeBattery.java)、[build/api-compat-addon/devices/upgrade-storage-20261027-a4/device-results.txt](../build/api-compat-addon/devices/upgrade-storage-20261027-a4/device-results.txt)
 
-### D44 · 区块加载升级 · 已有实现，待核对/验收
+### D44 · 区块加载升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeChunkloader.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeChunkloader.java](../src/main/java/li/cil/oc/server/component/UpgradeChunkloader.java)
 
-### D45 · 合成升级 · 已有实现，待核对/验收
+闭合依据：[docs/chunkloader-upgrade.md](../docs/chunkloader-upgrade.md)、[src/main/java/li/cil/oc/server/component/UpgradeChunkloader.java](../src/main/java/li/cil/oc/server/component/UpgradeChunkloader.java)、[build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt](../build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt)
+
+### D45 · 合成升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/UpgradeCrafting.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeCrafting.java](../src/main/java/li/cil/oc/server/component/UpgradeCrafting.java)
+
+闭合依据：[docs/crafting-and-trading.md](../docs/crafting-and-trading.md)、[src/main/java/li/cil/oc/server/component/UpgradeCrafting.java](../src/main/java/li/cil/oc/server/component/UpgradeCrafting.java)、[build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt](../build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt)
 
 ### D46 · 数据库升级 · 已闭合
 
@@ -867,15 +867,15 @@
 
 闭合依据：[docs/interaction-upgrades.md](../docs/interaction-upgrades.md)、[src/main/java/li/cil/oc/server/component/UpgradeTractorBeam.java](../src/main/java/li/cil/oc/server/component/UpgradeTractorBeam.java)
 
-### D59 · 交易升级 · 已有实现，待核对/验收
+### D59 · 交易升级 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/Trade.scala`、`src/main/scala/li/cil/oc/server/component/UpgradeTrading.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/UpgradeTrading.java](../src/main/java/li/cil/oc/server/component/UpgradeTrading.java)
+
+闭合依据：[docs/crafting-and-trading.md](../docs/crafting-and-trading.md)、[src/main/java/li/cil/oc/server/component/UpgradeTrading.java](../src/main/java/li/cil/oc/server/component/UpgradeTrading.java)、[src/main/java/li/cil/oc/server/machine/luac/UserdataAPI.java](../src/main/java/li/cil/oc/server/machine/luac/UserdataAPI.java)、[build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt](../build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt)
 
 ### D60 · 航点 · 已有实现，待核对/验收
 
@@ -960,15 +960,15 @@
 
 闭合依据：[docs/hoverboots.md](../docs/hoverboots.md)、[src/main/java/li/cil/oc/common/init/MiscDevices.java](../src/main/java/li/cil/oc/common/init/MiscDevices.java)、[src/main/java/li/cil/oc/common/event/HoverBootsHandler.java](../src/main/java/li/cil/oc/common/event/HoverBootsHandler.java)
 
-### T07 · 悬浮升级 · 已有实现，待核对/验收
+### T07 · 悬浮升级 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：各等级高度和运动/能耗行为待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/UpgradeHover.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/item/FunctionalUpgradeItem.java](../src/main/java/li/cil/oc/common/item/FunctionalUpgradeItem.java)
+
+闭合依据：[docs/flight-upgrades.md](../docs/flight-upgrades.md)、[src/main/java/li/cil/oc/common/init/AgentUpgrades.java](../src/main/java/li/cil/oc/common/init/AgentUpgrades.java)、[build/launch-support/windows-hardware-build.log](../build/launch-support/windows-hardware-build.log)
 
 ### T08 · 物品栏升级 · 已闭合
 

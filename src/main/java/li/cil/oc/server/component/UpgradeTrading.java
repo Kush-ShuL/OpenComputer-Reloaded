@@ -17,6 +17,7 @@ import li.cil.oc.api.prefab.AbstractValue;
 import li.cil.oc.util.InventoryUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -25,8 +26,8 @@ import net.minecraft.world.phys.*;
 import java.util.*;
 
 public final class UpgradeTrading extends UpgradeBase {
-    public UpgradeTrading(EnvironmentHost host){super(host,"trading","Trading upgrade","Capitalism H.O. 1200T",false);}
-    @Callback public Object[] getTrades(Context context,Arguments args){double range=Settings.get().tradingRange;List<Entity> merchants=host.world().getEntities((Entity)null,new AABB(position()).inflate(range),entity->entity instanceof Merchant&&entity.isAlive()&&entity.distanceToSqr(host.xPosition(),host.yPosition(),host.zPosition())<=range*range);merchants.sort(Comparator.comparing(Entity::getUUID));List<Trade> result=new ArrayList<>();for(int merchant=0;merchant<merchants.size();merchant++){Entity entity=merchants.get(merchant);Merchant trader=(Merchant)entity;for(int recipe=0;recipe<trader.getOffers().size();recipe++)result.add(new Trade(host,node().address(),entity,recipe,merchant+1));}return new Object[]{result.toArray()};}
+    public UpgradeTrading(EnvironmentHost host){super(host,"trading","Trading upgrade","Capitalism H.O. 1200T",false);((Component)node()).setVisibility(Visibility.Network);}
+    @Callback(doc="function():table -- Returns a table of trades in range as userdata objects.") public Object[] getTrades(Context context,Arguments args){double range=Settings.get().tradingRange;Vec3 center=Vec3.atCenterOf(position());List<Entity> merchants=host.world().getEntities((Entity)null,new AABB(position()).inflate(range),entity->entity instanceof Merchant&&entity.distanceToSqr(center)<=range*range);merchants.sort(Comparator.comparing(Entity::getUUID));List<Trade> result=new ArrayList<>();for(int merchant=0;merchant<merchants.size();merchant++){Entity entity=merchants.get(merchant);Merchant trader=(Merchant)entity;for(int recipe=0;recipe<trader.getOffers().size();recipe++)result.add(new Trade(host,node().address(),entity,recipe,merchant+1));}return new Object[]{result.toArray()};}
     /** Trade values retain their originating host, even after the upgrade is removed. */
     public static final class Trade extends AbstractValue {
         private String upgradeAddress="",hostAddress="",hostDimension="",merchantDimension="";
@@ -35,6 +36,7 @@ public final class UpgradeTrading extends UpgradeBase {
         private EnvironmentHost origin;
         private Entity merchantEntity;
         private int recipeIndex=-1,merchantIndex=-1;
+        private Integer legacyDimension;
 
         public Trade(){}
         private Trade(EnvironmentHost host,String address,Entity merchant,int recipe,int index){
@@ -57,6 +59,7 @@ public final class UpgradeTrading extends UpgradeBase {
             origin=actualHost(host);
             if(origin==null||origin.world()==null)return;
             hostDimension=origin.world().dimension().location().toString();
+            legacyDimension=null;
             hostPosition=BlockPos.containing(origin.xPosition(),origin.yPosition(),origin.zPosition());
             hostEntityId=origin instanceof Entity entity?entity.getUUID():null;
             if(origin instanceof MachineHost machine&&machine.machine()!=null&&machine.machine().node().address()!=null)hostAddress=machine.machine().node().address();
@@ -114,14 +117,18 @@ public final class UpgradeTrading extends UpgradeBase {
             return null;
         }
         private MerchantOffer recipe(Context context){Merchant merchant=merchant(context);return merchant!=null&&recipeIndex>=0&&recipeIndex<merchant.getOffers().size()?merchant.getOffers().get(recipeIndex):null;}
-        @Callback public Object[] getMerchantId(Context context,Arguments args){return new Object[]{merchantIndex};}
-        @Callback public Object[] getInput(Context context,Arguments args){MerchantOffer offer=recipe(context);return offer==null?new Object[]{null,null}:new Object[]{offer.getCostA().copy(),offer.getCostB().isEmpty()?null:offer.getCostB().copy()};}
-        @Callback public Object[] getOutput(Context context,Arguments args){MerchantOffer offer=recipe(context);return new Object[]{offer==null?null:offer.getResult().copy()};}
-        @Callback public Object[] isEnabled(Context context,Arguments args){MerchantOffer offer=recipe(context);return new Object[]{offer!=null&&!offer.isOutOfStock()};}
+        @Callback(doc="function():number -- Returns a sort index of the merchant that provides this trade") public Object[] getMerchantId(Context context,Arguments args){return new Object[]{merchantIndex};}
+        @Callback(doc="function():table, table -- Returns the items the merchant wants for this trade.") public Object[] getInput(Context context,Arguments args){MerchantOffer offer=recipe(context);return offer==null?new Object[]{null,null}:new Object[]{offer.getCostA().copy(),offer.getCostB().isEmpty()?null:offer.getCostB().copy()};}
+        @Callback(doc="function():table -- Returns the item the merchant offers for this trade.") public Object[] getOutput(Context context,Arguments args){MerchantOffer offer=recipe(context);return new Object[]{offer==null?null:offer.getResult().copy()};}
+        @Callback(doc="function():boolean -- Returns whether the merchant currently wants to trade this.") public Object[] isEnabled(Context context,Arguments args){MerchantOffer offer=recipe(context);return new Object[]{offer!=null&&!offer.isOutOfStock()};}
 
         private static SimpleContainer copyInventory(Agent agent){
-            SimpleContainer inventory=new SimpleContainer(agent.mainInventory().getContainerSize());
-            for(int slot=0;slot<inventory.getContainerSize();slot++)inventory.setItem(slot,agent.mainInventory().getItem(slot).copy());
+            Container source=agent.mainInventory();
+            SimpleContainer inventory=new SimpleContainer(source.getContainerSize()){
+                @Override public int getMaxStackSize(){return source.getMaxStackSize();}
+                @Override public boolean canPlaceItem(int slot,ItemStack stack){return source.canPlaceItem(slot,stack);}
+            };
+            for(int slot=0;slot<inventory.getContainerSize();slot++)inventory.setItem(slot,source.getItem(slot).copy());
             return inventory;
         }
         private static boolean take(SimpleContainer inventory,ItemStack cost,boolean exact){
@@ -140,18 +147,13 @@ public final class UpgradeTrading extends UpgradeBase {
             SimpleContainer inventory=copyInventory(agent);
             return take(inventory,offer.getCostA(),exact)&&take(inventory,offer.getCostB(),exact)?inventory:null;
         }
-        @Callback public Object[] trade(Context context,Arguments args){
+        @Callback(doc="function():boolean, string -- Returns true when trade succeeds and nil, error when not.") public Object[] trade(Context context,Arguments args){
             EnvironmentHost host=host(context);
-            if(!(host instanceof Agent agent)||agent.mainInventory().getContainerSize()==0)return new Object[]{false,"trading requires an inventory upgrade to be installed"};
+            if(!(host instanceof Agent agent)||agent.mainInventory()==null)return new Object[]{false,"trading requires an inventory upgrade to be installed"};
             Merchant merchant=merchant(context);MerchantOffer offer=recipe(context);
             if(!(merchant instanceof Entity entity)||offer==null)return new Object[]{false,"trade has become invalid"};
-            if(entity.level()!=host.world()||entity.distanceToSqr(host.xPosition(),host.yPosition(),host.zPosition())>Settings.get().tradingRange*Settings.get().tradingRange)return new Object[]{false,"out of range"};
+            if(entity.level()!=host.world()||!(entity.distanceToSqr(host.xPosition(),host.yPosition(),host.zPosition())<Settings.get().tradingRange*Settings.get().tradingRange))return new Object[]{false,"trade has become invalid"};
             if(offer.isOutOfStock())return new Object[]{false,"trade is disabled"};
-            var player=agent.player();
-            if(merchant.getTradingPlayer()!=null&&merchant.getTradingPlayer()!=player)return new Object[]{false,"trader is busy"};
-            var event=new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract(player,net.minecraft.world.InteractionHand.MAIN_HAND,entity);
-            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
-            if(event.isCanceled())return new Object[]{false,"not allowed"};
             SimpleContainer inventory=copyInventory(agent);
             ItemStack room=offer.getResult().copy();
             InventoryUtils.insertIntoInventory(room,InventoryUtils.asItemHandler(inventory),room.getCount(),true);
@@ -163,17 +165,25 @@ public final class UpgradeTrading extends UpgradeBase {
             InventoryUtils.insertIntoInventory(output,InventoryUtils.asItemHandler(inventory),output.getCount(),false);
             if(!output.isEmpty())return new Object[]{false,"not enough inventory space to trade"};
             for(int slot=0;slot<inventory.getContainerSize();slot++)agent.mainInventory().setItem(slot,inventory.getItem(slot));
-            var previous=merchant.getTradingPlayer();merchant.setTradingPlayer(player);
-            try{merchant.notifyTrade(offer);merchant.overrideXp(merchant.getVillagerXp()+offer.getXp());}finally{merchant.setTradingPlayer(previous);}
+            merchant.notifyTrade(offer);
             host.markChanged();return new Object[]{true};
         }
         @Override public void load(CompoundTag tag){
-            origin=null;merchantEntity=null;upgradeAddress=tag.getString("upgradeAddress");
+            origin=null;merchantEntity=null;legacyDimension=null;upgradeAddress=tag.getString("upgradeAddress");
             hostAddress=tag.getString("hostAddress");hostDimension=tag.getString("hostDimension");merchantDimension=tag.getString("merchantDimension");
             hostPosition=tag.contains("hostPosition")?BlockPos.of(tag.getLong("hostPosition")):null;
             hostEntityId=tag.hasUUID("hostEntity")?tag.getUUID("hostEntity"):null;
             merchantId=tag.hasUUID("merchant")?tag.getUUID("merchant"):null;
-            recipeIndex=tag.getInt("recipeID");merchantIndex=tag.getInt("merchantID");
+            if(hostDimension.isEmpty()&&tag.contains("dimensionID")){
+                legacyDimension=tag.getInt("dimensionID");
+                hostDimension=switch(legacyDimension){case -1->"minecraft:the_nether";case 0->"minecraft:overworld";case 1->"minecraft:the_end";default->"";};
+                if(merchantDimension.isEmpty())merchantDimension=hostDimension;
+                if(tag.getBoolean("hostIsEntity")){
+                    if(hostEntityId==null&&tag.contains("hostUUIDMost")&&tag.contains("hostUUIDLeast"))hostEntityId=new UUID(tag.getLong("hostUUIDMost"),tag.getLong("hostUUIDLeast"));
+                }else if(hostPosition==null&&tag.contains("hostX")&&tag.contains("hostY")&&tag.contains("hostZ"))hostPosition=new BlockPos(tag.getInt("hostX"),tag.getInt("hostY"),tag.getInt("hostZ"));
+                if(merchantId==null&&tag.contains("merchantUUIDMost")&&tag.contains("merchantUUIDLeast"))merchantId=new UUID(tag.getLong("merchantUUIDMost"),tag.getLong("merchantUUIDLeast"));
+            }
+            recipeIndex=tag.getInt("recipeID");merchantIndex=tag.contains("merchantID")?tag.getInt("merchantID"):-1;
         }
         @Override public void save(CompoundTag tag){
             if(validHost(origin))rememberHost(origin);
@@ -181,6 +191,12 @@ public final class UpgradeTrading extends UpgradeBase {
             if(hostPosition!=null)tag.putLong("hostPosition",hostPosition.asLong());
             if(hostEntityId!=null)tag.putUUID("hostEntity",hostEntityId);
             if(merchantId!=null)tag.putUUID("merchant",merchantId);
+            Integer dimension=switch(hostDimension){case "minecraft:the_nether"->-1;case "minecraft:overworld"->0;case "minecraft:the_end"->1;default->legacyDimension;};
+            if(dimension!=null)tag.putInt("dimensionID",dimension);
+            tag.putBoolean("hostIsEntity",hostEntityId!=null);
+            if(hostEntityId!=null){tag.putLong("hostUUIDMost",hostEntityId.getMostSignificantBits());tag.putLong("hostUUIDLeast",hostEntityId.getLeastSignificantBits());}
+            if(hostPosition!=null){tag.putInt("hostX",hostPosition.getX());tag.putInt("hostY",hostPosition.getY());tag.putInt("hostZ",hostPosition.getZ());}
+            if(merchantId!=null){tag.putLong("merchantUUIDMost",merchantId.getMostSignificantBits());tag.putLong("merchantUUIDLeast",merchantId.getLeastSignificantBits());}
             tag.putInt("recipeID",recipeIndex);tag.putInt("merchantID",merchantIndex);
         }
     }

@@ -679,7 +679,7 @@
       "id": "D09",
       "group": "设备与组件",
       "name": "数据卡",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/DataCard.scala"
       ],
@@ -689,8 +689,13 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/data-and-linked-cards.md",
+        "src/main/java/li/cil/oc/server/component/DataCard.java",
+        "src/main/java/li/cil/oc/common/item/NetworkCardItem.java",
+        "build/launch-support/windows-hardware-build.log"
+      ]
     },
     {
       "id": "D10",
@@ -917,7 +922,7 @@
       "id": "D22",
       "group": "设备与组件",
       "name": "量子链接卡",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/LinkedCard.scala"
       ],
@@ -927,8 +932,13 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/data-and-linked-cards.md",
+        "src/main/java/li/cil/oc/server/component/LinkedCard.java",
+        "src/main/java/li/cil/oc/server/network/QuantumNetwork.java",
+        "build/launch-support/windows-hardware-build.log"
+      ]
     },
     {
       "id": "D23",
@@ -1264,7 +1274,7 @@
       "id": "D41",
       "group": "设备与组件",
       "name": "天使升级",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/UpgradeAngel.scala"
       ],
@@ -1274,8 +1284,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/flight-upgrades.md",
+        "src/main/java/li/cil/oc/server/component/AgentComponent.java",
+        "build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt"
+      ]
     },
     {
       "id": "D42",
@@ -1325,7 +1339,7 @@
       "id": "D44",
       "group": "设备与组件",
       "name": "区块加载升级",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/UpgradeChunkloader.scala"
       ],
@@ -1335,14 +1349,18 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/chunkloader-upgrade.md",
+        "src/main/java/li/cil/oc/server/component/UpgradeChunkloader.java",
+        "build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt"
+      ]
     },
     {
       "id": "D45",
       "group": "设备与组件",
       "name": "合成升级",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/UpgradeCrafting.scala"
       ],
@@ -1352,8 +1370,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/crafting-and-trading.md",
+        "src/main/java/li/cil/oc/server/component/UpgradeCrafting.java",
+        "build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt"
+      ]
     },
     {
       "id": "D46",
@@ -1630,7 +1652,7 @@
       "id": "D59",
       "group": "设备与组件",
       "name": "交易升级",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/Trade.scala",
         "src/main/scala/li/cil/oc/server/component/UpgradeTrading.scala"
@@ -1641,8 +1663,13 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/crafting-and-trading.md",
+        "src/main/java/li/cil/oc/server/component/UpgradeTrading.java",
+        "src/main/java/li/cil/oc/server/machine/luac/UserdataAPI.java",
+        "build/api-compat-addon/devices/agent-actions-20261027-b2/device-results.txt"
+      ]
     },
     {
       "id": "D60",
@@ -1792,7 +1819,7 @@
       "id": "T07",
       "group": "工具与附加玩法",
       "name": "悬浮升级",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/UpgradeHover.scala"
       ],
@@ -1802,8 +1829,12 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "各等级高度和运动/能耗行为待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/flight-upgrades.md",
+        "src/main/java/li/cil/oc/common/init/AgentUpgrades.java",
+        "build/launch-support/windows-hardware-build.log"
+      ]
     },
     {
       "id": "T08",

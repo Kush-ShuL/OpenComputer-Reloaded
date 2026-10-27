@@ -405,9 +405,21 @@ prefer exact item/component matches, then retry both inputs from an untouched
 inventory copy with item-type matching. Trade userdata retains the real host
 and merchant independently of the installed upgrade, persists their identities
 and resolves unloaded hosts later without forcing chunks. Older preview values
-can still migrate through their saved upgrade address. These source changes pass
-the Windows build; real villager interaction and Trade cold recovery still need
-their own acceptance.
+can still migrate through their saved upgrade address. Original merchant search,
+strict execution distance, native merchant completion and legacy Trade userdata
+fields/class-name restoration now match the pinned source. The Windows scenario
+`agent-actions-20261027-b2` passed real two-input villager payment/output/use-count
+and insufficient-second-input atomicity, alongside a real vanilla cake recipe
+and its three bucket remainders. See [crafting and trading](crafting-and-trading.md).
+
+The same Windows scenario passed five real Robot air/solid-reference placement
+paths, including Angel `use` drawing from backpack slot one without changing the
+selected slot, and actual NeoForge nine-chunk tickets with disable, insufficient
+power and node-removal cleanup. Hover height rules and Data/Linked card behavior
+were matched against the pinned source; card tooltips and optional saved fields
+were completed. These close D09, D22, D41, D44, D45, D59 and T07 in the fixed
+120-item checklist. See [flight upgrades](flight-upgrades.md),
+[chunkloader](chunkloader-upgrade.md) and [data/linked cards](data-and-linked-cards.md).
 
 The external-addon fixture also passed an end-to-end IMC production contract:
 the real assembler validates and consumes addon inputs, applies energy over

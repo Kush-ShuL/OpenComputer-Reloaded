@@ -105,40 +105,201 @@ public abstract class AgentComponent extends AbstractManagedEnvironment implemen
     }
     private void collectDrops(BlockPos position,Set<Integer> existing){for(ItemEntity entity:agent.world().getEntitiesOfClass(ItemEntity.class,new AABB(position).inflate(2),entity->!existing.contains(entity.getId()))){ItemStack stack=entity.getItem();InventoryUtils.insertIntoInventory(stack,InventoryUtils.asItemHandler(agent.mainInventory()),stack.getCount(),false);if(stack.isEmpty())entity.discard();}agent.inventoryChanged();}
     private void toolUsed(ItemStack before,ItemStack after){var event=new RobotUsedToolEvent.ComputeDamageRate(agent,before,after,Settings.get().itemDamageRate);NeoForge.EVENT_BUS.post(event);if(event.getDamageRate()<1){if(!after.isEmpty()&&ItemStack.isSameItem(before,after)&&after.isDamageableItem()){int damage=Math.max(0,after.getDamageValue()-before.getDamageValue());int keep=(int)Math.floor(damage*event.getDamageRate()+agent.world().random.nextDouble());after.setDamageValue(before.getDamageValue()+keep);}NeoForge.EVENT_BUS.post(new RobotUsedToolEvent.ApplyDamageRate(agent,before,after,event.getDamageRate()));}agent.inventoryChanged();}
-    @Callback public Object[] use(Context context,Arguments args){return interact(context,args,false);}
-    @Callback public Object[] place(Context context,Arguments args){return interact(context,args,true);}
+    @Callback(doc="function(side:number[, face:number=side[, sneaky:boolean=false[, duration:number=0]]]):boolean, string -- Perform a 'right click' towards the specified side. The `face' allows a more precise click calibration, and is relative to the targeted blockspace.")
+    public Object[] use(Context context,Arguments args){return interact(context,args,false);}
+    @Callback(doc="function(side:number[, face:number=side[, sneaky:boolean=false]]):boolean -- Place a block towards the specified side. The `face' allows a more precise click calibration, and is relative to the targeted blockspace.")
+    public Object[] place(Context context,Arguments args){return interact(context,args,true);}
+
     private Object[] interact(Context context,Arguments args,boolean place){
-        Direction facing=side(args,0);AgentPlayer player=agent.runtime().player().orient(facing,args.optBoolean(2,false));var level=(ServerLevel)agent.world();BlockPos target=agent.blockPosition().relative(facing);
+        int value=args.checkInteger(0);
+        if(value<0||value>5)throw new IllegalArgumentException("invalid side");
+        if(agent.robot()&&value!=0&&value!=1&&value!=3)throw new IllegalArgumentException("unsupported side");
+        Direction facing=agent.robot()?agent.toGlobal(Direction.from3DDataValue(value)):Direction.from3DDataValue(value);
+        List<Direction> sides=new ArrayList<>();
+        if(args.isInteger(1)){
+            int face=args.checkInteger(1);
+            if(face<0||face>5)throw new IllegalArgumentException("invalid side");
+            Direction side=agent.toGlobal(Direction.from3DDataValue(face));
+            if(side==facing.getOpposite())throw new IllegalArgumentException("unsupported side");
+            sides.add(side);
+        }else{
+            sides.add(facing);
+            for(Direction side:Direction.values())if(side!=facing&&side!=facing.getOpposite())sides.add(side);
+        }
+        boolean sneaky=args.isBoolean(2)&&args.checkBoolean(2);
+        double duration=args.isDouble(3)?args.checkDouble(3):0;
+        AgentPlayer player=agent.runtime().player();
+        ServerLevel level=(ServerLevel)agent.world();
+        BlockPos target=agent.blockPosition().relative(facing);
         if(!level.hasChunkAt(target)||!level.mayInteract(player,target))return new Object[]{false};
-        Direction face=args.count()>1&&args.isInteger(1)?agent.toGlobal(Direction.from3DDataValue(args.checkInteger(1))):facing.getOpposite();
-        boolean previous=player.usingSelectedMaterial;player.usingSelectedMaterial=place;ItemStack before=player.getMainHandItem().copy();
+        boolean previous=player.usingSelectedMaterial;
+        int previousSlot=player.materialSlot;
+        player.usingSelectedMaterial=false;
         try{
-            if(place&&before.isEmpty())return new Object[]{null,"nothing selected"};
-            if(!place){
-                Vec3 eye=player.getEyePosition(),end=eye.add(Vec3.atLowerCornerOf(facing.getNormal()).scale(Settings.get().useAndPlaceRange));
-                var obstruction=level.clip(new net.minecraft.world.level.ClipContext(eye,end,net.minecraft.world.level.ClipContext.Block.OUTLINE,net.minecraft.world.level.ClipContext.Fluid.NONE,player));
-                double reach=obstruction.getType()==HitResult.Type.MISS?eye.distanceToSqr(end):eye.distanceToSqr(obstruction.getLocation());
-                Entity entity=level.getEntities(player,new AABB(eye,end).inflate(.35),candidate->candidate!=agent&&candidate.isAlive()&&candidate.isPickable()&&!(candidate instanceof ItemEntity)&&candidate.getBoundingBox().inflate(candidate.getPickRadius()).clip(eye,end).filter(hit->eye.distanceToSqr(hit)<=reach).isPresent()).stream().min(Comparator.comparingDouble(player::distanceToSqr)).orElse(null);
-                if(entity!=null){Set<Integer> old=new HashSet<>();for(ItemEntity item:level.getEntitiesOfClass(ItemEntity.class,entity.getBoundingBox().inflate(2)))old.add(item.getId());if(player.interactOn(entity,InteractionHand.MAIN_HAND).consumesAction()){collectDrops(entity.blockPosition(),old);toolUsed(before,player.getMainHandItem());delay(context,"use");return new Object[]{true,"item_interacted"};}}
-            }
-            BlockPos anchor=target;
-            if(place&&level.getBlockState(target).canBeReplaced()){
-                boolean reference=false;
-                for(Direction direction:Direction.values()){BlockPos adjacent=target.relative(direction);if(!level.getBlockState(adjacent).canBeReplaced()){anchor=adjacent;face=direction.getOpposite();reference=true;break;}}
-                if(!reference){var event=new RobotPlaceInAirEvent(agent);NeoForge.EVENT_BUS.post(event);if(!event.isAllowed())return new Object[]{false};}
-            }
-            var event=new RobotPlaceBlockEvent.Pre(agent,before,level,target);if(place){NeoForge.EVENT_BUS.post(event);if(event.isCanceled())return new Object[]{false};}
-            var hit=new BlockHitResult(Vec3.atCenterOf(anchor).add(Vec3.atLowerCornerOf(face.getNormal()).scale(.5)),face,anchor,false);
-            InteractionResult result=InteractionResult.PASS;
-            if(place||Settings.get().allowActivateBlocks)result=player.gameMode.useItemOn(player,level,player.getMainHandItem(),InteractionHand.MAIN_HAND,hit);
-            if(!result.consumesAction()&&!place&&!before.isEmpty())result=player.gameMode.useItem(player,level,player.getMainHandItem(),InteractionHand.MAIN_HAND);
-            if(result.consumesAction()){
-                if(place)NeoForge.EVENT_BUS.post(new RobotPlaceBlockEvent.Post(agent,before,level,target));
-                if(!place&&args.count()>3&&args.isDouble(3)&&Settings.get().allowUseItemsWithDuration){int ticks=(int)Math.min(72000,Math.max(0,args.checkDouble(3)*20));for(int tick=0;tick<ticks&&player.isUsingItem();tick++)player.getUseItem().getItem().onUseTick(level,player,player.getUseItem(),player.getUseItemRemainingTicks()-tick);player.releaseUsingItem();context.pause(ticks/20d);}
-                toolUsed(before,player.getMainHandItem());delay(context,place?"place":"use");return new Object[]{true,place?"item_placed":"item_used"};
+            if(place&&selectedStack().isEmpty())return new Object[]{null,"nothing selected"};
+            for(Direction side:sides){
+                orientForInteraction(player,facing,side,sneaky);
+                HitResult hit=pickForInteraction(level,player,facing,side);
+                if(place){
+                    boolean success=false;
+                    if(hit.getType()==HitResult.Type.BLOCK)
+                        success=placeFromInventory(player,(BlockHitResult)hit,false);
+                    else if(hit.getType()==HitResult.Type.MISS&&canPlaceInAir()
+                            &&closestInteractionEntity(level,player,facing)==null&&level.getBlockState(target).canBeReplaced())
+                        success=placeFromInventory(player,interactionFace(target,facing),false);
+                    if(success){delay(context,"place");return new Object[]{true};}
+                    continue;
+                }
+                ItemStack before=player.getMainHandItem().copy();
+                boolean usedEquipment=false;
+                String action=null;
+                try{
+                    if(hit instanceof EntityHitResult entityHit){
+                        usedEquipment=true;
+                        Entity entity=entityHit.getEntity();
+                        Set<Integer> old=new HashSet<>();
+                        for(ItemEntity item:level.getEntitiesOfClass(ItemEntity.class,entity.getBoundingBox().inflate(2)))old.add(item.getId());
+                        if(isEquippedItemAllowed(player)&&player.interactOn(entity,InteractionHand.MAIN_HAND).consumesAction()){
+                            collectDrops(entity.blockPosition(),old);
+                            action="item_interacted";
+                        }
+                    }
+                    if(action==null&&hit.getType()==HitResult.Type.BLOCK){
+                        usedEquipment=true;
+                        action=activateEquipped(context,player,(BlockHitResult)hit,facing,duration);
+                    }else if(action==null){
+                        if(canPlaceInAir()){
+                            // The original use callback tries main inventory slot zero before the tool.
+                            if(placeFromInventory(player,interactionFace(agent.blockPosition(),facing),true))action="item_placed";
+                            else{
+                                usedEquipment=true;
+                                BlockPos itemPos=target.relative(side);
+                                action=activateEquipped(context,player,interactionFace(itemPos,side.getOpposite()),facing,duration);
+                            }
+                        }
+                        if(action==null){
+                            usedEquipment=true;
+                            if(useEquippedItem(context,player,facing,duration))action="item_used";
+                        }
+                    }
+                }finally{if(usedEquipment)toolUsed(before,player.getMainHandItem());}
+                if(action!=null){delay(context,"use");return new Object[]{true,action};}
             }
             return new Object[]{false};
-        }finally{player.usingSelectedMaterial=previous;player.setShiftKeyDown(false);}
+        }finally{
+            player.usingSelectedMaterial=previous;
+            player.materialSlot=previousSlot;
+            player.setShiftKeyDown(false);
+        }
+    }
+
+    private void orientForInteraction(AgentPlayer player,Direction facing,Direction side,boolean sneaky){
+        player.orient(facing,sneaky);
+        Vec3 direction=Vec3.atLowerCornerOf(facing.getNormal()).add(Vec3.atLowerCornerOf(side.getNormal())).normalize();
+        player.setYRot((float)Math.toDegrees(-Math.atan2(direction.x,direction.z)));
+        player.setXRot((float)(Math.toDegrees(-Math.atan2(direction.y,Math.sqrt(direction.x*direction.x+direction.z*direction.z)))*.99));
+    }
+
+    private Entity closestInteractionEntity(ServerLevel level,AgentPlayer player,Direction facing){
+        Vec3 center=new Vec3(agent.xPosition(),agent.yPosition(),agent.zPosition());
+        return level.getEntities(player,new AABB(agent.blockPosition().relative(facing)),entity->entity!=agent&&!entity.isRemoved())
+                .stream().min(Comparator.comparingDouble(entity->entity.position().distanceToSqr(center))).orElse(null);
+    }
+
+    private HitResult pickForInteraction(ServerLevel level,AgentPlayer player,Direction facing,Direction side){
+        Vec3 center=new Vec3(agent.xPosition(),agent.yPosition(),agent.zPosition());
+        Vec3 offset=Vec3.atLowerCornerOf(facing.getNormal());
+        // Start just outside the host so its own block is never a placement reference.
+        Vec3 origin=center.add(offset.scale(.50001));
+        Vec3 end=center.add(offset.scale(1.01)).add(Vec3.atLowerCornerOf(side.getNormal()).scale(Settings.get().useAndPlaceRange));
+        BlockHitResult hit=level.clip(new net.minecraft.world.level.ClipContext(origin,end,
+                net.minecraft.world.level.ClipContext.Block.OUTLINE,net.minecraft.world.level.ClipContext.Fluid.NONE,player));
+        Entity entity=closestInteractionEntity(level,player,facing);
+        if((entity instanceof LivingEntity||entity instanceof net.minecraft.world.entity.vehicle.AbstractMinecart
+                ||entity instanceof li.cil.oc.api.internal.Drone)
+                &&(hit.getType()==HitResult.Type.MISS||center.distanceToSqr(hit.getLocation())>center.distanceToSqr(entity.position())))
+            return new EntityHitResult(entity);
+        return hit;
+    }
+
+    private boolean canPlaceInAir(){
+        var event=new RobotPlaceInAirEvent(agent);
+        NeoForge.EVENT_BUS.post(event);
+        return event.isAllowed();
+    }
+
+    private static BlockHitResult interactionFace(BlockPos pos,Direction face){
+        return new BlockHitResult(Vec3.atCenterOf(pos).add(Vec3.atLowerCornerOf(face.getNormal()).scale(.5)),face,pos,false);
+    }
+
+    private boolean rightClickAllowed(AgentPlayer player,BlockHitResult hit){
+        var level=agent.world();
+        if(!level.hasChunkAt(hit.getBlockPos())||!level.mayInteract(player,hit.getBlockPos()))return false;
+        var event=net.neoforged.neoforge.common.CommonHooks.onRightClickBlock(player,InteractionHand.MAIN_HAND,hit.getBlockPos(),hit);
+        return !event.isCanceled()&&!event.getUseBlock().isFalse()&&!event.getUseItem().isFalse();
+    }
+
+    private boolean placeFromInventory(AgentPlayer player,BlockHitResult hit,boolean firstSlot){
+        boolean previous=player.usingSelectedMaterial;
+        int previousSlot=player.materialSlot;
+        player.usingSelectedMaterial=true;
+        if(firstSlot)player.materialSlot=0;
+        try{return rightClickAllowed(player,hit)&&placeHeldItem(player,hit);}
+        finally{player.usingSelectedMaterial=previous;player.materialSlot=previousSlot;agent.inventoryChanged();}
+    }
+
+    private boolean placeHeldItem(AgentPlayer player,BlockHitResult hit){
+        ItemStack stack=player.getMainHandItem();
+        if(stack.isEmpty())return false;
+        var event=new RobotPlaceBlockEvent.Pre(agent,stack,agent.world(),hit.getBlockPos());
+        NeoForge.EVENT_BUS.post(event);
+        if(event.isCanceled())return false;
+        InteractionResult result=stack.useOn(new net.minecraft.world.item.context.UseOnContext(player,InteractionHand.MAIN_HAND,hit));
+        if(!result.consumesAction())return false;
+        NeoForge.EVENT_BUS.post(new RobotPlaceBlockEvent.Post(agent,stack,agent.world(),hit.getBlockPos()));
+        return true;
+    }
+
+    private boolean isEquippedItemAllowed(AgentPlayer player){
+        ItemStack stack=player.getMainHandItem();
+        return stack.isEmpty()||(stack.getItem()!=net.minecraft.world.item.Items.LEAD
+                &&(Settings.get().allowUseItemsWithDuration||stack.getUseDuration(player)<=0));
+    }
+
+    private String activateEquipped(Context context,AgentPlayer player,BlockHitResult hit,Direction facing,double duration){
+        if(!rightClickAllowed(player,hit))return null;
+        var level=agent.world();
+        ItemStack stack=player.getMainHandItem();
+        if(!stack.isEmpty()&&stack.onItemUseFirst(new net.minecraft.world.item.context.UseOnContext(player,InteractionHand.MAIN_HAND,hit)).consumesAction())
+            return "item_used";
+        var state=level.getBlockState(hit.getBlockPos());
+        if(!state.isAir()&&Settings.get().allowActivateBlocks
+                &&(!player.isShiftKeyDown()||stack.isEmpty()||stack.doesSneakBypassUse(level,hit.getBlockPos(),player))){
+            ItemInteractionResult result=state.useItemOn(stack,level,player,InteractionHand.MAIN_HAND,hit);
+            if(result.consumesAction())return "block_activated";
+            if(result==ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION&&state.useWithoutItem(level,player,hit).consumesAction())
+                return "block_activated";
+        }
+        if(duration<=Double.MIN_VALUE&&isEquippedItemAllowed(player)&&placeHeldItem(player,hit))return "item_placed";
+        return useEquippedItem(context,player,facing,duration)?"item_used":null;
+    }
+
+    private boolean useEquippedItem(Context context,AgentPlayer player,Direction facing,double duration){
+        if(!isEquippedItemAllowed(player)||player.getMainHandItem().isEmpty())return false;
+        ItemStack before=player.getMainHandItem().copy();
+        Vec3 previous=player.position();
+        player.setPos(previous.x+facing.getStepX()*.5,previous.y,previous.z+facing.getStepZ()*.5);
+        try{
+            InteractionResult result=player.gameMode.useItem(player,agent.world(),player.getMainHandItem(),InteractionHand.MAIN_HAND);
+            int ticks=Math.max(0,Math.min(before.getUseDuration(player),(int)(duration*20)));
+            if(Settings.get().allowUseItemsWithDuration){
+                for(int tick=0;tick<ticks&&player.isUsingItem();tick++)
+                    player.getUseItem().getItem().onUseTick(agent.world(),player,player.getUseItem(),player.getUseItemRemainingTicks()-tick);
+                if(player.isUsingItem())player.releaseUsingItem();
+                if(ticks>0)context.pause(ticks/20d);
+            }
+            return result.consumesAction()&&!ItemStack.matches(before,player.getMainHandItem());
+        }finally{player.setPos(previous.x,previous.y,previous.z);}
     }
     @Callback public Object[] tankCount(Context context, Arguments args) { return new Object[]{agent.tank().tankCount()}; }
     private int checkTank(Arguments args, int index) {
