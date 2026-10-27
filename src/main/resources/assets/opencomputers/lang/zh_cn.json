@@ -618,5 +618,7 @@
   "tooltip.opencomputers.gpu_operations": "操作数 / tick：%s",
   "tooltip.opencomputers.storage_size": "存储容量：%s KiB",
   "item.opencomputers.floppycontainer": "软盘容器",
-  "oc:tooltip.cpu.Components": "支持的组件数：%s"
+  "oc:tooltip.cpu.Components": "支持的组件数：%s",
+  "jei.opencomputers.manual": "OpenComputers 手册",
+  "jei.opencomputers.api": "OpenComputers API"
 }

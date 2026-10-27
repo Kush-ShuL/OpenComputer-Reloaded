@@ -37,3 +37,17 @@ type="optional"
 versionRange="[1.120.2,)"
 ordering="AFTER"
 side="BOTH"
+
+[[dependencies.opencomputers]]
+modId="jei"
+type="optional"
+versionRange="[19.21.0.247,20)"
+ordering="AFTER"
+side="CLIENT"
+
+[[dependencies.opencomputers]]
+modId="ae2"
+type="optional"
+versionRange="[19.2.14,)"
+ordering="AFTER"
+side="BOTH"

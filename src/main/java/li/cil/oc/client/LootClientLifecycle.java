@@ -31,6 +31,7 @@ public final class LootClientLifecycle {
         // Ignore a queued packet belonging to a connection which has already closed or changed.
         if (minecraft.player == null || minecraft.player != expectedPlayer || minecraft.getConnection() == null) return;
         Recipes.setClientWorldLootDisks(disks);
+        li.cil.oc.client.integration.jei.JeiIntegration.refreshLoot();
         lastParameters = parameters(minecraft, minecraft.player);
         refresh(minecraft, lastParameters, minecraft.getConnection(), true);
     }
@@ -42,6 +43,7 @@ public final class LootClientLifecycle {
             return;
         }
         Recipes.setClientWorldLootDisks(List.of());
+        li.cil.oc.client.integration.jei.JeiIntegration.refreshLoot();
         CreativeModeTab.ItemDisplayParameters parameters = departingPlayer == null
                 ? lastParameters : parameters(minecraft, departingPlayer);
         if (parameters != null) refresh(minecraft, parameters,

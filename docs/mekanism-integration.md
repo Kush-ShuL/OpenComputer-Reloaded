@@ -72,21 +72,19 @@ li.cil.oc.common.integration.mekanism.MekanismIntegration.initializeDrivers();
 
 官方 API 不匹配时，启动日志报告具体绑定错误，其他模块继续初始化。普通对象不受转换器影响。
 
-## 真实 Mekanism 验证步骤
+## 已验证范围
 
-以下是后续实际验收流程，本次源码实现不表示已经在真实 Mekanism 客户端验收：
+Windows Java 21、NeoForge 21.1.224 与官方完整 Mekanism 10.7.19.85 已通过三个
+独立隔离世界场景：默认启用且调试 ID 关闭、启用且调试 ID 开启、两个原模块 ID 同时
+列入黑名单。测试通过真实 Configurator 八种模式和 `BlockState.useItemOn` 验证
+NetSplitter 的六面状态及蹲下操作的反面选择。
 
-1. 在隔离的 Minecraft 1.21.1 / NeoForge 环境加入真实 Mekanism 10.7.x；例如 10.7.19
-   需要 NeoForge 至少 21.1.194。启动应无 chemical API 绑定错误。
-2. 持 Configurator 切到 WRENCH 模式，对 OC Adapter 或 Net Splitter 使用扳手，确认对应
-   侧面的连接状态确实改变；切到 ROTATE、EMPTY 和配置模式，确认不触发该 OC 扳手操作。
-   客户端屏幕扳手提示也应与模式同步。
-3. 在一个真实 Java 回调中返回 Mekanism 注册表中的氢气 ChemicalStack，让 OC Driver
-   转换链处理它；确认 Lua 可读到 `amount/name/label`。使用大于 `Integer.MAX_VALUE`
-   的数量确认 Java 转换结果没有 32 位溢出，并依据 Lua 架构评估更大的整数。
-4. 启用 `debug.insertIdsInConverters` 后比较 `id` 与真实化学品注册表 ID；关闭后不应有
-   `id`。空 ChemicalStack 应为零数量和官方空化学品身份。
-5. 将两个原 ID 同时加入黑名单后重启，确认上述集成不注册；分别禁用它们可以独立关闭
-   扳手与转换器。移除 Mekanism 后启动，确认 OC 本体可以运行。
+真实机箱的原生 Lua 5.3 回调已验证 ChemicalStack 的数量、注册名、显示名、空栈、
+调试 ID，以及 `2147483665`、`9007199254740993`、`9223372036854775807` 三个
+整数边界；期望使用独立的 Lua 整数文字和十进制字符串。普通对象与普通表保持原有
+转换行为。两个模块同时被禁用时，相同玩家交互与回调场景证明集成不再生效。
+
+这些结果覆盖服务器行为和原生转换链。客户端提示、远程多人连接及两个黑名单项分别
+单独关闭的场景仍未验收。
 
 这里没有新增化学品库存或化学品容器驱动：原 pinned 模块也只提供返回值转换器。

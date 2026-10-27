@@ -49,8 +49,10 @@ hologram tiers with real voxel VBOs, shaders and revisioned synchronization,
 have been connected to registration. These additions require interactive
 acceptance; compilation does not establish their rendering or world behavior.
 The bundled-redstone core retains all sixteen channels, provider aggregation,
-per-color events and NBT. Concrete optional-mod adapters and wireless redstone
-are still outstanding; registering the core does not claim those integrations.
+per-color events and NBT. The opt-in CC:Tweaked bridge registers both input and
+output providers against that same state; its full sixteen-channel gameplay
+acceptance is outstanding. Other optional bundled and wireless redstone bridges
+still need migration or acceptance for supported modern runtimes.
 
 The manual API now has a Java client backend, resource and addon providers,
 language fallback, tabs and interactive Markdown rendering using the original
@@ -98,6 +100,38 @@ own-pet visibility setting, optional GL/font diagnostics and periodic light
 updates. The remaining original diagnostic commands and integrated-server wireless
 tree visualization are connected. These client additions compile; their visual
 and multiplayer acceptance remains outstanding.
+
+The original JEI manual/API categories, crafting extensions, configured-device
+subtypes, slot hover hints and client program-disk refresh are now implemented in
+Java against the official optional API. The Windows build passed; the JEI client
+screens and live world transitions still need acceptance.
+
+The optional AE2 integration passed a Windows dedicated-server scenario with
+official AE2 19.2.14 and GuideME 21.1.1. Native Lua 5.3 reached real Adapter
+components, queried actual ME stock/CPU/energy/cell state, configured database
+filters, exported eight iron and imported eleven copper without changing item
+totals, and completed a real crafting request using a CPU, pattern and Molecular
+Assembler. SDK crafting values passed registry-aware save/load round-trips;
+pending-job cold recovery, fuzzy export, spatial movement and remote multiplayer
+remain separate acceptance work. See [AE2 integration](appeng-integration.md).
+
+The optional Mekanism bridge passed Windows dedicated-server scenarios with the
+official 10.7.19.85 runtime: actual Configurator modes and NetSplitter interactions,
+native Lua 5.3 ChemicalStack conversion including 64-bit integer boundaries,
+debug IDs on/off, and both original blacklist entries enabled together. This does
+not establish its client hints or remote multiplayer acceptance.
+
+The optional EnderStorage bridge passed an actual Windows dedicated-server run
+with official EnderStorage 2.13.0.191 and CodeChickenLib 4.6.1.529. A real Case's
+native Lua 5.3 VM used a real Adapter to call all five callbacks on an Ender Chest
+and Ender Tank, including frequency bounds and all sixteen colors. Actual item
+and fluid capabilities retained separate public-frequency and private-owner
+contents, and OC frequency changes preserved owner UUID and display name.
+Owner setup used the foreign mod's public API; player diamond interaction,
+remote synchronization and cold-process recovery are not established by this run.
+Separate blacklist runs passed with the generic inventory/tank drivers both off
+and explicitly enabled: no dedicated API leaked, existing generic wrappers
+rejected all five methods, and actual contents/frequency/ownership remained intact.
 
 Program-disk chest generation preserves the original vanilla pool objects and
 enchantment holder ownership. A Windows real-world run generated all four target
@@ -173,7 +207,7 @@ tmpfs position, userdata/iterator state, signal and component identities. A
 separate LuaJ world passed its expected reboot and disk-data restoration. A
 separate native Lua 5.2 world then passed prepare and resume in different JVMs,
 including real chunk unload/reload, one BIOS boot and two userdata restorations.
-Cold-world restoration on other physical host types still needs acceptance.
+Cold-world restoration on the remaining physical host types still needs acceptance.
 No public SDK signatures changed for these runtime fixes.
 
 A real configured robot also passed native Lua 5.3 cold-process restoration after
@@ -181,7 +215,30 @@ its Lua program moved the physical proxy upward. The second JVM retained the sam
 machine/component identities, native locals and nested coroutine, userdata item
 data and iterator cursor, open tmpfs/HDD offsets, EEPROM and queued signal, plus
 the robot's name, owner, selected slot and inventory. The BIOS boot count remained
-one. Other host types and the robot's LuaJ reboot path need their own acceptance.
+one. The robot's LuaJ reboot path still needs its own acceptance.
+
+A configured drone then passed native Lua 5.3 prepare/resume in separate Windows
+JVMs. The actual entity loaded from world storage with its original UUID, saved
+position/velocity/flight target, owner and inventory. Its native stack, nested
+coroutine, userdata, tmpfs descriptor offset, EEPROM, queued signal and all node
+identities resumed with one BIOS boot. The fixture keeps the original drone's
+hardware limits: it adds no unsupported hard drive.
+
+A configured tablet also passed separate-JVM native Lua 5.3 restoration. The
+same item was saved in a real chest's world NBT, returned to a new holder and
+recreated through the item's normal inventory tick. Its VM and userdata, tmpfs,
+HDD and menu-inserted bay-floppy offsets, EEPROM, queued signal and all node
+identities survived. This establishes chest/world storage restoration, not
+online player-inventory persistence or remote multiplayer use.
+
+The assembled microcontroller passed native Lua 5.3 prepare/resume in two Windows
+JVMs through its real placement, EEPROM menu and power interaction. The second
+process retained the native stack and nested coroutine, registry-aware userdata,
+open tmpfs offset, EEPROM, queued signal, owner, orientation, hardware metadata,
+all node identities and six saved output flags. Real packets entered through
+every non-front side and left only through the configured open outputs; the five
+external graphs remained separate from one another and from the private VM.
+Its original hardware does not permit an HDD, and the fixture adds none.
 
 The external-addon fixture also passed an end-to-end IMC production contract:
 the real assembler validates and consumes addon inputs, applies energy over
