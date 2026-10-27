@@ -21,7 +21,7 @@ public final class FileSystem implements FileSystemAPI {
     public static boolean isValidFilename(String path){return path!=null&&path.chars().noneMatch(value->"\\:*?\"<>|".indexOf(value)>=0);}
     public static String validatePath(String path){
         if(!isValidFilename(path))throw failure(new IOException("path contains invalid characters"));
-        Deque<String> segments=new ArrayDeque<>();for(String segment:path.split("/")){if(segment.isEmpty()||segment.equals("."))continue;if(segment.equals("..")){if(segments.isEmpty())throw failure(new IOException("path escapes file system root"));segments.removeLast();}else segments.addLast(segment);}return String.join("/",segments);
+        boolean absolute=path.startsWith("/");Deque<String> segments=new ArrayDeque<>();for(String segment:path.split("/")){if(segment.isEmpty()||segment.equals("."))continue;if(segment.equals("..")){if(segments.isEmpty()){if(!absolute)throw failure(new FileNotFoundException(path));}else segments.removeLast();}else segments.addLast(segment);}return String.join("/",segments);
     }
     @SuppressWarnings("unchecked") public static <E extends Throwable> RuntimeException failure(Throwable error)throws E{throw(E)error;}
     public static Path saveRoot(){var server=ServerLifecycleHooks.getCurrentServer();if(server==null)throw new IllegalStateException("File systems require a running Minecraft server");return server.getWorldPath(LevelResource.ROOT);}
@@ -41,8 +41,8 @@ public final class FileSystem implements FileSystemAPI {
         return null;
     }
     public li.cil.oc.api.fs.FileSystem fromSaveDirectory(String root,long capacity,boolean buffered){
-        Path base=saveRoot().resolve(Settings.savePath).normalize(),path=base.resolve(validatePath(root)).normalize();if(!path.startsWith(base))throw new IllegalArgumentException("invalid file system root");
-        try{if(Files.exists(path)&&!Files.isDirectory(path))Files.delete(path);Files.createDirectories(path);return buffered?new BufferedFileSystem(path,capacity):new PathFileSystem(path,false,capacity);}catch(IOException error){throw failure(error);}
+        Path base=saveRoot().resolve(Settings.savePath).normalize(),path=base.resolve(root).normalize();if(!path.startsWith(base))throw new IllegalArgumentException("invalid file system root");
+        try{if(Files.exists(path)&&!Files.isDirectory(path))Files.delete(path);Files.createDirectories(path);return buffered?new BufferedFileSystem(path,capacity):new PathFileSystem(path,false,capacity);}catch(IOException error){return null;}
     }
     public li.cil.oc.api.fs.FileSystem fromMemory(long capacity){return new VolatileFileSystem(capacity);}
     public li.cil.oc.api.fs.FileSystem asReadOnly(li.cil.oc.api.fs.FileSystem fs){return fs.isReadOnly()?fs:new ReadOnlyWrapper(fs);}

@@ -61,6 +61,11 @@ public final class BuiltinAssemblyTemplates {
                 MicrocontrollerData data = new MicrocontrollerData(stack, registries);
                 return recovered(join(new ItemStack[]{item(ItemUtils.caseNameWithTierSuffix("microcontrollercase", data.tier))}, data.components));
             });
+            DisassemblerTemplates.add("Navigation Upgrade", stack -> named(stack, "navigationupgrade"), (stack, ingredients, registries) -> {
+                NavigationUpgradeData data = new NavigationUpgradeData(stack, registries);
+                return recovered(Arrays.stream(ingredients).map(part -> part.is(net.minecraft.world.item.Items.FILLED_MAP)
+                        ? data.map.copy() : part.copy()).toArray(ItemStack[]::new));
+            });
             AssemblerTemplates.addFilter(BuiltinAssemblyTemplates::allowedBase);
             registered = true;
         } catch (ReflectiveOperationException error) { throw new IllegalStateException("Could not register the original built-in assembly templates", error); }

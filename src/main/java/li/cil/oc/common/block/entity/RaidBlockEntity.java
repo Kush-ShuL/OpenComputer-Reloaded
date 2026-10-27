@@ -64,7 +64,7 @@ public final class RaidBlockEntity extends BlockEntity implements Environment,En
     @Override public void onMessage(Message message){}
     @Override public Node[] onAnalyze(Player player,Direction side,float x,float y,float z){return new Node[]{filesystemNode()};}
     @Override public void onComponentActivity(String address,boolean network){if(!network)lastAccess=System.currentTimeMillis();}
-    @Override public void onLoad(){super.onLoad();initialize();}
+    @Override public void onLoad(){super.onLoad();disposed=false;initialize();}
     private void dispose(){if(disposed)return;if(volume!=null){pendingFileSystem=volume.close(level.registryAccess());volume=null;}if(node!=null){pendingNode=new CompoundTag();node.save(pendingNode);node.remove();}disposed=true;initialized=false;}
     @Override public void setRemoved(){dispose();super.setRemoved();}
     @Override public void onChunkUnloaded(){dispose();super.onChunkUnloaded();}

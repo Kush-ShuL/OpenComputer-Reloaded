@@ -457,6 +457,26 @@ multiple work ticks and produces the requested item; the real disassembler
 uses the addon callback and inserts its guaranteed drops into an adjacent chest.
 This confirms those extension flows, not every built-in device recipe or model.
 
+The host/storage/tool batch closes C11, D02, D03, D07, D11, D14, D32, D33,
+D38, T01, T02, T03, T04, T05 and T16, bringing the fixed checklist to 82/120
+complete and 38 remaining. Windows NeoForge 21.1.224 run
+`host-storage-20261027-d3` passed in 67 actual world ticks. It covers real
+filesystem quota/ownership/descriptor semantics, raw media, hot hardware and
+blade removal, closed-before-save item drops, buffered HDD immediate remount,
+network-buffered Case FE, production comparators, stored navigation-map recovery,
+RAID transport/member changes, wrench/debugger and material interactions.
+`storage-cold-20261027-d1` also passed native Lua 5.3 prepare/resume in separate
+Windows JVMs, including a real chunk unload. See
+[machine hosts](machine-hosts.md), [storage](storage-filesystems.md),
+[production](production-devices.md) and [player tools](player-tools.md).
+
+Windows client `manual-20261027-d2` passed real manual provider registration,
+image/link clicks, original pages, scroll/history, Case context and item reset.
+Three actual rendered screenshots were inspected. Legacy shared-item images and
+lowercase packaged diagram paths resolve, while inline code uses the OC font.
+See [player manual](player-manual.md). These runs do not change the shared
+multiplayer, visual, translation or final release checklist items.
+
 The standalone SDK has successfully compiled and published to Maven Local.
 A separately compiled addon has passed on a Windows dedicated server: legacy
 Converter binaries, registry-aware persistence, network and prefab lifecycles,
@@ -464,9 +484,9 @@ placed SimpleComponent discovery, and native Lua 5.3 / LuaJ callback conversion
 and IMC program mappings. The new Windows client also starts and joins the
 development world. Manual rendering and newly registered devices still need
 interactive acceptance. The remote JitPack tag build has succeeded and its Maven
-POM is available. The player manual item is registered, reuses the original
-book + tier-one chip recipes, and opens the client manual with page history or
-contextual block navigation; its interactive acceptance remains pending.
+POM is available. The player manual retains the original book + tier-one chip
+recipes; its page history, contextual navigation and interactions passed the
+Windows client scenario above.
 
 ## API and release packaging
 

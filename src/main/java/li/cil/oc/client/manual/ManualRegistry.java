@@ -120,7 +120,7 @@ public final class ManualRegistry implements ManualAPI {
 
     private List<String> contentWithRedirects(String path, String language) {
         var seen = new LinkedHashSet<String>();
-        while (seen.size() < 128) {
+        while (true) {
             path = normalize(path);
             if (!seen.add(path)) {
                 var message = new ArrayList<String>();
@@ -133,7 +133,6 @@ public final class ManualRegistry implements ManualAPI {
             if (!first.regionMatches(true, 0, "#redirect ", 0, 10)) return content;
             path = makeRelative(first.substring(10).trim(), path).replace(LANGUAGE_KEY, language);
         }
-        return List.of("Too many manual redirects.", path);
     }
 
     private List<String> lookup(String path) {
@@ -159,6 +158,11 @@ public final class ManualRegistry implements ManualAPI {
             // Also repair direct links and a history entry created before this alias existed.
             // A pack's explicit variant page still wins over this shared-page fallback.
             resourcePath = resourcePath.substring(0, resourcePath.length() - "carpetedcapacitor.md".length()) + "capacitor.md";
+            location = ResourceLocation.fromNamespaceAndPath(OpenComputers.ID, resourcePath);
+            resource = Minecraft.getInstance().getResourceManager().getResource(location);
+        }
+        if (resource.isEmpty() && resourcePath.endsWith("/item/cu.md")) {
+            resourcePath = resourcePath.substring(0, resourcePath.length() - "cu.md".length()) + "controlunit.md";
             location = ResourceLocation.fromNamespaceAndPath(OpenComputers.ID, resourcePath);
             resource = Minecraft.getInstance().getResourceManager().getResource(location);
         }
@@ -206,7 +210,7 @@ public final class ManualRegistry implements ManualAPI {
         execute(() -> {
             String clean = normalize(path);
             synchronized (history) {
-                if (!history.peek().path.equals(clean)) history.push(new HistoryEntry(clean));
+                if (!(Minecraft.getInstance().screen instanceof ManualScreen) || !history.peek().path.equals(clean)) history.push(new HistoryEntry(clean));
             }
             refreshScreen();
         });

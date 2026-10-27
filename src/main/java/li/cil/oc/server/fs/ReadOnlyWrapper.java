@@ -18,7 +18,7 @@ public final class ReadOnlyWrapper implements li.cil.oc.api.fs.FileSystem {
     public boolean makeDirectory(String path){return false;}
     public boolean rename(String from,String to){return false;}
     public boolean setLastModified(String path,long time){return false;}
-    public int open(String path,Mode mode)throws FileNotFoundException{if(mode!=Mode.Read)throw new FileNotFoundException("file system is read only");return inner.open(path,mode);}
+    public int open(String path,Mode mode)throws FileNotFoundException{if(mode!=Mode.Read)throw new FileNotFoundException("read-only filesystem; cannot open for "+(mode==Mode.Append?"appending: ":"writing: ")+path);return inner.open(path,mode);}
     public Handle getHandle(int id){return inner.getHandle(id);}
     public void close(){inner.close();}
     public void load(CompoundTag nbt){inner.load(nbt);}

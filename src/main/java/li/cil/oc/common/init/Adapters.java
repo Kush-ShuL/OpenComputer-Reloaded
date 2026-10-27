@@ -26,7 +26,7 @@ public final class Adapters {
     private static final DeferredRegister<BlockEntityType<?>> TYPES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, "opencomputers");
     public static final Supplier<AdapterBlock> BLOCK = BLOCKS.register("adapter", () -> new AdapterBlock(BlockBehaviour.Properties.of().strength(2, 5).sound(SoundType.METAL), () -> Adapters.TYPE.get()));
     public static final Supplier<BlockEntityType<AdapterBlockEntity>> TYPE = TYPES.register("adapter", () -> BlockEntityType.Builder.of((pos, state) -> new AdapterBlockEntity(Adapters.TYPE.get(), pos, state), BLOCK.get()).build(null));
-    public static final Supplier<BlockItem> ITEM = ITEMS.register("adapter", () -> new BlockItem(BLOCK.get(), new Item.Properties()));
+    public static final Supplier<BlockItem> ITEM = ITEMS.register("adapter", () -> new li.cil.oc.common.item.MachineHostBlockItem(BLOCK.get(), new Item.Properties()));
     public static final Supplier<UpgradeMFItem> MFU = ITEMS.register("mfu", () -> new UpgradeMFItem(new Item.Properties().rarity(Rarity.RARE)));
     private static boolean driversInitialized;
     static { Items.INSTANCE.registerBlock("adapter", BLOCK, ITEM); Items.INSTANCE.registerItem("mfu", MFU); }

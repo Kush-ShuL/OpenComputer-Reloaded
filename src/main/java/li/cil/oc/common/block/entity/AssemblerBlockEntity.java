@@ -18,10 +18,10 @@ public final class AssemblerBlockEntity extends WorkstationBlockEntity {
     @Override protected String deviceName() { return "assembler"; }
     @Override protected double rate() { return Settings.get().assemblerRate; }
     public AssemblerTemplates.Template template() { return AssemblerTemplates.select(getItem(0)).orElse(null); }
-    @Override public boolean busy() { return !output.isEmpty() || clientBusy; }
+    @Override public boolean busy() { return remaining > 0 || clientBusy; }
     /** A snapshot of the actual device being assembled, without exposing mutable inventory state. */
     public ItemStack pendingOutput() { return output.copy(); }
-    @Override public boolean canStart() { var template = template(); return !busy() && template != null && template.validate(this).valid(); }
+    @Override public boolean canStart() { var template = template(); return !busy() && output.isEmpty() && template != null && template.validate(this).valid(); }
     @Override public double progress() { return !busy() || total <= 0 ? 0 : Math.max(0, Math.min(100, (1 - remaining / total) * 100)); }
     @Override public int timeRemaining() { return (int) Math.min(Integer.MAX_VALUE, Math.max(0, remaining / Settings.get().assemblerTickAmount / 20)); }
     public AssemblerTemplates.Slot slotInfo(int slot) {
@@ -33,7 +33,7 @@ public final class AssemblerBlockEntity extends WorkstationBlockEntity {
         return AssemblerTemplates.NO_SLOT;
     }
     @Override public boolean canPlaceItem(int slot, ItemStack stack) {
-        return !busy() && slot >= 0 && slot < items.size() && !stack.isEmpty()
+        return !busy() && output.isEmpty() && slot >= 0 && slot < items.size() && !stack.isEmpty()
                 && (slot == 0 ? AssemblerTemplates.select(stack).isPresent() : slotInfo(slot).validate(this, slot, stack));
     }
     public boolean start(boolean immediate) {

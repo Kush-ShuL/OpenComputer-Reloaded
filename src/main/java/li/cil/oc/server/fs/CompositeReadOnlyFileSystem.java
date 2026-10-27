@@ -16,7 +16,7 @@ public final class CompositeReadOnlyFileSystem implements li.cil.oc.api.fs.FileS
     public boolean isDirectory(String path){var fs=find(path);return fs!=null&&fs.isDirectory(path);}
     public long size(String path){var fs=find(path);return fs==null?0:fs.size(path);}
     public long lastModified(String path){var fs=find(path);return fs==null?0:fs.lastModified(path);}
-    public String[] list(String path){if(!isDirectory(path))return null;Set<String> result=new LinkedHashSet<>();for(var fs:parts.values()){String[] children=fs.exists(path)?fs.list(path):null;if(children!=null)for(String child:children){String name=child.endsWith("/")?child.substring(0,child.length()-1):child;result.remove(name);result.remove(name+"/");result.add(child);}}return result.toArray(String[]::new);}
+    public String[] list(String path){if(!isDirectory(path))return null;Set<String> result=new LinkedHashSet<>();for(var fs:parts.values())try{String[] children=fs.exists(path)?fs.list(path):null;if(children!=null)for(String child:children){String name=child.endsWith("/")?child.substring(0,child.length()-1):child;result.remove(name);result.remove(name+"/");result.add(child);}}catch(Exception ignored){/* Another layer may replace an object this backing filesystem cannot list. */}return result.toArray(String[]::new);}
     public boolean delete(String path){return false;}
     public boolean makeDirectory(String path){return false;}
     public boolean rename(String from,String to){return false;}

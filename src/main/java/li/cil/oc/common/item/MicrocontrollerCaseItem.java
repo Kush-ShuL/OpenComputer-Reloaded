@@ -1,7 +1,14 @@
 package li.cil.oc.common.item;
+import java.util.List;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 public final class MicrocontrollerCaseItem extends Item implements li.cil.oc.api.internal.Tiered {
     public final int tier;
-    public MicrocontrollerCaseItem(Properties properties,int tier){super(properties.stacksTo(1));this.tier=tier;}
+    public MicrocontrollerCaseItem(Properties properties,int tier){super(properties.rarity(PlayerItemTooltips.rarity(tier)));this.tier=tier;}
     @Override public int tier(){return tier;}
+    @Override public boolean isBookEnchantable(ItemStack stack,ItemStack book){return false;}
+    @Override public int getMaxStackSize(ItemStack stack){return PlayerItemTooltips.stackSize(stack,super.getMaxStackSize(stack));}
+    @Override public void appendHoverText(ItemStack stack,TooltipContext context,List<Component> tooltip,TooltipFlag flag){super.appendHoverText(stack,context,tooltip,flag);PlayerItemTooltips.append(stack,tooltip,"oc:tooltip.microcontrollercase");if(flag.isAdvanced())tooltip.add(Component.translatable("oc:tooltip.tier",tier+1));}
 }

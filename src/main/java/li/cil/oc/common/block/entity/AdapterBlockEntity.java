@@ -9,6 +9,7 @@ import li.cil.oc.api.driver.DriverBlock;
 import li.cil.oc.api.driver.item.Slot;
 import li.cil.oc.api.network.*;
 import li.cil.oc.common.menu.AdapterMenu;
+import li.cil.oc.api.util.Lifecycle;
 import net.minecraft.core.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.*;
@@ -36,7 +37,7 @@ public final class AdapterBlockEntity extends BlockEntity implements li.cil.oc.a
     private Node node;
     private CompoundTag pendingNode;
     private int openSides = 0x3f;
-    private boolean initialized, refreshing;
+    private boolean initialized, refreshing, initializing;
     private record BlockData(String name, CompoundTag data) {}
     public AdapterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) { super(type, pos, state); }
     @Override public Level world() { return level; }
@@ -63,7 +64,7 @@ public final class AdapterBlockEntity extends BlockEntity implements li.cil.oc.a
     }
     private void initialize() {
         if (initialized || level == null || level.isClientSide || isRemoved()) return;
-        initialized = true; node(); mountUpgrade(); li.cil.oc.api.Network.joinOrCreateNetwork(this);
+        initialized = true; initializing = true; try { node(); mountUpgrade(); li.cil.oc.api.Network.joinOrCreateNetwork(this); } finally { initializing = false; }
     }
     public void refreshNeighbors() {
         if (refreshing || level == null || level.isClientSide || isRemoved()) return;
@@ -99,20 +100,29 @@ public final class AdapterBlockEntity extends BlockEntity implements li.cil.oc.a
         CompoundTag data = new CompoundTag(); environment.save(data, level.registryAccess());
         savedBlocks[index] = new BlockData(environment.getClass().getName(), data);
     }
-    private void release(int index) { save(index); ManagedEnvironment old = environments[index]; environments[index] = null; drivers[index] = null; targets[index] = null; if (old != null && old.node() != null) old.node().remove(); }
+    private void release(int index) { ManagedEnvironment old = environments[index]; if (old != null && old.node() != null && node != null) node.disconnect(old.node()); save(index); environments[index] = null; drivers[index] = null; targets[index] = null; if (old != null && old.node() != null) old.node().remove(); }
     private void mountUpgrade() {
         if (upgrade != null || !initialized || level == null || level.isClientSide || items.getFirst().isEmpty()) return;
         var driver = Driver.driverFor(items.getFirst(), getClass());
         if (driver == null || !Slot.Upgrade.equals(driver.slot(items.getFirst()))) return;
         upgrade = driver.createEnvironment(items.getFirst(), this);
-        if (upgrade != null) { upgrade.load(driver.dataTag(items.getFirst()), level.registryAccess()); if (node() != null && node.network() != null && upgrade.node() != null) node.connect(upgrade.node()); }
+        if (upgrade != null) {
+            lifecycle(upgrade, Lifecycle.LifecycleState.Constructing);
+            try { upgrade.load(componentData(driver, items.getFirst()), level.registryAccess()); }
+            catch (Throwable error) { li.cil.oc.OpenComputers.LOGGER.warn("An adapter item component failed while loading", error); }
+            lifecycle(upgrade, Lifecycle.LifecycleState.Initializing);
+            if (node() != null && node.network() != null && upgrade.node() != null) node.connect(upgrade.node());
+            lifecycle(upgrade, Lifecycle.LifecycleState.Initialized); if (!initializing) flushUpgrade();
+        }
     }
     public void flushUpgrade() {
         if (upgrade == null || level == null || level.isClientSide || items.getFirst().isEmpty()) return;
         var driver = Driver.driverFor(items.getFirst(), getClass());
-        if (driver != null) { CompoundTag data = driver.dataTag(items.getFirst()); upgrade.save(data, level.registryAccess()); driver.saveDataTag(items.getFirst(), data); }
+        if (driver != null) { CompoundTag data = componentData(driver, items.getFirst()); upgrade.save(data, level.registryAccess()); driver.saveDataTag(items.getFirst(), data); }
     }
-    private void releaseUpgrade() { if (upgrade != null && upgrade.node() != null) upgrade.node().remove(); flushUpgrade(); upgrade = null; }
+    private static CompoundTag componentData(li.cil.oc.api.driver.DriverItem driver, ItemStack stack) { CompoundTag data = driver.dataTag(stack); return data != null ? data : stack.getOrDefault(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag().getCompound("oc:data"); }
+    private static void lifecycle(ManagedEnvironment environment, Lifecycle.LifecycleState state) { if (environment instanceof Lifecycle listener) listener.onLifecycleStateChange(state); }
+    private void releaseUpgrade() { if (upgrade == null) return; lifecycle(upgrade, Lifecycle.LifecycleState.Disposing); if (upgrade.node() != null) upgrade.node().remove(); flushUpgrade(); if (upgrade.node() != null) upgrade.node().remove(); lifecycle(upgrade, Lifecycle.LifecycleState.Disposed); upgrade = null; }
     public void prepareDrops() { releaseUpgrade(); }
     private void inventoryChanged() { mountUpgrade(); setChanged(); if (level != null && !level.isClientSide) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3); }
     @Override public void onConnect(Node connected) { if (connected == node) { if (upgrade != null && upgrade.node() != null) node.connect(upgrade.node()); refreshNeighbors(); } }
@@ -132,7 +142,7 @@ public final class AdapterBlockEntity extends BlockEntity implements li.cil.oc.a
     @Override public boolean canPlaceItem(int slot, ItemStack stack) { if (slot != 0 || stack.isEmpty()) return false; var driver = Driver.driverFor(stack, getClass()); return driver != null && Slot.Upgrade.equals(driver.slot(stack)); }
     @Override public ItemStack removeItem(int slot, int amount) { if (slot != 0 || amount <= 0 || isEmpty()) return ItemStack.EMPTY; releaseUpgrade(); ItemStack result = ContainerHelper.removeItem(items, 0, amount); inventoryChanged(); return result; }
     @Override public ItemStack removeItemNoUpdate(int slot) { return removeItem(slot, 1); }
-    @Override public void setItem(int slot, ItemStack stack) { if (slot != 0) return; releaseUpgrade(); items.set(0, stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1)); inventoryChanged(); }
+    @Override public void setItem(int slot, ItemStack stack) { if (slot != 0 || items.getFirst() == stack || items.getFirst().isEmpty() && stack.isEmpty()) return; ItemStack next = stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1); releaseUpgrade(); items.set(0, next); inventoryChanged(); }
     @Override public void clearContent() { removeItem(0, 1); }
     @Override public boolean stillValid(Player player) { return level != null && level.getBlockEntity(worldPosition) == this && player.distanceToSqr(xPosition(), yPosition(), zPosition()) <= 64; }
     @Override public Component getDisplayName() { return Component.translatable("block.opencomputers.adapter"); }

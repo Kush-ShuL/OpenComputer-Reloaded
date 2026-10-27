@@ -5,11 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import li.cil.oc.OpenComputers;
 import li.cil.oc.api.manual.ImageRenderer;
 import li.cil.oc.api.manual.InteractiveImageRenderer;
+import li.cil.oc.client.renderer.ScreenTextRenderer;
+import li.cil.oc.util.FontUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -18,10 +19,12 @@ import net.minecraft.resources.ResourceLocation;
 
 /** Layout for the Markdown subset used by the original OC manual, including addon image callbacks. */
 public final class MarkdownDocument {
-    private static final Pattern HEADING = Pattern.compile("^(#{1,6})\\s+(.*)$");
+    public enum MarkupFormat { Markdown, IGWMod }
+    private static final Pattern HEADING = Pattern.compile("^(#+)\\s+(.*)$");
     private static final Pattern WORD = Pattern.compile("\\s+|\\S+");
-    private static final Style CODE = Style.EMPTY.withFont(ResourceLocation.withDefaultNamespace("uniform")).withColor(0xBFCBFF);
+    private static final Style CODE = Style.EMPTY.withFont(ResourceLocation.withDefaultNamespace("uniform")).withColor(0xBFCCFF);
     private final List<Element> elements = new ArrayList<>();
+    private final List<String> markdownLines = new ArrayList<>(), igwLines = new ArrayList<>();
     private final Map<String, Boolean> validLinks = new HashMap<>();
     private final Map<String, Integer> anchors = new HashMap<>();
     private final ManualRegistry manual;
@@ -31,8 +34,13 @@ public final class MarkdownDocument {
     private float x, y, rowHeight, indentation;
     private final float normalHeight;
 
-    private record Span(String text, Style style, String link, ImageRenderer image, String tooltip) {
-        Span withLink(String href) { return new Span(text, style, href, image, tooltip); }
+    private static final class Link {
+        final String href;
+        long lastHovered = System.currentTimeMillis() - 500;
+        Link(String href) { this.href = href; }
+    }
+    private record Span(String text, Style style, Link link, ImageRenderer image, String tooltip) {
+        Span withLink(Link link) { return new Span(text, style, link, image, tooltip); }
     }
 
     public final class Hit {
@@ -44,7 +52,7 @@ public final class MarkdownDocument {
                 try { return interactive.getTooltip(element.tooltip); }
                 catch (Throwable error) { OpenComputers.LOGGER.warn("Manual image tooltip failed", error); return null; }
             }
-            return element.image != null ? element.tooltip : element.link;
+            return element.image != null ? element.tooltip : element.link == null ? null : element.link.href;
         }
         /** The image gets first refusal on linked images, as specified by InteractiveImageRenderer. */
         public String click() {
@@ -52,16 +60,17 @@ public final class MarkdownDocument {
                 try { if (interactive.onMouseClick(imageX, imageY)) return null; }
                 catch (Throwable error) { OpenComputers.LOGGER.warn("Manual image click failed", error); }
             }
-            return element.link;
+            return element.link == null ? null : element.link.href;
         }
     }
 
     private static final class Element {
         float x, y, width, height, scale;
         Component text;
-        String link, tooltip;
+        Link link;
+        String tooltip;
         ImageRenderer image;
-        boolean failed;
+        boolean failed, code;
         boolean contains(double px, double py) { return px >= x && px < x + width && py >= y && py < y + height; }
     }
 
@@ -71,7 +80,9 @@ public final class MarkdownDocument {
         rowHeight = normalHeight;
         boolean codeBlock = false;
         for (String line : lines) {
-            if (line.stripLeading().startsWith("```")) { codeBlock = !codeBlock; continue; }
+            line = line == null ? "" : line.stripTrailing();
+            markdownLines.add(line);
+            if (line.stripLeading().startsWith("```")) { codeBlock = !codeBlock; igwLines.add(""); continue; }
             float scale = 1;
             Style style = codeBlock ? CODE : Style.EMPTY;
             if (!codeBlock) {
@@ -86,20 +97,36 @@ public final class MarkdownDocument {
             }
             int spaces = 0;
             while (spaces < line.length() && Character.isWhitespace(line.charAt(spaces))) spaces++;
-            indentation = Math.min(width / 3F, font.width(" ".repeat(spaces)) * scale);
+            indentation = Math.min(width / 3F, measure(" ".repeat(spaces), style) * scale);
             if (!codeBlock && (line.startsWith("- ", spaces) || line.startsWith("* ", spaces)))
                 indentation = Math.min(width / 3F, indentation + font.width(line.substring(spaces, spaces + 2)) * scale);
             rowHeight = normalHeight * scale;
             List<Span> spans = codeBlock ? List.of(new Span(line, style, null, null, null)) : parse(line, style);
+            igwLines.add(asIgwText(spans));
             for (Span span : spans) {
                 if (span.image != null) appendImage(span); else appendText(span, scale);
             }
-            newLine(0);
+            if (x > 0 || rowHeight > 0 || spans.isEmpty()) newLine(0);
         }
     }
 
     public int height() { return Math.max(0, (int) Math.ceil(y)); }
     public int anchorOffset(String anchor) { return anchors.getOrDefault(anchor.toLowerCase(Locale.ROOT), 0); }
+    /** Preserve the original segment tree's text-export facility without exposing it through the SDK. */
+    public Iterable<String> renderAsText(MarkupFormat format) { return List.copyOf(format == MarkupFormat.Markdown ? markdownLines : igwLines); }
+
+    private static String asIgwText(List<Span> spans) {
+        var line = new StringBuilder();
+        for (Span span : spans) {
+            if (span.image != null) { line.append("(Sorry, images only work in the OpenComputers manual for now.)"); continue; }
+            String flags = isCode(span.style) ? "1" : (span.style.isBold() || span.style.isUnderlined() ? "l" : "")
+                    + (span.style.isItalic() ? "o" : "") + (span.style.isStrikethrough() ? "m" : "");
+            String text = flags.isEmpty() ? span.text : "[prefix{" + flags + "}]" + span.text + " [prefix{}]";
+            if (span.link != null && !external(span.link.href)) text = "[link{" + OpenComputers.ID + ":" + span.link.href + "}]" + text + " [link{}]";
+            line.append(text);
+        }
+        return line.toString();
+    }
 
     private void newLine(float indent) {
         y += Math.max(rowHeight, normalHeight);
@@ -111,14 +138,13 @@ public final class MarkdownDocument {
         while (matcher.find()) {
             String word = matcher.group();
             float wordWidth = measure(word, span.style) * scale;
-            if (!word.isBlank() && x > indentation && x + wordWidth > width) newLine(indentation);
             // Preserve explicit leading indentation but avoid carrying trailing whitespace onto a wrapped row.
             if (word.isBlank()) {
                 if (x + wordWidth <= width) x += wordWidth;
                 continue;
             }
             while (!word.isEmpty()) {
-                int end = fittingEnd(word, span.style, (width - x) / scale);
+                int end = fittingEnd(word, span.style, (width - x) / scale, (width - indentation) / scale);
                 if (end == 0 && x > indentation) { newLine(indentation); continue; }
                 if (end == 0) end = Character.charCount(word.codePointAt(0));
                 String part = word.substring(0, end);
@@ -126,6 +152,7 @@ public final class MarkdownDocument {
                 element.x = x; element.y = y; element.width = measure(part, span.style) * scale;
                 element.height = normalHeight * scale; element.scale = scale;
                 element.text = Component.literal(part).setStyle(span.style);
+                element.code = isCode(span.style);
                 element.link = span.link;
                 elements.add(element);
                 x += element.width; rowHeight = Math.max(rowHeight, element.height);
@@ -135,13 +162,25 @@ public final class MarkdownDocument {
         }
     }
 
-    private float measure(String value, Style style) { return font.width(Component.literal(value).setStyle(style)); }
+    private static boolean isCode(Style style) { return CODE.getFont().equals(style.getFont()); }
+    private float measure(String value, Style style) {
+        if (isCode(style)) {
+            int cellWidth = ScreenTextRenderer.characterWidth();
+            return value.codePoints().map(codePoint -> Math.max(0, FontUtils.wcwidth(codePoint)) * cellWidth).sum();
+        }
+        return font.width(Component.literal(value).setStyle(style));
+    }
 
-    private int fittingEnd(String value, Style style, float available) {
-        int end = 0;
+    private int fittingEnd(String value, Style style, float available, float fullLine) {
+        int end = 0, lastBreak = 0;
         while (end < value.length()) {
             int next = end + Character.charCount(value.codePointAt(end));
-            if (measure(value.substring(0, next), style) > available) break;
+            if (measure(value.substring(0, next), style) > available) {
+                if (lastBreak > 0) return lastBreak;
+                if (available < fullLine && measure(value, style) <= fullLine) return 0;
+                break;
+            }
+            if (" .,:;!?_=-+*/\\".indexOf(value.codePointAt(end)) >= 0) lastBreak = next;
             end = next;
         }
         return end;
@@ -174,6 +213,8 @@ public final class MarkdownDocument {
     public Hit render(GuiGraphics graphics, int left, int top, int height, int offset, double mouseX, double mouseY) {
         double localX = mouseX - left, localY = mouseY - top + offset;
         Hit hovered = mouseY >= top && mouseY < top + height && mouseX >= left && mouseX < left + width ? hit(localX, localY) : null;
+        long now = System.currentTimeMillis();
+        if (hovered != null && hovered.element.link != null) hovered.element.link.lastHovered = now;
         graphics.enableScissor(left, top, left + width, top + height);
         graphics.pose().pushPose();
         try {
@@ -185,6 +226,8 @@ public final class MarkdownDocument {
                     graphics.pose().translate(element.x, element.y, 0);
                     graphics.pose().scale(element.scale, element.scale, 1);
                     if (element.image != null) {
+                        if (hovered != null && hovered.element == element)
+                            graphics.fill(0, 0, element.image.getWidth(), element.image.getHeight(), 0x26FFFFFF);
                         if (!element.failed) {
                             try {
                                 element.image.render(graphics, (int) Math.floor((localX - element.x) / element.scale), (int) Math.floor((localY - element.y) / element.scale));
@@ -198,27 +241,38 @@ public final class MarkdownDocument {
                         Component text = element.text;
                         int color = 0xDDDDDD;
                         if (element.link != null) {
-                            boolean valid = validLinks.computeIfAbsent(element.link, href -> {
+                            boolean valid = validLinks.computeIfAbsent(element.link.href, href -> {
                                 if (external(href) || href.startsWith("#")) return true;
                                 int hash = href.indexOf('#');
                                 return manual.contentFor(ManualRegistry.makeRelative(hash < 0 ? href : href.substring(0, hash), path)) != null;
                             });
-                            color = valid ? 0x66CC66 : 0xCC6666;
-                            if (hovered != null && Objects.equals(hovered.element.link, element.link)) color = valid ? 0xAAFFAA : 0xFFAAAA;
-                            text = text.copy().withStyle(style -> style.withColor(colorForLink(valid, hovered != null && Objects.equals(hovered.element.link, element.link))));
+                            int linkColor = colorForLink(valid, element.link.lastHovered, now);
+                            color = linkColor;
+                            text = text.copy().withStyle(style -> style.withColor(linkColor));
                         }
-                        graphics.drawString(font, text, 0, 0, color, false);
+                        if (element.code) {
+                            var textColor = text.getStyle().getColor();
+                            ScreenTextRenderer.drawString(text.getString(), graphics.pose(), graphics.bufferSource(), textColor == null ? color : textColor.getValue());
+                        } else graphics.drawString(font, text, 0, 0, color, false);
                     }
                 } finally { graphics.pose().popPose(); }
             }
         } finally {
+            graphics.flush();
             graphics.pose().popPose();
             graphics.disableScissor();
         }
         return hovered;
     }
 
-    private static int colorForLink(boolean valid, boolean hovered) { return valid ? (hovered ? 0xAAFFAA : 0x66CC66) : (hovered ? 0xFFAAAA : 0xCC6666); }
+    private static int colorForLink(boolean valid, long lastHovered, long now) {
+        int normal = valid ? 0x66FF66 : 0xFF6666, hovered = valid ? 0xAAFFAA : 0xFFAAAA;
+        float elapsed = Math.clamp((now - lastHovered) / 500F, 0, 1);
+        int red = (int) (((hovered >> 16) & 255) + (((normal >> 16) & 255) - ((hovered >> 16) & 255)) * elapsed);
+        int green = (int) (((hovered >> 8) & 255) + (((normal >> 8) & 255) - ((hovered >> 8) & 255)) * elapsed);
+        int blue = (int) ((hovered & 255) + ((normal & 255) - (hovered & 255)) * elapsed);
+        return red << 16 | green << 8 | blue;
+    }
     public static boolean external(String href) { return href.startsWith("https://") || href.startsWith("http://"); }
 
     private List<Span> parse(String source, Style style) {
@@ -243,7 +297,8 @@ public final class MarkdownDocument {
                             if (renderer != null) result.add(new Span(null, style, null, renderer, label));
                             else result.add(new Span("No renderer found for: " + href, style.withColor(0xFF7777), null, null, null));
                         } else {
-                            for (Span child : parse(label, style)) result.add(child.withLink(href));
+                            Link link = new Link(href);
+                            for (Span child : parse(label, style)) result.add(child.withLink(link));
                         }
                         i = urlEnd + 1; continue;
                     }

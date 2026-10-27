@@ -35,13 +35,17 @@ public final class OcApiCompat {
     public OcApiCompat(IEventBus bus) {
         if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT
                 && Boolean.getBoolean("ocfixture.tis3dClient")) Tis3dClientContract.register();
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT
+                && Boolean.getBoolean("ocfixture.manualClient")) PlayerManualClientContract.register();
+        if (Boolean.getBoolean("ocfixture.hostBatchOnly")) MachineHostsContract.register(bus);
         FixtureBlocks.register(bus);
         ForgeEnergyContract.register(bus);
         GeneratorContract.register(bus);
         WorldPersistenceContract.registerBlocks(bus);
         bus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(() -> {
+            if (Boolean.getBoolean("ocfixture.manualClient")) return;
             if (HostPersistenceContract.enabled()) { HostPersistenceContract.register(); return; }
-            if (DeviceContract.enabled()) return;
+            if (DeviceContract.enabled()) { if (Boolean.getBoolean("ocfixture.hostBatchOnly")) MachineHostsContract.registerDrivers(); return; }
             if (MekanismContract.enabled()) return;
             if (ae2Scenario()) return;
             if (EnderStorageContract.enabled()) return;
@@ -67,6 +71,7 @@ public final class OcApiCompat {
             LOGGER.info("API_FIXTURE SDK={} owner={} registered", API.VERSION, API.ID_OWNER);
         }));
         bus.addListener((InterModEnqueueEvent event) -> {
+            if (Boolean.getBoolean("ocfixture.manualClient")) return;
             if (HostPersistenceContract.enabled()) return;
             if (DeviceContract.enabled()) return;
             if (MekanismContract.enabled()) return;

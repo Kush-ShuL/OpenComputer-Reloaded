@@ -27,6 +27,8 @@ public final class ManualItem extends Item {
     private static volatile ClientActions clientActions;
 
     public ManualItem(Properties properties) { super(properties); }
+    @Override public boolean isBookEnchantable(ItemStack stack, ItemStack book) { return false; }
+    @Override public int getMaxStackSize(ItemStack stack) { return PlayerItemTooltips.stackSize(stack, super.getMaxStackSize(stack)); }
 
     public static void setClientActions(ClientActions actions) {
         clientActions = Objects.requireNonNull(actions);
@@ -48,7 +50,7 @@ public final class ManualItem extends Item {
 
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.literal("v" + OpenComputers.VERSION).withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.translatable("oc:tooltip.manual"));
+        PlayerItemTooltips.append(stack, tooltip, "oc:tooltip.manual");
         super.appendHoverText(stack, context, tooltip, flag);
     }
 }

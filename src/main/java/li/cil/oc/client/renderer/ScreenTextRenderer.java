@@ -119,6 +119,27 @@ public final class ScreenTextRenderer implements ResourceManagerReloadListener {
         Glyph glyph = new Glyph(atlas.location, x / 256F, y / 256F, (x + width) / 256F, (y + 16) / 256F, width / 2F, 8, 0, 0);
         glyphs.put(codePoint, glyph); atlas.dirty = true; return glyph;
     }
+    /** Draw a manual code span with the same configured glyphs and atlas as an OC terminal. */
+    public static void drawString(String text, PoseStack pose, MultiBufferSource buffers, int color) {
+        INSTANCE.ensureLoaded();
+        for (int index = 0; index < text.length();) {
+            int codePoint = text.codePointAt(index); index += Character.charCount(codePoint);
+            if (codePoint != ' ' && FontUtils.wcwidth(codePoint) > 0) INSTANCE.glyph(codePoint);
+        }
+        for (Atlas atlas : INSTANCE.atlases) if (atlas.dirty) { atlas.texture.upload(); atlas.dirty = false; }
+        float x = 0; int cellWidth = characterWidth();
+        for (int index = 0; index < text.length();) {
+            int codePoint = text.codePointAt(index); index += Character.charCount(codePoint);
+            int cells = Math.max(0, FontUtils.wcwidth(codePoint));
+            if (codePoint != ' ' && cells > 0) {
+                Glyph glyph = INSTANCE.glyph(codePoint);
+                if (glyph != null) textured(buffers.getBuffer(ScreenRenderTypes.texture(glyph.texture, true)), pose,
+                        x + glyph.offsetX, glyph.offsetY, x + glyph.offsetX + glyph.width, glyph.offsetY + glyph.height,
+                        color, glyph, 0.002F, 1);
+            }
+            x += cells * cellWidth;
+        }
+    }
     public static boolean draw(TextBuffer buffer, PoseStack pose, MultiBufferSource buffers, int packedLight) {
         return draw(buffer, pose, buffers, packedLight, 1, true);
     }

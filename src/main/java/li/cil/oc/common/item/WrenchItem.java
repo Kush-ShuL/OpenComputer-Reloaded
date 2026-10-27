@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 /** The original undamageable scrench, including axis-specific block rotation. */
 public final class WrenchItem extends Item implements li.cil.oc.api.internal.Wrench {
     public WrenchItem(Properties properties) { super(properties.stacksTo(1)); }
+    @Override public boolean isBookEnchantable(ItemStack stack, ItemStack book) { return false; }
     @Override public boolean doesSneakBypassUse(ItemStack stack, LevelReader level, BlockPos pos, Player player) { return true; }
     @Override public boolean useWrenchOnBlock(Player player, Level level, BlockPos pos, boolean simulate) {
         if (!simulate) player.swing(InteractionHand.MAIN_HAND);
@@ -34,13 +35,12 @@ public final class WrenchItem extends Item implements li.cil.oc.api.internal.Wre
     }
     @Override public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         Player player = context.getPlayer(); Level level = context.getLevel(); BlockPos pos = context.getClickedPos();
-        if (player == null || !level.hasChunkAt(pos) || !level.mayInteract(player, pos)
-                || !player.mayUseItemAt(pos, context.getClickedFace(), stack)) return InteractionResult.PASS;
+        if (player == null || !level.hasChunkAt(pos) || !level.mayInteract(player, pos)) return InteractionResult.PASS;
         BlockEntity entity = level.getBlockEntity(pos);
-        if (level.getBlockState(pos).getBlock() instanceof li.cil.oc.common.block.ChargerBlock) return InteractionResult.PASS;
         if (entity instanceof RotatableBlockEntity rotatable) {
             if (level.isClientSide) return InteractionResult.SUCCESS;
             if (!rotatable.rotate(context.getClickedFace())) return InteractionResult.PASS;
+            level.neighborChanged(level.getBlockState(pos), pos, net.minecraft.world.level.block.Blocks.AIR, pos, false);
             level.updateNeighborsAt(pos, level.getBlockState(pos).getBlock());
             player.swing(context.getHand());
             return InteractionResult.CONSUME;
@@ -66,6 +66,7 @@ public final class WrenchItem extends Item implements li.cil.oc.api.internal.Wre
             li.cil.oc.api.Network.joinOrCreateNetwork(entity);
         }
         if (entity instanceof ScreenBlockEntity screen) screen.invalidateGroup();
+        level.neighborChanged(after, pos, net.minecraft.world.level.block.Blocks.AIR, pos, false);
         level.updateNeighborsAt(pos, after.getBlock());
         player.swing(context.getHand());
         return InteractionResult.CONSUME;
@@ -88,6 +89,6 @@ public final class WrenchItem extends Item implements li.cil.oc.api.internal.Wre
     }
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
-        tooltip.add(Component.translatable("oc:tooltip.Wrench"));
+        PlayerItemTooltips.append(stack, tooltip, "oc:tooltip.Wrench");
     }
 }

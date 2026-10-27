@@ -53,7 +53,7 @@ public final class Items implements ItemAPI {
         material("chamelium",li.cil.oc.common.item.CraftingMaterialItem.Kind.CHAMELIUM,64);
         material("inkcartridge",li.cil.oc.common.item.CraftingMaterialItem.Kind.INK,1);
         material("inkcartridgeempty",li.cil.oc.common.item.CraftingMaterialItem.Kind.PLAIN,1);
-        var chameliumBlock=GAME_BLOCKS.register("chameliumblock",()->new li.cil.oc.common.block.ChameliumBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().strength(2,5).requiresCorrectToolForDrops()));
+        var chameliumBlock=GAME_BLOCKS.register("chameliumblock",()->new li.cil.oc.common.block.ChameliumBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of().strength(2,5)));
         var chameliumItem=GAME_ITEMS.register("chameliumblock",()->new BlockItem(chameliumBlock.get(),new Item.Properties()));
         INSTANCE.registerBlock("chameliumblock",chameliumBlock::get,chameliumItem::get);
         for (int tier = 0; tier < 3; tier++) hardware("cpu" + (tier + 1), ComponentItem.Kind.PROCESSOR, tier);
@@ -97,7 +97,7 @@ public final class Items implements ItemAPI {
     private Items() {}
 
     private static void material(String name,li.cil.oc.common.item.CraftingMaterialItem.Kind kind,int size) {
-        var item=GAME_ITEMS.register(name,()->new li.cil.oc.common.item.CraftingMaterialItem(new Item.Properties().stacksTo(size),kind));
+        var item=GAME_ITEMS.register(name,()->new li.cil.oc.common.item.CraftingMaterialItem(new Item.Properties().stacksTo(size),kind,name));
         INSTANCE.registerItem(name,item::get);
     }
 

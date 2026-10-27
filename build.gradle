@@ -144,14 +144,19 @@ var generateModMetadata = tasks.register('generateModMetadata', ProcessResources
 sourceSets.main.resources.srcDir generateModMetadata
 neoForge.ideSyncTask generateModMetadata
 
+def lowercaseManualResources = { details ->
+    if (details.path.startsWith('assets/opencomputers/doc/')) details.path = details.path.toLowerCase(Locale.ROOT)
+}
 tasks.named('processResources') {
     exclude 'mcmod.info', 'oc_at.cfg'
     filesMatching('application.conf') { filter { it.replace('@VERSION@', project.version.toString()) } }
+    eachFile lowercaseManualResources
 }
 
 def legalFiles = files('LICENSE', 'LICENSE-jnlua', 'LICENSE-luaj', 'LICENSE-mods', 'NOTICE')
 def resourceLegalFiles = fileTree('src/main/resources') { include 'LICENSE*' }
 tasks.named('jar') {
+    eachFile lowercaseManualResources
     from sourceSets.api.output
     // Keep both upstream resource notices and the complete project notices.
     from(legalFiles) { into 'META-INF/licenses/project' }

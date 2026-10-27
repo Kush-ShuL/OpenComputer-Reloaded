@@ -39,7 +39,7 @@ public final class ServerMenu extends AbstractContainerMenu {
         int vertical=Math.min(3,1+tier);for(int i=0;i<=vertical;i++)addComponent(slot++,100,7+i*18);for(int i=0;i<=vertical;i++)addComponent(slot++,124,7+i*18);for(int i=0;i<=vertical;i++)addComponent(slot++,148,7+i*18);for(int i=2;i<=vertical;i++)addComponent(slot++,76,7+i*18);addComponent(slot,26,34);
         for(int row=0;row<3;row++)for(int col=0;col<9;col++)addSlot(new Slot(player,9+row*9+col,8+col*18,84+row*18));for(int col=0;col<9;col++)addSlot(new Slot(player,col,8+col*18,142));addDataSlots(status);
     }
-    private void addComponent(int index,int x,int y){addSlot(new Slot(inventory,index,x,y){@Override public boolean mayPlace(ItemStack stack){var driver=li.cil.oc.api.Driver.driverFor(stack,Server.class);var spec=ServerInventory.layout(tier)[index];return driver!=null&&spec.slot().equals(driver.slot(stack))&&driver.tier(stack)<=spec.tier()&&inventory.canPlaceItem(index,stack);}@Override public int getMaxStackSize(){return 1;}});}
+    private void addComponent(int index,int x,int y){addSlot(new Slot(inventory,index,x,y){@Override public boolean mayPlace(ItemStack stack){var driver=li.cil.oc.api.Driver.driverFor(stack,li.cil.oc.api.internal.Server.class);var spec=ServerInventory.layout(tier)[index];return driver!=null&&spec.slot().equals(driver.slot(stack))&&driver.tier(stack)<=spec.tier()&&inventory.canPlaceItem(index,stack);}@Override public int getMaxStackSize(){return 1;}});}
     public boolean running(){return status.get(0)!=0;}
     public String error(){int index=status.get(1);return index>=0&&index<CaseMenu.ERRORS.length?CaseMenu.ERRORS[index]:"gui.Error.InternalError";}
     public int energyPercent(){return Math.clamp(status.get(2),0,100);}

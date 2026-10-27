@@ -72,7 +72,7 @@ public final class DisassemblerBlockEntity extends WorkstationBlockEntity {
     private void drop(ItemStack stack) {
         if (stack.isEmpty()) return;
         for (Direction side : Direction.values()) {
-            InventoryUtils.insertIntoInventoryAt(stack, level, worldPosition.relative(side), side.getOpposite(), stack.getCount(), false);
+            InventoryUtils.insertIntoInventoryAt(stack, level, worldPosition.relative(side), side.getOpposite(), 64, false);
             if (stack.isEmpty()) return;
         }
         InventoryUtils.spawnStackInWorld(level, worldPosition, stack, Direction.UP);

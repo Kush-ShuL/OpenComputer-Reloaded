@@ -11,7 +11,7 @@ import java.util.function.Supplier;
 public final class DebugDevices {
     private static final DeferredRegister<Item> ITEMS=DeferredRegister.create(Registries.ITEM,"opencomputers");
     public static final Supplier<DebugCardItem> CARD=ITEMS.register("debugcard",()->new DebugCardItem(new Item.Properties().rarity(Rarity.EPIC)));
-    public static final Supplier<DebuggerItem> DEBUGGER=ITEMS.register("debugger",()->new DebuggerItem(new Item.Properties().rarity(Rarity.EPIC)));
+    public static final Supplier<DebuggerItem> DEBUGGER=ITEMS.register("debugger",()->new DebuggerItem(new Item.Properties()));
     public static final Supplier<TexturePickerItem> TEXTURE_PICKER=ITEMS.register("texturepicker",()->new TexturePickerItem(new Item.Properties()));
     static{Items.INSTANCE.registerItem("debugcard",CARD);Items.INSTANCE.registerItem("debugger",DEBUGGER);Items.INSTANCE.registerItem("texturepicker",TEXTURE_PICKER);}
     private DebugDevices(){}

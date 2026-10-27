@@ -17,6 +17,7 @@ import li.cil.oc.api.network.Environment;
 import li.cil.oc.api.network.ManagedEnvironment;
 import li.cil.oc.api.network.Message;
 import li.cil.oc.api.network.Node;
+import li.cil.oc.api.util.Lifecycle;
 import li.cil.oc.common.block.entity.RackBlockEntity;
 import li.cil.oc.common.inventory.ServerInventory;
 import li.cil.oc.common.menu.ServerMenu;
@@ -59,26 +60,29 @@ public final class Server extends ServerInventory implements li.cil.oc.api.inter
     @Override public Node node(){Machine value=machine();return value==null?null:value.node();}
     @Override public Iterable<ItemStack> internalComponents(){return List.copyOf(items);}
     @Override public Iterable<Environment> getComponents(){return Arrays.stream(environments).filter(java.util.Objects::nonNull).map(value->(Environment)value).toList();}
-    @Override public int componentSlot(String address){for(int i=0;i<environments.length;i++)if(environments[i]!=null&&environments[i].node()!=null&&address.equals(environments[i].node().address()))return i;return -1;}
+    @Override public int componentSlot(String address){for(int i=0;i<environments.length;i++)if(environments[i]!=null&&environments[i].node()!=null&&java.util.Objects.equals(address,environments[i].node().address()))return i;return -1;}
     private CompoundTag data(li.cil.oc.api.driver.DriverItem driver,ItemStack stack){CompoundTag value=driver.dataTag(stack);return value!=null?value:stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getCompound("oc:data");}
     private void create(int slot){
-        if(items.get(slot).isEmpty())return;var driver=Driver.driverFor(items.get(slot),getClass());if(driver==null)return;
+        if(items.get(slot).isEmpty())return;var driver=Driver.driverFor(items.get(slot),li.cil.oc.api.internal.Server.class);if(driver==null)return;
         ManagedEnvironment environment=driver.createEnvironment(items.get(slot),rack);environments[slot]=environment;
-        if(environment!=null){environment.load(data(driver,items.get(slot)),registries);if(environment.node()!=null&&node().network()!=null)node().connect(environment.node());}
+        if(environment!=null){lifecycle(environment,Lifecycle.LifecycleState.Constructing);try{environment.load(data(driver,items.get(slot)),registries);}catch(Throwable error){li.cil.oc.OpenComputers.LOGGER.warn("A server item component failed while loading",error);}lifecycle(environment,Lifecycle.LifecycleState.Initializing);if(environment.node()!=null&&node().network()!=null)node().connect(environment.node());lifecycle(environment,Lifecycle.LifecycleState.Initialized);if(!initializing)flush(slot);}
     }
-    private void flush(int slot){ManagedEnvironment environment=environments[slot];ItemStack stack=items.get(slot);if(environment==null||stack.isEmpty())return;var driver=Driver.driverFor(stack,getClass());if(driver!=null){CompoundTag tag=data(driver,stack);environment.save(tag,registries);driver.saveDataTag(stack,tag);}}
-    private void removeEnvironment(int slot){flush(slot);ManagedEnvironment old=environments[slot];environments[slot]=null;if(old!=null&&old.node()!=null)old.node().remove();}
+    private void flush(int slot){flush(slot,environments[slot]);}
+    private void flush(int slot,ManagedEnvironment environment){ItemStack stack=items.get(slot);if(environment==null||stack.isEmpty())return;var driver=Driver.driverFor(stack,li.cil.oc.api.internal.Server.class);if(driver!=null){CompoundTag tag=data(driver,stack);environment.save(tag,registries);driver.saveDataTag(stack,tag);}}
+    private static void lifecycle(ManagedEnvironment environment,Lifecycle.LifecycleState state){if(environment instanceof Lifecycle listener)listener.onLifecycleStateChange(state);}
+    private void removeEnvironment(int slot){ManagedEnvironment old=environments[slot];environments[slot]=null;if(old!=null){lifecycle(old,Lifecycle.LifecycleState.Disposing);if(old.node()!=null)old.node().remove();flush(slot,old);if(old.node()!=null)old.node().remove();lifecycle(old,Lifecycle.LifecycleState.Disposed);}}
     private void initialize(){
         if(initialized||world().isClientSide||disposed)return;initialized=true;initializing=true;
         try{machine();for(int i=0;i<items.size();i++)create(i);machine.onHostChanged();}finally{initializing=false;}
     }
-    @Override protected void beforeChange(int slot){if(initialized&&!initializing&&!world().isClientSide)removeEnvironment(slot);}
+    @Override protected void beforeChange(int slot){if(initialized&&!initializing&&!world().isClientSide){removeEnvironment(slot);if(!items.get(slot).isEmpty()&&layout(tier())[slot].slot().equals("cpu"))machine.stop();}}
     @Override protected void afterChange(int slot){
-        if(initialized&&!initializing&&!world().isClientSide){create(slot);machine.onHostChanged();if(layout(tier())[slot].slot().equals("cpu"))machine.stop();rack.reconnectMountable(rackSlot);}
+        if(initialized&&!initializing&&!world().isClientSide){create(slot);machine.onHostChanged();rack.reconnectMountable(rackSlot);}
         setChanged();
     }
     @Override public void setChanged(){if(rack==null)return;saveItems(container,items,registries);rack.markChanged(rackSlot);}
-    @Override public boolean stillValid(Player player){return !disposed&&rack.getMountable(rackSlot)==this&&rack.stillValid(player)&&machine().canInteract(player.getGameProfile().getName());}
+    @Override public boolean stillValid(Player player){return !disposed&&rack.getMountable(rackSlot)==this&&rack.stillValid(player);}
+    @Override public void clearContent(){super.clearContent();if(initialized&&!initializing&&!world().isClientSide){machine.onHostChanged();rack.reconnectMountable(rackSlot);}}
     @Override public void onMachineConnect(Node connected){if(machine!=null&&connected==machine.node())for(ManagedEnvironment environment:environments)if(environment!=null&&environment.node()!=null)machine.node().connect(environment.node());}
     @Override public void onMachineDisconnect(Node disconnected){if(machine!=null&&disconnected==machine.node())for(int i=0;i<environments.length;i++)flush(i);}
     @Override public void onConnect(Node node){onMachineConnect(node);}
@@ -91,15 +95,16 @@ public final class Server extends ServerInventory implements li.cil.oc.api.inter
     @Override public int getConnectableCount(){return connectables().size();}
     @Override public RackBusConnectable getConnectableAt(int index){List<RackBusConnectable> values=connectables();return index>=0&&index<values.size()?values.get(index):null;}
     @Override public boolean onActivate(Player player,InteractionHand hand,ItemStack held,float hitX,float hitY){
-        if(player instanceof ServerPlayer server&&stillValid(player)){if(player.isShiftKeyDown()){if(!machine().isRunning())machine().start();}else ServerMenu.openMounted(server,this);}return true;
+        if(player instanceof ServerPlayer server&&stillValid(player)){if(player.isShiftKeyDown()){if(!machine().isRunning()){wasRunning=false;hadErrored=false;machine().start();}}else ServerMenu.openMounted(server,this);}return true;
     }
     @Override public boolean canUpdate(){return true;}
     @Override public void update(){
         if(world().isClientSide||disposed)return;initialize();if(node().network()==null)Network.joinNewNetwork(node());
-        if(tier()==3)machine.node().changeBuffer(Double.POSITIVE_INFINITY);
-        machine.update();for(ManagedEnvironment environment:environments)if(environment!=null&&environment.canUpdate())environment.update();
+        machine.update();
         boolean running=machine.isRunning(),errored=machine.lastError()!=null;
         if(running!=wasRunning||errored!=hadErrored){wasRunning=running;hadErrored=errored;rack.markChanged(rackSlot);}
+        if(tier()==3)machine.node().changeBuffer(Double.POSITIVE_INFINITY);
+        for(ManagedEnvironment environment:environments)if(environment!=null&&environment.canUpdate())environment.update();
     }
     @Override public EnumSet<State> getCurrentState(){return machine!=null&&machine.isRunning()?EnumSet.of(State.IsWorking):EnumSet.noneOf(State.class);}
     @Override public Node[] onAnalyze(Player player,Direction side,float x,float y,float z){return new Node[]{node()};}
@@ -115,4 +120,6 @@ public final class Server extends ServerInventory implements li.cil.oc.api.inter
         CompoundTag machineTag=new CompoundTag();machine.save(machineTag,registries);tag.put("machine",machineTag);
     }
     public void dispose(){if(disposed)return;for(int i=0;i<environments.length;i++)flush(i);disposed=true;if(machine!=null){machine.stop();machine.node().remove();}for(ManagedEnvironment environment:environments)if(environment!=null&&environment.node()!=null)environment.node().remove();}
+    /** Real item removal closes the machine and its descriptors before Rack persists the removed blade. */
+    public void disposeForRemoval(){if(disposed)return;disposed=true;if(machine!=null){machine.stop();machine.node().remove();}for(ManagedEnvironment environment:environments)if(environment!=null){lifecycle(environment,Lifecycle.LifecycleState.Disposing);if(environment.node()!=null)environment.node().remove();lifecycle(environment,Lifecycle.LifecycleState.Disposed);}for(int i=0;i<environments.length;i++)flush(i);wasRunning=false;hadErrored=false;}
 }

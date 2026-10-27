@@ -56,10 +56,10 @@ public final class ItemUtils {
                 if(choice.isEmpty()||choice.getCount()/count==0||choice.getItem() instanceof BucketItem)continue;
                 if(isBlacklisted(choice)){blacklisted=true;break;}inputs.add(choice.copy());
             }
-            if(!blacklisted){selected=inputs;outputCount=count;break;}
+            // Recrafting shares the output item; keep looking for a manufacturing recipe.
+            if(!blacklisted&&inputs.stream().noneMatch(input->ItemStack.isSameItem(input,stack))){selected=inputs;outputCount=count;break;}
         }
         if(selected==null||outputCount==0)return new ItemStack[0];
-        for(ItemStack input:selected)if(ItemStack.isSameItem(input,stack))return new ItemStack[0];
         List<ItemStack> merged=new ArrayList<>();
         for(ItemStack input:selected){ItemStack same=merged.stream().filter(s->ItemStack.isSameItem(s,input)).findFirst().orElse(null);if(same==null)merged.add(input.copy());else same.grow(input.getCount());}
         List<ItemStack> result=new ArrayList<>();

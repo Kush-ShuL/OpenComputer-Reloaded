@@ -242,7 +242,7 @@
       "id": "C11",
       "group": "基础与交付",
       "name": "文件系统、沙箱、配额与句柄",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/fs/",
         "src/main/scala/li/cil/oc/server/component/FileSystem.scala"
@@ -254,8 +254,12 @@
       "acceptance": [
         "原路径/只读/配额/句柄和读写/寻址/重命名/删除行为闭合；硬件介质归 D14，程序盘归 C15。"
       ],
-      "remaining": "已有真实读写和恢复；仍需把路径、只读、配额、句柄边界按原实现闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/storage-filesystems.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt",
+        "build/api-compat-addon/persistence/storage-cold-20261027-d1/resume-results.txt"
+      ]
     },
     {
       "id": "C12",
@@ -554,7 +558,7 @@
       "id": "D02",
       "group": "设备与组件",
       "name": "适配器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Adapter.scala"
       ],
@@ -564,14 +568,17 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/machine-hosts.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "D03",
       "group": "设备与组件",
       "name": "装配机",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Assembler.scala"
       ],
@@ -581,8 +588,11 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/production-devices.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "D04",
@@ -653,7 +663,7 @@
       "id": "D07",
       "group": "设备与组件",
       "name": "机箱",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Case.scala"
       ],
@@ -663,8 +673,11 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/machine-hosts.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "D08",
@@ -730,7 +743,7 @@
       "id": "D11",
       "group": "设备与组件",
       "name": "拆解机",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Disassembler.scala"
       ],
@@ -740,8 +753,11 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/production-devices.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "D12",
@@ -787,7 +803,7 @@
       "id": "D14",
       "group": "设备与组件",
       "name": "硬盘及软盘存储",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/Drive.scala"
       ],
@@ -797,8 +813,12 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/storage-filesystems.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt",
+        "build/api-compat-addon/persistence/storage-cold-20261027-d1/resume-results.txt"
+      ]
     },
     {
       "id": "D15",
@@ -1145,7 +1165,7 @@
       "id": "D32",
       "group": "设备与组件",
       "name": "机架",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Rack.scala"
       ],
@@ -1155,14 +1175,17 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/machine-hosts.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "D33",
       "group": "设备与组件",
       "name": "磁盘阵列",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/tileentity/Raid.scala"
       ],
@@ -1172,8 +1195,11 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/production-devices.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "D34",
@@ -1262,7 +1288,7 @@
       "id": "D38",
       "group": "设备与组件",
       "name": "服务器刀片",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/server/component/Server.scala"
       ],
@@ -1272,8 +1298,11 @@
       "acceptance": [
         "按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。"
       ],
-      "remaining": "已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/machine-hosts.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "D39",
@@ -1774,7 +1803,7 @@
       "id": "T01",
       "group": "工具与附加玩法",
       "name": "分析仪",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/Analyzer.scala"
       ],
@@ -1784,14 +1813,17 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "原RobotAnalyzeEvent已在真实持久宿主上发射，经验统计listener已接入；诊断、剪贴板、权限及玩家可见交互仍待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/player-tools.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "T02",
       "group": "工具与附加玩法",
       "name": "扳手",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/Wrench.scala"
       ],
@@ -1801,14 +1833,17 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "旋转、拆卸、工具损耗和保护事件的原操作路径待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/player-tools.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "T03",
       "group": "工具与附加玩法",
       "name": "游戏内手册",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/Manual.scala",
         "src/main/scala/li/cil/oc/client/Manual.scala",
@@ -1821,14 +1856,17 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "物品打开/上下文页/历史与原Markdown特性、图片和链接闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/player-manual.md",
+        "build/api-compat-addon/manual-client/manual-20261027-d2/manual-results.txt"
+      ]
     },
     {
       "id": "T04",
       "group": "工具与附加玩法",
       "name": "调试器物品",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/Debugger.scala"
       ],
@@ -1838,14 +1876,17 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "原操作、访问权限及显示/诊断交互待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/player-tools.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "T05",
       "group": "工具与附加玩法",
       "name": "纹理选择器",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/TexturePicker.scala"
       ],
@@ -1855,8 +1896,11 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "实际选择方块材质及复制/显示流程待闭合。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/player-tools.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "T06",
@@ -2073,7 +2117,7 @@
       "id": "T16",
       "group": "工具与附加玩法",
       "name": "合成材料、机壳与墨盒耗材",
-      "status": "review",
+      "status": "complete",
       "upstream": [
         "src/main/scala/li/cil/oc/common/item/ALU.scala",
         "src/main/scala/li/cil/oc/common/item/Acid.scala",
@@ -2101,8 +2145,11 @@
       "acceptance": [
         "完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。"
       ],
-      "remaining": "原独立材料/耗材全部注册且保留属性和使用行为；配方归C17、外观归C20。",
-      "evidence": []
+      "remaining": "",
+      "evidence": [
+        "docs/player-tools.md",
+        "build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt"
+      ]
     },
     {
       "id": "I01",

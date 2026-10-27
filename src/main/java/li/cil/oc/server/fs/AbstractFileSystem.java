@@ -16,7 +16,6 @@ public abstract class AbstractFileSystem implements li.cil.oc.api.fs.FileSystem 
         String normalized = clean(path);
         int id; do { id = ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE); } while (handles.containsKey(id));
         if (mode != Mode.Read && isReadOnly()) throw new FileNotFoundException("file system is read only");
-        for (OpenHandle handle : handles.values()) if (handle.path.equals(normalized) && handle.mode != Mode.Read && mode != Mode.Read) throw new FileNotFoundException("file is already open for writing");
         try { OpenHandle handle = createHandle(id, normalized, mode); handles.put(id, handle); return id; }
         catch (IOException error) { throw FileSystem.failure(error); }
     }

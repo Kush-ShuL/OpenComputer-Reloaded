@@ -58,7 +58,7 @@ public abstract class WorkstationBlockEntity extends BlockEntity implements Envi
         return connector;
     }
     @Override public Node sidedNode(Direction side) { return canConnect(side) ? node() : null; }
-    @Override public boolean canConnect(Direction side) { return side != Direction.UP; }
+    @Override public boolean canConnect(Direction side) { return !deviceName().equals("assembler") || side != Direction.UP; }
     @Override public void onConnect(Node node) {}
     @Override public void onDisconnect(Node node) {}
     @Override public void onMessage(Message message) {}
@@ -112,7 +112,7 @@ public abstract class WorkstationBlockEntity extends BlockEntity implements Envi
     @Override public EnumSet<State> getCurrentState() { return busy() ? EnumSet.of(State.IsWorking) : canStart() ? EnumSet.of(State.CanWork) : EnumSet.noneOf(State.class); }
     @Override public java.util.Map<String, String> getDeviceInfo() { return java.util.Map.of("class", "generic", "description", deviceName().equals("assembler") ? "Assembler" : "Disassembler", "vendor", li.cil.oc.Constants.DeviceInfo.DefaultVendor, "product", deviceName().equals("assembler") ? "Factorizer R1D1" : "Break.3R-100"); }
     @Override public IEnergyStorage energy(Direction side) {
-        if (!canConnect(side)) return null;
+        if (side == Direction.UP) return null;
         return new IEnergyStorage() {
             public int receiveEnergy(int maximum, boolean simulate) {
                 Connector node = node(); double ratio = Settings.get().ratioForgeEnergy;

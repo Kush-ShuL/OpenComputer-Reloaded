@@ -37,7 +37,7 @@ public final class Racks {
     private static final DeferredRegister<MenuType<?>> MENUS=DeferredRegister.create(Registries.MENU,"opencomputers");
     public static final Supplier<RackBlock> RACK=BLOCKS.register("rack",()->new RackBlock(BlockBehaviour.Properties.of().strength(2,5).sound(SoundType.METAL).noOcclusion(),()->Racks.RACK_TYPE.get()));
     public static final Supplier<BlockEntityType<RackBlockEntity>> RACK_TYPE=TYPES.register("rack",()->BlockEntityType.Builder.of((pos,state)->new RackBlockEntity(Racks.RACK_TYPE.get(),pos,state),RACK.get()).build(null));
-    public static final Supplier<BlockItem> RACK_ITEM=ITEMS.register("rack",()->new BlockItem(RACK.get(),new Item.Properties()));
+    public static final Supplier<BlockItem> RACK_ITEM=ITEMS.register("rack",()->new li.cil.oc.common.item.MachineHostBlockItem(RACK.get(),new Item.Properties()));
     public static final Supplier<Item> TERMINAL_SERVER=ITEMS.register("terminalserver",()->new Item(new Item.Properties().stacksTo(1)));
     public static final Supplier<TerminalItem> TERMINAL=ITEMS.register("terminal",()->new TerminalItem(new Item.Properties()));
     public static final List<Supplier<ServerItem>> SERVERS=new ArrayList<>();

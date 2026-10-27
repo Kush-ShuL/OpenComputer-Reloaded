@@ -21,7 +21,7 @@ import net.minecraft.world.phys.BlockHitResult;
 /** Breaking the cabinet preserves the complete array instead of ejecting and formatting its disks. */
 public final class RaidBlock extends Block implements EntityBlock {
     public static final DirectionProperty FACING=BlockStateProperties.HORIZONTAL_FACING;
-    public RaidBlock(Properties properties){super(properties);registerDefaultState(stateDefinition.any().setValue(FACING,Direction.SOUTH));}
+    public RaidBlock(Properties properties){super(properties.isValidSpawn((state,level,pos,entity)->false));registerDefaultState(stateDefinition.any().setValue(FACING,Direction.SOUTH));}
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block,BlockState> builder){builder.add(FACING);}
     @Override public BlockState getStateForPlacement(BlockPlaceContext context){return defaultBlockState().setValue(FACING,context.getHorizontalDirection().getOpposite());}
     @Override protected BlockState rotate(BlockState state,Rotation rotation){return state.setValue(FACING,rotation.rotate(state.getValue(FACING)));}

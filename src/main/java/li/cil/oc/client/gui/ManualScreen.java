@@ -92,6 +92,8 @@ public final class ManualScreen extends Screen {
             if (tabTooltip != null) tooltip(graphics, tabTooltip, mouseX, mouseY);
             else if (hit != null) tooltip(graphics, hit.tooltip(), mouseX, mouseY);
         }
+        if (maxOffset() > 0 && (dragging || overScroll(mouseX, mouseY)))
+            tooltip(graphics, (100 * offset() / maxOffset()) + "%", left + SCROLL_X + 6, thumbY + THUMB_HEIGHT + 1);
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 

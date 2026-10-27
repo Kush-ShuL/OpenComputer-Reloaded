@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 67 项，剩余 53 项。**
+**总计 120 项，已闭合 82 项，剩余 38 项。**
 
-剩余包括：已有实现待核对/验收 45 项，有明确缺口 8 项。
+剩余包括：已有实现待核对/验收 30 项，有明确缺口 8 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -27,9 +27,9 @@
 
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
-| 基础与交付 | 24 | 13 | 11 |
-| 设备与组件 | 61 | 40 | 21 |
-| 工具与附加玩法 | 16 | 8 | 8 |
+| 基础与交付 | 24 | 14 | 10 |
+| 设备与组件 | 61 | 48 | 13 |
+| 工具与附加玩法 | 16 | 14 | 2 |
 | 可选集成 | 19 | 6 | 13 |
 
 ## 范围归属
@@ -142,15 +142,15 @@
 
 闭合依据：[docs/PORTING.md](../docs/PORTING.md)、[build/api-compat-addon/persistence/luaj-20261026-181932/resume-results.txt](../build/api-compat-addon/persistence/luaj-20261026-181932/resume-results.txt)
 
-### C11 · 文件系统、沙箱、配额与句柄 · 已有实现，待核对/验收
+### C11 · 文件系统、沙箱、配额与句柄 · 已闭合
 
 完成条件：原路径/只读/配额/句柄和读写/寻址/重命名/删除行为闭合；硬件介质归 D14，程序盘归 C15。
-
-剩余：已有真实读写和恢复；仍需把路径、只读、配额、句柄边界按原实现闭合。
 
 原版范围：`src/main/scala/li/cil/oc/server/fs/`、`src/main/scala/li/cil/oc/server/component/FileSystem.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/fs/](../src/main/java/li/cil/oc/server/fs/)、[src/main/java/li/cil/oc/server/component/FileSystem.java](../src/main/java/li/cil/oc/server/component/FileSystem.java)
+
+闭合依据：[docs/storage-filesystems.md](../docs/storage-filesystems.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)、[build/api-compat-addon/persistence/storage-cold-20261027-d1/resume-results.txt](../build/api-compat-addon/persistence/storage-cold-20261027-d1/resume-results.txt)
 
 ### C12 · 物理宿主保存、冷恢复与区块生命周期 · 已闭合
 
@@ -297,25 +297,25 @@
 
 闭合依据：[docs/processors.md](../docs/processors.md)、[src/main/java/li/cil/oc/server/driver/item/APU.java](../src/main/java/li/cil/oc/server/driver/item/APU.java)、[src/main/java/li/cil/oc/server/component/APU.java](../src/main/java/li/cil/oc/server/component/APU.java)
 
-### D02 · 适配器 · 已有实现，待核对/验收
+### D02 · 适配器 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Adapter.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/AdapterBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/AdapterBlockEntity.java)
 
-### D03 · 装配机 · 已有实现，待核对/验收
+闭合依据：[docs/machine-hosts.md](../docs/machine-hosts.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
+
+### D03 · 装配机 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Assembler.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/AssemblerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/AssemblerBlockEntity.java)
+
+闭合依据：[docs/production-devices.md](../docs/production-devices.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
 
 ### D04 · CPU · 已闭合
 
@@ -347,15 +347,15 @@
 
 闭合依据：[docs/power-devices.md](../docs/power-devices.md)、[src/main/java/li/cil/oc/common/block/entity/CapacitorBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/CapacitorBlockEntity.java)、[build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt](../build/api-compat-addon/devices/device-batch-20261027-c3/device-results.txt)
 
-### D07 · 机箱 · 已有实现，待核对/验收
+### D07 · 机箱 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Case.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/CaseBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/CaseBlockEntity.java)
+
+闭合依据：[docs/machine-hosts.md](../docs/machine-hosts.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
 
 ### D08 · 充电器 · 已闭合
 
@@ -387,15 +387,15 @@
 
 当前接入：[src/main/java/li/cil/oc/server/component/DebugCard.java](../src/main/java/li/cil/oc/server/component/DebugCard.java)
 
-### D11 · 拆解机 · 已有实现，待核对/验收
+### D11 · 拆解机 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Disassembler.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/DisassemblerBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/DisassemblerBlockEntity.java)
+
+闭合依据：[docs/production-devices.md](../docs/production-devices.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
 
 ### D12 · 外置软盘驱动器 · 已闭合
 
@@ -417,15 +417,15 @@
 
 闭合依据：[docs/PORTING.md](../docs/PORTING.md)、[tools/api-compat-addon/src/main/java/ocfixture/DeviceContract.java](../tools/api-compat-addon/src/main/java/ocfixture/DeviceContract.java)
 
-### D14 · 硬盘及软盘存储 · 已有实现，待核对/验收
+### D14 · 硬盘及软盘存储 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/Drive.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/Drive.java](../src/main/java/li/cil/oc/server/component/Drive.java)
+
+闭合依据：[docs/storage-filesystems.md](../docs/storage-filesystems.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)、[build/api-compat-addon/persistence/storage-cold-20261027-d1/resume-results.txt](../build/api-compat-addon/persistence/storage-cold-20261027-d1/resume-results.txt)
 
 ### D15 · 无人机 · 已有实现，待核对/验收
 
@@ -597,25 +597,25 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/PrinterBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/PrinterBlockEntity.java)、[src/main/java/li/cil/oc/server/component/Printer.java](../src/main/java/li/cil/oc/server/component/Printer.java)
 
-### D32 · 机架 · 已有实现，待核对/验收
+### D32 · 机架 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Rack.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/RackBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RackBlockEntity.java)
 
-### D33 · 磁盘阵列 · 已有实现，待核对/验收
+闭合依据：[docs/machine-hosts.md](../docs/machine-hosts.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
+
+### D33 · 磁盘阵列 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/common/tileentity/Raid.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/RaidBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/RaidBlockEntity.java)
+
+闭合依据：[docs/production-devices.md](../docs/production-devices.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
 
 ### D34 · 普通及集束红石 · 已有实现，待核对/验收
 
@@ -657,15 +657,15 @@
 
 当前接入：[src/main/java/li/cil/oc/common/block/entity/ScreenBlockEntity.java](../src/main/java/li/cil/oc/common/block/entity/ScreenBlockEntity.java)
 
-### D38 · 服务器刀片 · 已有实现，待核对/验收
+### D38 · 服务器刀片 · 已闭合
 
 完成条件：按原版该族公开操作、参数/错误、状态消耗、配置、保存及事件行为闭合；所有tier同族，辅助实现和共享trait一并负责。GUI/模型统一归C20/C23，远程包归C19，不重复扩充分母。
-
-剩余：已有Java实现及注册映射；仍需完成本族原版行为核对和必要的实际操作验收。
 
 原版范围：`src/main/scala/li/cil/oc/server/component/Server.scala`
 
 当前接入：[src/main/java/li/cil/oc/server/component/Server.java](../src/main/java/li/cil/oc/server/component/Server.java)
+
+闭合依据：[docs/machine-hosts.md](../docs/machine-hosts.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
 
 ### D39 · 平板电脑 · 已有实现，待核对/验收
 
@@ -900,55 +900,55 @@
 
 ## 工具与附加玩法
 
-### T01 · 分析仪 · 已有实现，待核对/验收
+### T01 · 分析仪 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：原RobotAnalyzeEvent已在真实持久宿主上发射，经验统计listener已接入；诊断、剪贴板、权限及玩家可见交互仍待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/Analyzer.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/item/AnalyzerItem.java](../src/main/java/li/cil/oc/common/item/AnalyzerItem.java)
 
-### T02 · 扳手 · 已有实现，待核对/验收
+闭合依据：[docs/player-tools.md](../docs/player-tools.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
+
+### T02 · 扳手 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：旋转、拆卸、工具损耗和保护事件的原操作路径待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/Wrench.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/item/WrenchItem.java](../src/main/java/li/cil/oc/common/item/WrenchItem.java)
 
-### T03 · 游戏内手册 · 已有实现，待核对/验收
+闭合依据：[docs/player-tools.md](../docs/player-tools.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
+
+### T03 · 游戏内手册 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：物品打开/上下文页/历史与原Markdown特性、图片和链接闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/Manual.scala`、`src/main/scala/li/cil/oc/client/Manual.scala`、`src/main/scala/li/cil/oc/client/renderer/markdown/`
 
 当前接入：[src/main/java/li/cil/oc/common/item/ManualItem.java](../src/main/java/li/cil/oc/common/item/ManualItem.java)、[src/main/java/li/cil/oc/client/manual/ManualRegistry.java](../src/main/java/li/cil/oc/client/manual/ManualRegistry.java)
 
-### T04 · 调试器物品 · 已有实现，待核对/验收
+闭合依据：[docs/player-manual.md](../docs/player-manual.md)、[build/api-compat-addon/manual-client/manual-20261027-d2/manual-results.txt](../build/api-compat-addon/manual-client/manual-20261027-d2/manual-results.txt)
+
+### T04 · 调试器物品 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：原操作、访问权限及显示/诊断交互待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/Debugger.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/item/DebuggerItem.java](../src/main/java/li/cil/oc/common/item/DebuggerItem.java)
 
-### T05 · 纹理选择器 · 已有实现，待核对/验收
+闭合依据：[docs/player-tools.md](../docs/player-tools.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
+
+### T05 · 纹理选择器 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：实际选择方块材质及复制/显示流程待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/TexturePicker.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/item/TexturePickerItem.java](../src/main/java/li/cil/oc/common/item/TexturePickerItem.java)
+
+闭合依据：[docs/player-tools.md](../docs/player-tools.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
 
 ### T06 · 悬浮靴 · 已闭合
 
@@ -1050,15 +1050,15 @@
 
 闭合依据：[docs/seasonal-and-endstone.md](../docs/seasonal-and-endstone.md)、[src/main/java/li/cil/oc/common/init/MiscDevices.java](../src/main/java/li/cil/oc/common/init/MiscDevices.java)、[src/main/resources/data/opencomputers/loot_table/blocks/endstone.json](../src/main/resources/data/opencomputers/loot_table/blocks/endstone.json)、[src/main/resources/data/opencomputers/recipe/default/endstone.json](../src/main/resources/data/opencomputers/recipe/default/endstone.json)
 
-### T16 · 合成材料、机壳与墨盒耗材 · 已有实现，待核对/验收
+### T16 · 合成材料、机壳与墨盒耗材 · 已闭合
 
 完成条件：完成该族原版全部行为及注册/数据持久化；显示由C20/C23统一验收。
-
-剩余：原独立材料/耗材全部注册且保留属性和使用行为；配方归C17、外观归C20。
 
 原版范围：`src/main/scala/li/cil/oc/common/item/ALU.scala`、`src/main/scala/li/cil/oc/common/item/Acid.scala`、`src/main/scala/li/cil/oc/common/item/ArrowKeys.scala`、`src/main/scala/li/cil/oc/common/item/ButtonGroup.scala`、`src/main/scala/li/cil/oc/common/item/Chamelium.scala`、`src/main/scala/li/cil/oc/common/item/CircuitBoard.scala`、`src/main/scala/li/cil/oc/common/item/ControlUnit.scala`、`src/main/scala/li/cil/oc/common/item/CuttingWire.scala`、`src/main/scala/li/cil/oc/common/item/DiamondChip.scala`、`src/main/scala/li/cil/oc/common/item/DroneCase.scala`、`src/main/scala/li/cil/oc/common/item/InkCartridge.scala`、`src/main/scala/li/cil/oc/common/item/InkCartridgeEmpty.scala`、`src/main/scala/li/cil/oc/common/item/Microchip.scala`、`src/main/scala/li/cil/oc/common/item/MicrocontrollerCase.scala`、`src/main/scala/li/cil/oc/common/item/NumPad.scala`、`src/main/scala/li/cil/oc/common/item/PrintedCircuitBoard.scala`、`src/main/scala/li/cil/oc/common/item/RawCircuitBoard.scala`、`src/main/scala/li/cil/oc/common/item/TabletCase.scala`、`src/main/scala/li/cil/oc/common/item/Transistor.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/item/CraftingMaterialItem.java](../src/main/java/li/cil/oc/common/item/CraftingMaterialItem.java)
+
+闭合依据：[docs/player-tools.md](../docs/player-tools.md)、[build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt](../build/api-compat-addon/devices/host-storage-20261027-d3/device-results.txt)
 
 
 ## 可选集成

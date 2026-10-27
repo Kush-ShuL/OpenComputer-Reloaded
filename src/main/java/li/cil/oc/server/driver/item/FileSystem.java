@@ -20,27 +20,27 @@ public final class FileSystem extends ItemDriver {
     @Override public String slot(ItemStack stack) { return item(stack).kind() == ComponentItem.Kind.HDD ? Slot.HDD : Slot.Floppy; }
     @Override public ManagedEnvironment createEnvironment(ItemStack stack, EnvironmentHost host) {
         if (host.world() != null && host.world().isClientSide) return null;
+        if (net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer() == null) return null;
         CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         CompoundTag state = dataTag(stack);
         String loot = root.getString("oc:lootFactory");
-        if (!loot.isEmpty()) {
+        if (root.contains("oc:lootFactory")) {
             var factory = li.cil.oc.common.integration.LootIntegration.fileSystemFactory(loot, host.world());
-            if (factory == null) throw new IllegalStateException("Missing loot filesystem factory: " + loot);
+            if (factory == null) return null;
             try {
                 var fs = factory.call();
-                if (fs == null) throw new IllegalStateException("Loot filesystem factory returned null: " + loot);
+                if (fs == null) return null;
                 return li.cil.oc.api.FileSystem.asManagedEnvironment(fs, state.contains("oc:fs.label") ? state.getString("oc:fs.label") : null,
                         host, "opencomputers:floppy_access");
             } catch (Exception error) { throw new IllegalStateException("Could not mount loot filesystem " + loot, error); }
         }
         CompoundTag node = state.getCompound("node");
         String address = node.getString("address");
-        try { UUID.fromString(address); }
-        catch (IllegalArgumentException invalid) { address = UUID.randomUUID().toString(); }
+        if (!address.matches("[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}")) address = UUID.randomUUID().toString();
         node.putString("address", address); state.put("node", node); saveDataTag(stack, state);
         boolean floppy = item(stack).kind() == ComponentItem.Kind.FLOPPY;
         int tier = tier(stack), speed = floppy ? 1 : tier + 2;
-        int capacity = (floppy ? Settings.get().floppySize : Settings.get().hddSizes[tier]) * 1024;
+        int capacity = Math.max(0,(floppy ? Settings.get().floppySize : Settings.get().hddSizes[tier]) * 1024);
         int platters = floppy ? 1 : Settings.get().hddPlatterCounts[tier];
         Label label = new ItemLabel(stack, state);
         boolean locked = !root.getString("oc:lock").isEmpty();
@@ -57,9 +57,9 @@ public final class FileSystem extends ItemDriver {
         if (environment.node() != null) environment.node().load(node);
         return environment;
     }
-    private static final class ItemLabel implements Label {
+    private static final class ItemLabel extends li.cil.oc.server.fs.FileSystem.ItemLabel {
         private String label;
-        ItemLabel(ItemStack stack, CompoundTag data) { load(data); }
+        ItemLabel(ItemStack stack, CompoundTag data) { super(stack);load(data); }
         @Override public String getLabel() { return label; }
         @Override public void setLabel(String value) { label = value == null ? null : value.substring(0, Math.min(16, value.length())); }
         @Override public void load(CompoundTag tag) { label = tag.contains("oc:fs.label") ? tag.getString("oc:fs.label") : null; }

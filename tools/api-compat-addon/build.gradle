@@ -66,6 +66,9 @@ def runtimeFile = file(providers.gradleProperty('ocModJar').getOrElse("${reposit
 def tis3dClientId = providers.gradleProperty('ocTis3dClientRunId').getOrElse('not-selected')
 def tis3dClientDirectory = file("${repositoryRoot}/build/api-compat-addon/tis3d-client/${tis3dClientId}")
 def tis3dClientReport = new File(tis3dClientDirectory, 'manual-results.txt')
+def manualClientId = providers.gradleProperty('ocManualClientRunId').getOrElse('not-selected')
+def manualClientDirectory = file("${repositoryRoot}/build/api-compat-addon/manual-client/${manualClientId}")
+def manualClientReport = new File(manualClientDirectory, 'manual-results.txt')
 sourceSets {
     legacy { java.srcDir 'src/legacy/java'; resources.srcDirs = [] }
     main { compileClasspath += sourceSets.legacy.output; runtimeClasspath += sourceSets.legacy.output }
@@ -91,6 +94,16 @@ neoForge {
             gameDirectory = tis3dClientDirectory
             systemProperty 'ocfixture.tis3dClient', 'true'
             systemProperty 'ocfixture.tis3dClientReport', tis3dClientReport.absolutePath
+        }
+        manualClient {
+            client()
+            gameDirectory = manualClientDirectory
+            programArgument '--width'; programArgument '1280'
+            programArgument '--height'; programArgument '720'
+            systemProperty 'ocfixture.manualClient', 'true'
+            systemProperty 'ocfixture.manualClientRunId', manualClientId
+            systemProperty 'ocfixture.manualClientDirectory', manualClientDirectory.absolutePath
+            systemProperty 'ocfixture.manualClientReport', manualClientReport.absolutePath
         }
         persistenceServer {
             server()
@@ -120,6 +133,7 @@ neoForge {
             systemProperty 'ocfixture.upgradeStorageOnly', providers.gradleProperty('ocUpgradeStorageOnly').getOrElse('false')
             systemProperty 'ocfixture.agentActionsOnly', providers.gradleProperty('ocAgentActionsOnly').getOrElse('false')
             systemProperty 'ocfixture.deviceBatchOnly', providers.gradleProperty('ocDeviceBatchOnly').getOrElse('false')
+            systemProperty 'ocfixture.hostBatchOnly', providers.gradleProperty('ocHostBatchOnly').getOrElse('false')
             systemProperty 'ocfixture.vanillaOnly', providers.gradleProperty('ocVanillaOnly').getOrElse('false')
         }
         hostPersistenceServer {
@@ -219,6 +233,22 @@ tasks.matching { it.name == 'runTis3dClient' }.configureEach {
     doLast {
         if (!tis3dClientReport.isFile() || tis3dClientReport.readLines('UTF-8').first() != 'status=PASS')
             throw new GradleException("The TIS-3D manual client did not pass; see ${tis3dClientReport}")
+    }
+}
+def preparePlayerManualClient = tasks.register('preparePlayerManualClient') {
+    doLast {
+        if (!providers.gradleProperty('ocManualClientRunId').isPresent() || !(manualClientId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a fresh -PocManualClientRunId=NAME')
+        if (manualClientReport.exists() || new File(manualClientDirectory, 'logs/latest.log').exists()) throw new GradleException('This manual client run already exists; select a new run id')
+        manualClientDirectory.mkdirs()
+        new File(manualClientDirectory, 'options.txt').setText('lang:en_us\nguiScale:2\nrenderDistance:2\nsimulationDistance:2\nautoJump:false\n', 'UTF-8')
+    }
+}
+tasks.matching { it.name == 'runManualClient' }.configureEach {
+    dependsOn preparePlayerManualClient
+    doLast {
+        if (!manualClientReport.isFile() || manualClientReport.readLines('UTF-8').first() != 'status=PASS')
+            throw new GradleException("The player manual client did not pass; see ${manualClientReport}")
     }
 }
 def prepareJadeRun = tasks.register('prepareJadeRun') {

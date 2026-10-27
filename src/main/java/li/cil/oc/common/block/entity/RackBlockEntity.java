@@ -60,6 +60,7 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 public final class RackBlockEntity extends BlockEntity implements li.cil.oc.api.internal.Rack, Environment, Analyzable, StateAware, MenuProvider, RedstoneHost, EnergyProvider, RotatableBlockEntity, li.cil.oc.server.PacketSender.ActivityListener {
     private final NonNullList<ItemStack> items=NonNullList.withSize(4,ItemStack.EMPTY);
     private final RackMountable[] mountables=new RackMountable[4];
+    private final ItemStack[] clientStacks=new ItemStack[4];
     private final CompoundTag[] lastData=new CompoundTag[4];
     private final Plug[] plugs=new Plug[6];
     private final Node[][] sniffers=new Node[4][3];
@@ -78,8 +79,8 @@ public final class RackBlockEntity extends BlockEntity implements li.cil.oc.api.
     @Override public double yPosition(){return worldPosition.getY()+.5;}
     @Override public double zPosition(){return worldPosition.getZ()+.5;}
     @Override public Direction facing(){return getBlockState().getValue(RackBlock.FACING);}
-    @Override public Direction toGlobal(Direction side){if(side.getAxis().isVertical())return side;for(int i=0;i<facing().get2DDataValue();i++)side=side.getClockWise();return side;}
-    @Override public Direction toLocal(Direction side){if(side.getAxis().isVertical())return side;for(int i=0;i<facing().get2DDataValue();i++)side=side.getCounterClockWise();return side;}
+    @Override public Direction toGlobal(Direction side){if(side==null||side.getAxis().isVertical())return side;for(int i=0;i<facing().get2DDataValue();i++)side=side.getClockWise();return side;}
+    @Override public Direction toLocal(Direction side){if(side==null||side.getAxis().isVertical())return side;for(int i=0;i<facing().get2DDataValue();i++)side=side.getCounterClockWise();return side;}
     @Override public RedstoneState redstoneState(){return redstone;}
     @Override public boolean rotate(Direction axis){
         Direction target=li.cil.oc.util.RotationHelper.rotate(facing(),axis);if(target.getAxis().isVertical()||target==facing()||level==null)return false;if(level.isClientSide)return true;
@@ -130,18 +131,22 @@ public final class RackBlockEntity extends BlockEntity implements li.cil.oc.api.
     private void createMountable(int slot){
         ItemStack stack=items.get(slot);if(stack.isEmpty())return;var driver=Driver.driverFor(stack,getClass());if(driver==null)return;
         var environment=driver.createEnvironment(stack,this);if(!(environment instanceof RackMountable mountable))return;mountables[slot]=mountable;
-        lifecycle(mountable,Lifecycle.LifecycleState.Constructing);CompoundTag data=driver.dataTag(stack);if(data==null)data=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getCompound("oc:data");mountable.load(data,level.registryAccess());lifecycle(mountable,Lifecycle.LifecycleState.Initializing);
-        if(mountable.node()!=null&&mountable.node().network()==null)Network.joinNewNetwork(mountable.node());for(int connection=0;connection<4;connection++)reconnect(slot,connection);lifecycle(mountable,Lifecycle.LifecycleState.Initialized);markChanged(slot);
+        lifecycle(mountable,Lifecycle.LifecycleState.Constructing);CompoundTag data=driver.dataTag(stack);if(data==null)data=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getCompound("oc:data");try{mountable.load(data,level.registryAccess());}catch(Throwable error){li.cil.oc.OpenComputers.LOGGER.warn("A rack item component failed while loading",error);}lifecycle(mountable,Lifecycle.LifecycleState.Initializing);
+        if(mountable.node()!=null&&mountable.node().network()==null)Network.joinNewNetwork(mountable.node());for(int connection=0;connection<4;connection++)reconnect(slot,connection);lifecycle(mountable,Lifecycle.LifecycleState.Initialized);if(!loading)flush(slot);markChanged(slot);
     }
     private static void lifecycle(RackMountable mountable,Lifecycle.LifecycleState state){if(mountable instanceof Lifecycle value)value.onLifecycleStateChange(state);}
     private void flush(int slot){
-        RackMountable mountable=mountables[slot];ItemStack stack=items.get(slot);if(mountable==null||stack.isEmpty()||level==null||level.isClientSide)return;
+        flush(slot,mountables[slot]);
+    }
+    private void flush(int slot,RackMountable mountable){
+        ItemStack stack=items.get(slot);if(mountable==null||stack.isEmpty()||level==null||level.isClientSide)return;
         var driver=Driver.driverFor(stack,getClass());if(driver==null)return;CompoundTag data=driver.dataTag(stack);if(data==null)data=stack.getOrDefault(DataComponents.CUSTOM_DATA,CustomData.EMPTY).copyTag().getCompound("oc:data");mountable.save(data,level.registryAccess());driver.saveDataTag(stack,data);
     }
     public void flushMountables(){for(int slot=0;slot<4;slot++)flush(slot);}
+    public void prepareDrops(){for(int slot=0;slot<4;slot++)release(slot);}
     private void release(int slot){
-        flush(slot);RackMountable mountable=mountables[slot];for(int connection=0;connection<4;connection++)disconnect(slot,connection);mountables[slot]=null;
-        if(mountable!=null){if(mountable instanceof li.cil.oc.server.component.DiskDriveMountable disk)disk.dispose(false);lifecycle(mountable,Lifecycle.LifecycleState.Disposing);if(mountable instanceof li.cil.oc.server.component.Server server)server.dispose();else if(mountable.node()!=null)mountable.node().remove();lifecycle(mountable,Lifecycle.LifecycleState.Disposed);}
+        RackMountable mountable=mountables[slot];for(int connection=0;connection<4;connection++)disconnect(slot,connection);mountables[slot]=null;
+        if(mountable!=null){if(mountable instanceof li.cil.oc.server.component.DiskDriveMountable disk)disk.dispose(false);lifecycle(mountable,Lifecycle.LifecycleState.Disposing);if(mountable instanceof li.cil.oc.server.component.Server server)server.disposeForRemoval();else if(mountable.node()!=null)mountable.node().remove();flush(slot,mountable);if(mountable.node()!=null)mountable.node().remove();lifecycle(mountable,Lifecycle.LifecycleState.Disposed);}
         Arrays.fill(mapping[slot],-1);lastData[slot]=null;
     }
     private void initialize(){if(initialized||level==null||level.isClientSide||detached)return;initialized=true;loading=true;try{ensurePlugs();for(int slot=0;slot<4;slot++)createMountable(slot);Network.joinOrCreateNetwork(this);}finally{loading=false;}}
@@ -184,24 +189,34 @@ public final class RackBlockEntity extends BlockEntity implements li.cil.oc.api.
         @Override public void onMessage(Message message){if(primary()&&message.name().equals("network.message")&&message.data().length==1&&message.data()[0] instanceof Packet packet){for(Plug plug:plugs)if(plug!=null&&plug.node==message.source())return;enqueue(side,packet);}}
     }
     public void neighborChanged(){redstone.rescan();if(level!=null&&!level.isClientSide&&!detached)Network.joinOrCreateNetwork(this);}
-    @Override public void onLoad(){super.onLoad();detached=false;if(level!=null&&!level.isClientSide)initialize();}
-    private void dispose(){if(detached)return;flushMountables();detached=true;for(int slot=0;slot<4;slot++){RackMountable value=mountables[slot];if(value!=null){lifecycle(value,Lifecycle.LifecycleState.Disposing);if(value instanceof li.cil.oc.server.component.Server server)server.dispose();else if(value.node()!=null)value.node().remove();lifecycle(value,Lifecycle.LifecycleState.Disposed);}mountables[slot]=null;}for(Node[] row:sniffers){for(Node node:row)if(node!=null)node.remove();Arrays.fill(row,null);}for(Plug plug:plugs)if(plug!=null)plug.node.remove();Arrays.fill(plugs,null);initialized=false;}
+    private void clearClientMountable(int slot){RackMountable old=mountables[slot];mountables[slot]=null;clientStacks[slot]=null;if(old!=null&&old.node()!=null)old.node().remove();}
+    private void refreshClientMountables(){
+        if(level==null||!level.isClientSide||detached||isRemoved())return;
+        for(int slot=0;slot<4;slot++){
+            ItemStack stack=items.get(slot),previous=clientStacks[slot];
+            if(previous!=null&&ItemStack.isSameItemSameComponents(previous,stack)&&previous.getCount()==stack.getCount())continue;
+            clearClientMountable(slot);clientStacks[slot]=stack.copy();if(stack.isEmpty())continue;
+            var driver=Driver.driverFor(stack,getClass());if(driver!=null&&driver.createEnvironment(stack,this) instanceof RackMountable view)mountables[slot]=view;
+        }
+    }
+    @Override public void onLoad(){super.onLoad();detached=false;if(level!=null){if(level.isClientSide)refreshClientMountables();else initialize();}}
+    private void dispose(){if(detached)return;if(level!=null&&level.isClientSide){for(int slot=0;slot<4;slot++)clearClientMountable(slot);detached=true;return;}flushMountables();detached=true;for(int slot=0;slot<4;slot++){RackMountable value=mountables[slot];if(value!=null){lifecycle(value,Lifecycle.LifecycleState.Disposing);if(value instanceof li.cil.oc.server.component.Server server)server.dispose();else if(value.node()!=null)value.node().remove();lifecycle(value,Lifecycle.LifecycleState.Disposed);}mountables[slot]=null;}for(Node[] row:sniffers){for(Node node:row)if(node!=null)node.remove();Arrays.fill(row,null);}for(Plug plug:plugs)if(plug!=null)plug.node.remove();Arrays.fill(plugs,null);initialized=false;}
     @Override public void setRemoved(){dispose();super.setRemoved();}
     @Override public void onChunkUnloaded(){dispose();super.onChunkUnloaded();}
     @Override public int getContainerSize(){return 4;}
     @Override public int getMaxStackSize(){return 1;}
     @Override public boolean isEmpty(){return items.stream().allMatch(ItemStack::isEmpty);}
-    @Override public ItemStack getItem(int slot){return items.get(slot);}
-    @Override public ItemStack removeItem(int slot,int amount){if(amount<=0)return ItemStack.EMPTY;release(slot);ItemStack result=items.get(slot).split(amount);if(items.get(slot).isEmpty())items.set(slot,ItemStack.EMPTY);markChanged(slot);synchronize();return result;}
-    @Override public ItemStack removeItemNoUpdate(int slot){release(slot);ItemStack result=items.set(slot,ItemStack.EMPTY);markChanged(slot);synchronize();return result;}
-    @Override public void setItem(int slot,ItemStack stack){release(slot);items.set(slot,stack.copyWithCount(Math.min(1,stack.getCount())));if(initialized&&!loading)createMountable(slot);markChanged(slot);synchronize();}
+    @Override public ItemStack getItem(int slot){return slot>=0&&slot<4?items.get(slot):ItemStack.EMPTY;}
+    @Override public ItemStack removeItem(int slot,int amount){if(slot<0||slot>=4||amount<=0||items.get(slot).isEmpty())return ItemStack.EMPTY;release(slot);ItemStack result=items.get(slot).split(amount);if(items.get(slot).isEmpty())items.set(slot,ItemStack.EMPTY);markChanged(slot);synchronize();return result;}
+    @Override public ItemStack removeItemNoUpdate(int slot){if(slot<0||slot>=4||items.get(slot).isEmpty())return ItemStack.EMPTY;release(slot);ItemStack result=items.set(slot,ItemStack.EMPTY);markChanged(slot);synchronize();return result;}
+    @Override public void setItem(int slot,ItemStack stack){if(slot<0||slot>=4||items.get(slot)==stack||items.get(slot).isEmpty()&&stack.isEmpty())return;ItemStack next=stack.copyWithCount(Math.min(1,stack.getCount()));release(slot);items.set(slot,next);if(initialized&&!loading)createMountable(slot);markChanged(slot);synchronize();}
     @Override public boolean canPlaceItem(int slot,ItemStack stack){var driver=Driver.driverFor(stack,getClass());return slot>=0&&slot<4&&driver!=null&&driver.slot(stack).equals("rack_mountable");}
     @Override public void clearContent(){for(int slot=0;slot<4;slot++)release(slot);items.replaceAll(value->ItemStack.EMPTY);markChanged();synchronize();}
     @Override public boolean stillValid(Player player){return level!=null&&!isRemoved()&&level.getBlockEntity(worldPosition)==this&&player.distanceToSqr(xPosition(),yPosition(),zPosition())<=64;}
     @Override public Component getDisplayName(){return Component.translatable("block.opencomputers.rack");}
     @Override public AbstractContainerMenu createMenu(int id,Inventory inventory,Player player){return stillValid(player)?new RackMenu(id,inventory,this):null;}
     public int slotAt(Direction side,double hitY){return side==facing()?Math.clamp(((15-(int)(hitY*16))-2)*4/12,0,3):-1;}
-    @Override public Node[] onAnalyze(Player player,Direction side,float x,float y,float z){int slot=slotAt(side,y);RackMountable mountable=getMountable(slot);if(mountable instanceof Analyzable analyzable)return analyzable.onAnalyze(player,side,x,y,z);return new Node[]{sidedNode(side)};}
+    @Override public Node[] onAnalyze(Player player,Direction side,float x,float y,float z){int slot=slotAt(side,y);if(slot>=0)return getMountable(slot) instanceof Analyzable analyzable?analyzable.onAnalyze(player,side,x,y,z):null;return new Node[]{sidedNode(side)};}
     @Override public EnumSet<State> getCurrentState(){EnumSet<State> result=EnumSet.noneOf(State.class);for(RackMountable value:mountables)if(value!=null)result.addAll(value.getCurrentState());return result;}
     public void synchronize(){if(level!=null&&!level.isClientSide)level.sendBlockUpdated(worldPosition,getBlockState(),getBlockState(),2);}
     @Override public void onComponentActivity(String address,boolean network){for(CompoundTag data:lastData)if(data!=null){ListTag addresses=data.getList("componentAddresses",Tag.TAG_STRING);for(Tag candidate:addresses)if(candidate.getAsString().equals(address)){long now=System.currentTimeMillis();data.putLong(network?"lastNetworkActivity":"lastFileSystemAccess",now);if(!network&&data.contains("disk"))data.putLong("lastAccess",now);}}}
@@ -210,7 +225,7 @@ public final class RackBlockEntity extends BlockEntity implements li.cil.oc.api.
     @Override protected void loadAdditional(CompoundTag tag,HolderLookup.Provider registries){
         super.loadAdditional(tag,registries);boolean rebuild=initialized&&level!=null&&!level.isClientSide;loading=true;try{if(rebuild){for(int slot=0;slot<4;slot++)release(slot);for(Plug plug:plugs)if(plug!=null)plug.node.remove();Arrays.fill(plugs,null);initialized=false;}ServerInventory.loadItems(tag,items,registries);relayEnabled=tag.getBoolean("oc:isRelayEnabled");ListTag rows=tag.getList("oc:nodeMapping",Tag.TAG_INT_ARRAY);for(int slot=0;slot<Math.min(4,rows.size());slot++){int[] values=rows.getIntArray(slot);for(int connection=0;connection<Math.min(4,values.length);connection++)mapping[slot][connection]=values[connection]>=0&&values[connection]<6&&values[connection]!=3?values[connection]:-1;}
             ListTag data=tag.getList("oc:lastData",Tag.TAG_COMPOUND);for(int slot=0;slot<Math.min(4,data.size());slot++)lastData[slot]=data.getCompound(slot).copy();
-            if(level!=null&&level.isClientSide){redstone.loadClient(tag);return;}
+            if(level!=null&&level.isClientSide){redstone.loadClient(tag);refreshClientMountables();return;}
             redstone.load(tag);savedPlugs=tag.getList("oc:plugs",Tag.TAG_COMPOUND).copy();relayCooldown=tag.contains("oc:relayCooldown")?tag.getInt("oc:relayCooldown"):-1;synchronized(queue){queue.clear();for(Tag entry:tag.getList("oc:queue",Tag.TAG_COMPOUND)){CompoundTag value=(CompoundTag)entry;int side=value.getInt("side");queue.add(new QueuedPacket(side>=0&&side<6?Direction.from3DDataValue(side):null,Network.newPacket(value)));}}
         }finally{loading=false;}if(rebuild)initialize();
     }

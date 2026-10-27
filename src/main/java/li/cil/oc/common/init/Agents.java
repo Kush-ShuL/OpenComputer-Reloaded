@@ -29,7 +29,7 @@ public final class Agents {
     public static final Supplier<DroneItem> DRONE=ITEMS.register("drone",()->new DroneItem(new Item.Properties()));
     static {
         Items.INSTANCE.registerBlock("robot",ROBOT,ROBOT_ITEM);Items.INSTANCE.registerItem("drone",DRONE);
-        for(int index=0;index<3;index++){int tier=index==2?3:index;String name=index==2?"dronecasecreative":"dronecase"+(index+1);var item=ITEMS.register(name,()->new AgentCaseItem(new Item.Properties().stacksTo(1),tier));Items.INSTANCE.registerItem(name,item);}
+        for(int index=0;index<3;index++){int tier=index==2?3:index;String name=index==2?"dronecasecreative":"dronecase"+(index+1);var item=ITEMS.register(name,()->new AgentCaseItem(new Item.Properties(),tier));Items.INSTANCE.registerItem(name,item);}
         upgrade("inventoryupgrade","inventory",0);
         for(int tier=0;tier<3;tier++){upgrade("cardcontainer"+(tier+1),li.cil.oc.api.driver.item.Slot.Card,tier);upgrade("upgradecontainer"+(tier+1),li.cil.oc.api.driver.item.Slot.Upgrade,tier);}
         upgrade("floppycontainer",li.cil.oc.api.driver.item.Slot.Floppy,0);

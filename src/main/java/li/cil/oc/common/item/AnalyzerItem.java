@@ -48,6 +48,8 @@ public final class AnalyzerItem extends Item {
     }
     private static volatile ClientActions clientActions;
     public AnalyzerItem(Properties properties) { super(properties); }
+    @Override public boolean isBookEnchantable(ItemStack stack, ItemStack book) { return false; }
+    @Override public int getMaxStackSize(ItemStack stack) { return PlayerItemTooltips.stackSize(stack, super.getMaxStackSize(stack)); }
     public static void setClientActions(ClientActions actions) { clientActions = Objects.requireNonNull(actions); }
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
@@ -166,6 +168,6 @@ public final class AnalyzerItem extends Item {
     }
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
-        tooltip.add(Component.translatable("oc:tooltip.analyzer"));
+        PlayerItemTooltips.append(stack, tooltip, "oc:tooltip.analyzer");
     }
 }

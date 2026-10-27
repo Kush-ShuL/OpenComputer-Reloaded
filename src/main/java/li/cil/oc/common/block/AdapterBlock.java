@@ -22,7 +22,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 public final class AdapterBlock extends Block implements EntityBlock {
     private final Supplier<BlockEntityType<AdapterBlockEntity>> type;
-    public AdapterBlock(Properties properties, Supplier<BlockEntityType<AdapterBlockEntity>> type) { super(properties); this.type = type; }
+    public AdapterBlock(Properties properties, Supplier<BlockEntityType<AdapterBlockEntity>> type) { super(properties.isValidSpawn((state,level,pos,entity)->false)); this.type = type; }
+    @Override public void appendHoverText(ItemStack stack,net.minecraft.world.item.Item.TooltipContext context,java.util.List<net.minecraft.network.chat.Component> tooltip,net.minecraft.world.item.TooltipFlag flag){super.appendHoverText(stack,context,tooltip,flag);for(String line:net.minecraft.network.chat.Component.translatable("oc:tooltip.adapter").getString().split("\\[nl\\]"))tooltip.add(net.minecraft.network.chat.Component.literal(line));}
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return type.get().create(pos, state); }
     @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> requested) { return !level.isClientSide && requested == type.get() ? (world, pos, blockState, entity) -> AdapterBlockEntity.tick((AdapterBlockEntity) entity) : null; }
     @Override protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
@@ -33,7 +34,7 @@ public final class AdapterBlock extends Block implements EntityBlock {
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
     @Override protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof AdapterBlockEntity adapter) || !adapter.stillValid(player)) return InteractionResult.PASS;
+        if (player.isShiftKeyDown() || !(level.getBlockEntity(pos) instanceof AdapterBlockEntity adapter) || !adapter.stillValid(player)) return InteractionResult.PASS;
         if (!level.isClientSide) player.openMenu(adapter, buffer -> buffer.writeBlockPos(pos));
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

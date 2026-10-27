@@ -37,7 +37,7 @@ public final class Blocks {
             int tier=i;String id="case"+(tier==3?"creative":tier+1);
             Supplier<CaseBlock> block=BLOCKS.register(id,()->new CaseBlock(tier,metal(),()->CASE_TYPES.get(tier).get()));CASES.add(block);
             CASE_TYPES.add(TYPES.register(id,()->BlockEntityType.Builder.of((pos,state)->new CaseBlockEntity(CASE_TYPES.get(tier).get(),pos,state,tier),block.get()).build(null)));
-            var item=BLOCK_ITEMS.register(id,()->new BlockItem(block.get(),new Item.Properties().rarity(tier==0?Rarity.COMMON:tier==1?Rarity.UNCOMMON:tier==2?Rarity.RARE:Rarity.EPIC)));
+            var item=BLOCK_ITEMS.register(id,()->new li.cil.oc.common.item.MachineHostBlockItem(block.get(),new Item.Properties().rarity(tier==0?Rarity.COMMON:tier==1?Rarity.UNCOMMON:tier==2?Rarity.RARE:Rarity.EPIC)));
             DISPLAY_ITEMS.add(item);Items.INSTANCE.registerBlock(id,block,item);
         }
         for(int i=0;i<3;i++){

@@ -60,22 +60,22 @@ public class ServerInventory implements Container {
     }
     @Override public int getContainerSize() { return items.size(); }
     @Override public boolean isEmpty() { return items.stream().allMatch(ItemStack::isEmpty); }
-    @Override public ItemStack getItem(int slot) { return items.get(slot); }
+    @Override public ItemStack getItem(int slot) { return slot>=0&&slot<items.size()?items.get(slot):ItemStack.EMPTY; }
     protected void beforeChange(int slot) {}
     protected void afterChange(int slot) { setChanged(); }
     @Override public ItemStack removeItem(int slot, int amount) {
-        if (amount<=0 || items.get(slot).isEmpty()) return ItemStack.EMPTY;
+        if (slot<0 || slot>=items.size() || amount<=0 || items.get(slot).isEmpty()) return ItemStack.EMPTY;
         beforeChange(slot); ItemStack result=items.get(slot).split(amount); if(items.get(slot).isEmpty())items.set(slot,ItemStack.EMPTY); afterChange(slot); return result;
     }
-    @Override public ItemStack removeItemNoUpdate(int slot) { beforeChange(slot);ItemStack result=items.set(slot,ItemStack.EMPTY);afterChange(slot);return result; }
-    @Override public void setItem(int slot, ItemStack stack) { beforeChange(slot);items.set(slot,stack.copyWithCount(Math.min(1,stack.getCount())));afterChange(slot); }
+    @Override public ItemStack removeItemNoUpdate(int slot) { if(slot<0||slot>=items.size()||items.get(slot).isEmpty())return ItemStack.EMPTY;beforeChange(slot);ItemStack result=items.set(slot,ItemStack.EMPTY);afterChange(slot);return result; }
+    @Override public void setItem(int slot, ItemStack stack) { if(slot<0||slot>=items.size()||items.get(slot)==stack||items.get(slot).isEmpty()&&stack.isEmpty())return;ItemStack next=stack.copyWithCount(Math.min(1,stack.getCount()));beforeChange(slot);items.set(slot,next);afterChange(slot); }
     @Override public void setChanged() { saveItems(container, items, registries);dirty.run(); }
     @Override public boolean stillValid(Player player) { return true; }
     @Override public int getMaxStackSize() { return 1; }
     @Override public void clearContent() { for(int i=0;i<items.size();i++)beforeChange(i);items.replaceAll(ignored->ItemStack.EMPTY);setChanged(); }
     @Override public boolean canPlaceItem(int slot, ItemStack stack) {
         if(slot<0||slot>=items.size())return false;
-        var driver=Driver.driverFor(stack,li.cil.oc.server.component.Server.class);var spec=layout(tier())[slot];
+        var driver=Driver.driverFor(stack,li.cil.oc.api.internal.Server.class);var spec=layout(tier())[slot];
         return driver!=null&&driver.slot(stack).equals(spec.slot())&&driver.tier(stack)<=spec.tier();
     }
 }

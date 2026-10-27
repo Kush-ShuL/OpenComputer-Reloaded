@@ -34,6 +34,12 @@ public final class ChargerBlock extends Block implements EntityBlock {
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return type.get().create(pos, state); }
     @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> requested) { return requested == type.get() ? (world, pos, value, entity) -> { if (world.isClientSide) ((ChargerBlockEntity) entity).clientTick(); else ((ChargerBlockEntity) entity).serverTick(); } : null; }
     @Override public boolean canConnectRedstone(BlockState state, BlockGetter level, BlockPos pos, Direction side) { return true; }
+    @Override protected boolean hasAnalogOutputSignal(BlockState state) { return true; }
+    @Override protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        if (!(level.getBlockEntity(pos) instanceof ChargerBlockEntity charger)) return 0;
+        var current=charger.getCurrentState();
+        return current.contains(li.cil.oc.api.util.StateAware.State.IsWorking)?15:current.contains(li.cil.oc.api.util.StateAware.State.CanWork)?10:0;
+    }
     @Override protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighbor, BlockPos from, boolean moving) {
         if (level.getBlockEntity(pos) instanceof ChargerBlockEntity charger) {
             charger.neighborChanged();
