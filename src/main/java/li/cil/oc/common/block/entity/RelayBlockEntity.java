@@ -37,6 +37,8 @@ public final class RelayBlockEntity extends NetworkDeviceBlockEntity implements 
     private final NonNullList<ItemStack> items=NonNullList.withSize(4,ItemStack.EMPTY);
     private final Plug[] plugs=new Plug[6];
     private final Node[] componentNodes=new Node[6];
+    /** Six world-side addresses without creating or reconnecting component nodes. */
+    public String[] componentAddresses(){String[] addresses=new String[6];for(int i=0;i<addresses.length;i++){Node node=componentNodes[i];String address=node==null?null:node.address();addresses[i]=address==null?"":address;}return addresses;}
     private ListTag savedPlugs=new ListTag(),savedComponents=new ListTag();
     private boolean updatingComponents;
     private volatile int maxQueueSize=Math.max(1,Settings.get().switchDefaultMaxQueueSize),relayDelay=Math.max(1,Settings.get().switchDefaultRelayDelay),relayAmount=Math.max(1,Settings.get().switchDefaultRelayAmount);

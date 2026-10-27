@@ -19,6 +19,8 @@ public final class AssemblerBlockEntity extends WorkstationBlockEntity {
     @Override protected double rate() { return Settings.get().assemblerRate; }
     public AssemblerTemplates.Template template() { return AssemblerTemplates.select(getItem(0)).orElse(null); }
     @Override public boolean busy() { return !output.isEmpty() || clientBusy; }
+    /** A snapshot of the actual device being assembled, without exposing mutable inventory state. */
+    public ItemStack pendingOutput() { return output.copy(); }
     @Override public boolean canStart() { var template = template(); return !busy() && template != null && template.validate(this).valid(); }
     @Override public double progress() { return !busy() || total <= 0 ? 0 : Math.max(0, Math.min(100, (1 - remaining / total) * 100)); }
     @Override public int timeRemaining() { return (int) Math.min(Integer.MAX_VALUE, Math.max(0, remaining / Settings.get().assemblerTickAmount / 20)); }

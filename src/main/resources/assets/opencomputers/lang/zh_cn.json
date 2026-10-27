@@ -620,5 +620,9 @@
   "item.opencomputers.floppycontainer": "软盘容器",
   "oc:tooltip.cpu.Components": "支持的组件数：%s",
   "jei.opencomputers.manual": "OpenComputers 手册",
-  "jei.opencomputers.api": "OpenComputers API"
+  "jei.opencomputers.api": "OpenComputers API",
+  "config.jade.plugin_opencomputers.address": "地址",
+  "config.jade.plugin_opencomputers.energy": "能量",
+  "config.jade.plugin_opencomputers.component_name": "组件名",
+  "oc:gui.Assembler.Building": "正在组装：%s"
 }

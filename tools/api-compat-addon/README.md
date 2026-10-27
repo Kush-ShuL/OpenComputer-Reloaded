@@ -177,14 +177,19 @@ These are distinct executable scenarios. Consult their actual stage reports and
 ## Optional foreign runtimes
 
 Each named run below creates a fresh isolated world and reports actual behavior
-through a placed Case's native Lua 5.3 VM and Adapter. Supply the same published
+through a placed Case's native Lua 5.3 VM. AE2 and EnderStorage use an Adapter;
+ProjectRed uses a tier-two internal card and external Redstone I/O. Supply the same published
 SDK/legacy SDK/full OC artifact properties used above. Foreign runtime paths must
 point to separately obtained official full JARs; the fixture does not embed them.
+The Jade task separately calls the actual automatically registered server data
+provider against real placed machines; it does not execute a Lua BIOS.
 
 | Task | Required properties | Report directory |
 | --- | --- | --- |
 | `runAppliedEnergisticsServer` | `ocAppliedEnergisticsRunId`, `ocAppliedEnergisticsJar`, `ocGuideMeJar` | `build/api-compat-addon/appeng/<id>` |
 | `runEnderStorageServer` | `ocEnderStorageRunId`, `ocEnderStorageJar`, `ocCodeChickenLibJar` | `build/api-compat-addon/enderstorage/<id>` |
+| `runProjectRedServer` | `ocProjectRedRunId`, `ocProjectRedCoreJar`, `ocProjectRedTransmissionJar`, `ocCBMultipartJar`, `ocCodeChickenLibJar` | `build/api-compat-addon/projectred/<id>` |
+| `runJadeServer` | `ocJadeRunId`, `ocJadeJar` | `build/api-compat-addon/jade/<id>` |
 
 EnderStorage's separate `-PocEnderStorageDisabled=true` run verifies that its five
 callbacks have no callable device entry while physical contents, frequencies and
@@ -195,3 +200,27 @@ are then mandatory, and each wrapper must reject all five EnderStorage methods.
 The actual wrappers are obtained through public `Analyzable`; no placeholder
 nodes are created when the generic drivers are off. Both tasks reject an existing
 world/report and fail when `contract-results.txt` does not begin with `status=PASS`.
+
+The ProjectRed run places one real neutral framed bundled cable through its
+registered item's normal survival interaction. Native Lua and Java SDK callbacks
+check both endpoints against the official transmission API for all sixteen
+channels, including 0, 1, 127, 128, 254 and 255, both directions, two Case
+orientations, wrong sides, zero clearing and ordinary shutdown propagation.
+Actual Waypoint and NetSplitter interactions check non-consuming screwdriver
+detection followed by exactly one durability loss on use (default ProjectRed
+`unbreakableScrewdriver=false`). Use a new id and
+`-PocProjectRedBlacklist=projectred-transmission` for the disabled scenario.
+The server binds only to localhost port 25584 and reuses existing EULA acceptance;
+the task never accepts it automatically or resets a prior world. These scenarios
+do not establish branched/face wire networks, covers, multiple sources, chunk
+reload or remote multiplayer behavior.
+
+The Jade scenario queries its real automatically discovered OC provider through
+Jade's public server accessor builder. It checks Case world-side nodes and local
+energy, relay address snapshots and strength, floppy insertion/ejection and
+redstone-controlled charger speed. Use a fresh id and `-PocJadeBlacklist=waila`
+to check the original blacklist alias against Jade's real provider registration.
+It binds only to localhost port 25585, reuses existing EULA acceptance, refuses
+an existing world/report and restores its temporary blocks. Client tooltip
+formatting/toggles, busy assembler fields and remote synchronization are separate
+acceptance work.

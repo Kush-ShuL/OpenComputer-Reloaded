@@ -20,5 +20,8 @@ public final class RedstoneCardItem extends Item implements Tiered {
     @Override public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         super.appendHoverText(stack, context, tooltip, flag);
         tooltip.add(Component.translatable("oc:tooltip.redstonecard"));
+        if (tier > 0 && li.cil.oc.common.integration.projectred.ProjectRedIntegration.available()) {
+            tooltip.add(Component.translatable("oc:tooltip.redstonecard.ProjectRed"));
+        }
     }
 }

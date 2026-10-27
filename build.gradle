@@ -28,6 +28,11 @@ repositories {
         url = 'https://maven.squiddev.cc'
         content { includeGroup 'cc.tweaked' }
     }
+    maven {
+        name = 'JadeOfficialDistribution'
+        url = 'https://api.modrinth.com/maven'
+        content { includeModule 'maven.modrinth', 'jade' }
+    }
     ivy {
         name = 'OriginalOpenComputersLuaLibraries'
         url = 'https://asie.pl/javadeps'
@@ -83,6 +88,10 @@ dependencies {
     compileOnly 'mezz.jei:jei-1.21.1-common-api:19.21.0.247'
     compileOnly 'mezz.jei:jei-1.21.1-neoforge-api:19.21.0.247'
     compileOnly('org.appliedenergistics:appliedenergistics2:19.2.14') { transitive = false }
+    compileOnly('maven.modrinth:jade:15.10.0+neoforge') { transitive = false }
+    if (providers.gradleProperty('ocWithJade').map { it.toBoolean() }.getOrElse(false)) {
+        localRuntime 'maven.modrinth:jade:15.10.0+neoforge'
+    }
     if (providers.gradleProperty('ocWithAppliedEnergistics').map { it.toBoolean() }.getOrElse(false)) {
         localRuntime 'org.appliedenergistics:appliedenergistics2:19.2.14'
     }

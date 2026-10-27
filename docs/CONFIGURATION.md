@@ -55,6 +55,7 @@ opencomputers {
 | 路径 | 用途 |
 | --- | --- |
 | `integration.computerCraft.enabled` | 显式启用 CC 兼容，默认 `false` |
+| `integration.modBlacklist` | 禁用指定可选集成；修改后重启 |
 | `integration.vanilla.enableInventoryDriver` | 允许 Adapter 直接操作相邻物品栏，默认 `false` |
 | `integration.vanilla.enableTankDriver` | 允许 Adapter 直接操作相邻流体容器，默认 `false` |
 | `integration.vanilla.enableCommandBlockDriver` | 允许命令方块驱动，默认 `false`，还受服务器命令方块开关限制 |
@@ -72,6 +73,11 @@ opencomputers {
 | `nanomachines.potionWhitelist` | 可用效果资源 ID，接受 `minecraft:speed` 等名称 |
 | `debug.forceLuaJ` | 强制使用 LuaJ；LuaJ 按原版规则在读档时重新启动 |
 | `debug.debugCardAccess` | 调试卡的 `allow` / `deny` / `whitelist` 访问策略 |
+
+ProjectRed 束线与螺丝刀集成在安装 Core 和 Transmission 后启用；黑名单可使用
+`projectred-transmission`、`projectred_transmission` 或 `projectred`。
+Jade 的机器信息在双方安装 Jade 后启用，黑名单中的 `jade` 或旧名 `waila` 均可禁用。
+Jade 设置界面还可分别控制 OC 地址、能量和组件名的显示。
 
 ## 从旧配置迁移
 

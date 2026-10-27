@@ -621,5 +621,9 @@
   "item.opencomputers.floppycontainer": "Floppy Disk Container",
   "oc:tooltip.cpu.Components": "Supported components: %s",
   "jei.opencomputers.manual": "OpenComputers Manual",
-  "jei.opencomputers.api": "OpenComputers API"
+  "jei.opencomputers.api": "OpenComputers API",
+  "config.jade.plugin_opencomputers.address": "Address",
+  "config.jade.plugin_opencomputers.energy": "Energy",
+  "config.jade.plugin_opencomputers.component_name": "Component Name",
+  "oc:gui.Assembler.Building": "Building: %s"
 }

@@ -16,6 +16,12 @@ import net.minecraft.world.level.block.state.BlockState;
 public final class RedstoneBlock extends Block implements EntityBlock {
     private final Supplier<BlockEntityType<RedstoneBlockEntity>> type;
     public RedstoneBlock(Properties properties, Supplier<BlockEntityType<RedstoneBlockEntity>> type) { super(properties); this.type = type; }
+    @Override public void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context, java.util.List<net.minecraft.network.chat.Component> tooltip, net.minecraft.world.item.TooltipFlag flag) {
+        super.appendHoverText(stack, context, tooltip, flag);
+        if (li.cil.oc.common.integration.projectred.ProjectRedIntegration.available()) {
+            tooltip.add(net.minecraft.network.chat.Component.translatable("oc:tooltip.redstonecard.ProjectRed"));
+        }
+    }
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return type.get().create(pos, state); }
     @Override public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> requested) {
         return !level.isClientSide && requested == type.get() ? (world, pos, value, entity) -> ((RedstoneBlockEntity) entity).tick() : null;

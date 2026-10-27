@@ -51,8 +51,10 @@ acceptance; compilation does not establish their rendering or world behavior.
 The bundled-redstone core retains all sixteen channels, provider aggregation,
 per-color events and NBT. The opt-in CC:Tweaked bridge registers both input and
 output providers against that same state; its full sixteen-channel gameplay
-acceptance is outstanding. Other optional bundled and wireless redstone bridges
-still need migration or acceptance for supported modern runtimes.
+acceptance is outstanding. ProjectRed now uses the same state through its modern
+optional public API, with a real framed-wire scenario described below. Other
+bundled and wireless redstone bridges still need migration or acceptance for
+supported modern runtimes.
 
 The manual API now has a Java client backend, resource and addon providers,
 language fallback, tabs and interactive Markdown rendering using the original
@@ -132,6 +134,28 @@ remote synchronization and cold-process recovery are not established by this run
 Separate blacklist runs passed with the generic inventory/tank drivers both off
 and explicitly enabled: no dedicated API leaked, existing generic wrappers
 rejected all five methods, and actual contents/frequency/ownership remained intact.
+
+ProjectRed Core / Transmission 4.23.0, CodeChickenLib 4.6.1.529 and CBMultipart
+3.5.0.161 passed Windows dedicated-server scenarios with the integration enabled
+and explicitly blacklisted. A real survival item placed one neutral framed
+bundled cable between a native Lua 5.3 Case/card2 and external Redstone I/O.
+All sixteen channels, unsigned byte boundaries, both directions, two Case
+orientations, wrong sides and ordinary shutdown clearing agreed across native
+Lua, SDK callbacks and the official transmission API. The real screwdriver
+passed non-consuming detection then exactly one durability loss on use.
+Blacklisting removed real cable connections and refused tool interactions.
+Branched/face wire networks, covers, multiple sources, chunk reload and remote
+multiplayer remain separate acceptance. See [ProjectRed integration](projectred-integration.md).
+
+The original Waila machine information now has an optional Java Jade plugin.
+The Windows build targets official Jade 15.10.0; a dedicated-server run with
+15.10.6 passed real annotation discovery and provider calls against placed OC
+devices. Case world-side addresses/local energy/component names, all six relay
+addresses and real wireless strength, floppy filesystem insertion/ejection, and
+redstone-driven charger speed matched actual device state. A separate `waila`
+blacklist run loaded Jade without registering the OC provider. Client toggles,
+rendered tooltips, busy assembler data and remote synchronization still need
+acceptance. See [Jade integration](jade-integration.md).
 
 Program-disk chest generation preserves the original vanilla pool objects and
 enchantment holder ownership. A Windows real-world run generated all four target
@@ -240,7 +264,8 @@ tmpfs position, userdata/iterator state, signal and component identities. A
 separate LuaJ world passed its expected reboot and disk-data restoration. A
 separate native Lua 5.2 world then passed prepare and resume in different JVMs,
 including real chunk unload/reload, one BIOS boot and two userdata restorations.
-Cold-world restoration on the remaining physical host types still needs acceptance.
+Other physical-host architecture combinations and remote multiplayer persistence
+still need acceptance.
 No public SDK signatures changed for these runtime fixes.
 
 A real configured robot also passed native Lua 5.3 cold-process restoration after

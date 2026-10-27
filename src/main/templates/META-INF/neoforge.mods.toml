@@ -51,3 +51,17 @@ type="optional"
 versionRange="[19.2.14,)"
 ordering="AFTER"
 side="BOTH"
+
+[[dependencies.opencomputers]]
+modId="projectred_transmission"
+type="optional"
+versionRange="[4.23.0,)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.opencomputers]]
+modId="jade"
+type="optional"
+versionRange="[15.10.0,16)"
+ordering="AFTER"
+side="BOTH"

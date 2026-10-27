@@ -105,6 +105,7 @@ public final class OpenComputers {
             li.cil.oc.common.integration.mekanism.MekanismIntegration.initializeDrivers();
             li.cil.oc.common.integration.enderstorage.EnderStorageIntegration.initializeDrivers();
             li.cil.oc.common.integration.appeng.AE2Integration.initializeDrivers();
+            li.cil.oc.common.integration.projectred.ProjectRedIntegration.initializeDrivers();
             li.cil.oc.common.template.BuiltinAssemblyTemplates.initialize();
             li.cil.oc.common.init.Converters.initialize();
             li.cil.oc.common.init.Items.INSTANCE.initializeLuaBios();

@@ -30,6 +30,12 @@ def appengReport = new File(appengDirectory, 'contract-results.txt')
 def enderId = providers.gradleProperty('ocEnderStorageRunId').getOrElse('unselected')
 def enderDirectory = file("${repositoryRoot}/build/api-compat-addon/enderstorage/${enderId}")
 def enderReport = new File(enderDirectory, 'contract-results.txt')
+def projectRedId = providers.gradleProperty('ocProjectRedRunId').getOrElse('unselected')
+def projectRedDirectory = file("${repositoryRoot}/build/api-compat-addon/projectred/${projectRedId}")
+def projectRedReport = new File(projectRedDirectory, 'contract-results.txt')
+def jadeId = providers.gradleProperty('ocJadeRunId').getOrElse('unselected')
+def jadeDirectory = file("${repositoryRoot}/build/api-compat-addon/jade/${jadeId}")
+def jadeReport = new File(jadeDirectory, 'contract-results.txt')
 def computerCraftEnabled = providers.gradleProperty('ocEnableComputerCraft').getOrElse('false') == 'true'
 def computerCraftScenario = providers.gradleProperty('ocComputerCraftJar').isPresent()
 def fixtureConfiguration = { String version ->
@@ -44,6 +50,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 repositories {
     mavenCentral()
     maven { url = 'https://maven.squiddev.cc' }
+    maven { url = 'https://api.modrinth.com/maven'; content { includeModule 'maven.modrinth', 'jade' } }
     maven { url = uri(providers.gradleProperty('ocApiMaven').getOrElse("${repositoryRoot}/build/jitpack-maven")) }
 }
 
@@ -131,6 +138,25 @@ neoForge {
             systemProperty 'ocfixture.enderStorageOnly', 'true'
             systemProperty 'ocfixture.reportFile', enderReport.absolutePath
         }
+        projectRedServer {
+            server()
+            gameDirectory = projectRedDirectory
+            programArgument '--nogui'
+            systemProperty 'ocfixture.autorun', 'true'
+            systemProperty 'ocfixture.stopAfterRun', 'true'
+            systemProperty 'ocfixture.projectRedOnly', 'true'
+            systemProperty 'ocfixture.reportFile', projectRedReport.absolutePath
+        }
+        jadeServer {
+            server()
+            gameDirectory = jadeDirectory
+            programArgument '--nogui'
+            systemProperty 'ocfixture.autorun', 'true'
+            systemProperty 'ocfixture.stopAfterRun', 'true'
+            systemProperty 'ocfixture.jadeOnly', 'true'
+            systemProperty 'ocfixture.jadeBlacklist', providers.gradleProperty('ocJadeBlacklist').getOrElse('')
+            systemProperty 'ocfixture.reportFile', jadeReport.absolutePath
+        }
     }
     mods { oc_api_compat { sourceSet sourceSets.main; sourceSet sourceSets.legacy } }
 }
@@ -141,6 +167,7 @@ dependencies {
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-core-api:1.120.2'
     compileOnly 'cc.tweaked:cc-tweaked-1.21.1-forge-api:1.120.2'
     compileOnly('org.appliedenergistics:appliedenergistics2:19.2.14') { transitive = false }
+    compileOnly('maven.modrinth:jade:15.10.0+neoforge') { transitive = false }
     legacyCompileOnly files(legacyFile)
     runtimeOnly files(runtimeFile)
     if (providers.gradleProperty('ocComputerCraftJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocComputerCraftJar').get())
@@ -149,6 +176,100 @@ dependencies {
     if (providers.gradleProperty('ocGuideMeJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocGuideMeJar').get())
     if (providers.gradleProperty('ocEnderStorageJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocEnderStorageJar').get())
     if (providers.gradleProperty('ocCodeChickenLibJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocCodeChickenLibJar').get())
+    if (providers.gradleProperty('ocJadeJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocJadeJar').get())
+    for (String property : ['ocProjectRedCoreJar', 'ocProjectRedTransmissionJar', 'ocCBMultipartJar'])
+        if (providers.gradleProperty(property).isPresent()) runtimeOnly files(providers.gradleProperty(property).get())
+}
+def prepareJadeRun = tasks.register('prepareJadeRun') {
+    outputs.upToDateWhen { false }
+    doLast {
+        if (!providers.gradleProperty('ocJadeRunId').isPresent() || !(jadeId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a new, explicit -PocJadeRunId=NAME')
+        if (!providers.gradleProperty('ocJadeJar').isPresent() || !file(providers.gradleProperty('ocJadeJar').get()).isFile())
+            throw new GradleException('Supply -PocJadeJar=/absolute/path/to/the/official/Jade.jar')
+        if (new File(jadeDirectory, 'ocfixture-jade-world/level.dat').exists() || jadeReport.exists())
+            throw new GradleException('This Jade run already exists; choose a new run id. Existing worlds are never reset.')
+        def settings = new File(jadeDirectory, 'config/opencomputers/settings.conf')
+        settings.parentFile.mkdirs()
+        def blacklist = providers.gradleProperty('ocJadeBlacklist').getOrElse('').split(',').collect { it.trim() }.findAll { !it.isEmpty() }
+        settings.text = fixtureConfiguration('jade-fixture') +
+            '\nopencomputers.integration.modBlacklist = ' + groovy.json.JsonOutput.toJson(blacklist) + '\n'
+        def propertiesFile = new File(jadeDirectory, 'server.properties')
+        if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-jade-world
+level-type=minecraft\\:flat
+generator-settings={"layers":[{"block":"minecraft:bedrock","height":1}],"biome":"minecraft:plains"}
+online-mode=false
+server-ip=127.0.0.1
+server-port=25585
+gamemode=creative
+spawn-protection=0
+view-distance=2
+simulation-distance=2
+enable-command-block=false
+''', 'UTF-8')
+        def selected = new Properties(); propertiesFile.withInputStream { selected.load(it) }
+        if (selected.getProperty('level-name') != 'ocfixture-jade-world') throw new GradleException('Refusing a different Minecraft world')
+        def eula = new File(jadeDirectory, 'eula.txt')
+        def previous = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
+        if (!eula.exists() && previous.isFile()) {
+            def accepted = new Properties(); previous.withInputStream { accepted.load(it) }
+            if (accepted.getProperty('eula') == 'true') eula.bytes = previous.bytes
+        }
+        if (!eula.isFile()) throw new GradleException("Set the isolated server's EULA in ${eula}; acceptance is not generated")
+    }
+}
+tasks.matching { it.name == 'runJadeServer' }.configureEach {
+    dependsOn prepareJadeRun
+    doLast {
+        def lines = jadeReport.isFile() ? jadeReport.readLines('UTF-8') : []
+        if (lines.isEmpty() || lines[0] != 'status=PASS') throw new GradleException("The real Jade scenario did not pass; see ${jadeReport}")
+    }
+}
+def prepareProjectRedRun = tasks.register('prepareProjectRedRun') {
+    outputs.upToDateWhen { false }
+    doLast {
+        if (!providers.gradleProperty('ocProjectRedRunId').isPresent() || !(projectRedId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply a new, explicit -PocProjectRedRunId=NAME')
+        for (String property : ['ocProjectRedCoreJar', 'ocProjectRedTransmissionJar', 'ocCBMultipartJar', 'ocCodeChickenLibJar'])
+            if (!providers.gradleProperty(property).isPresent() || !file(providers.gradleProperty(property).get()).isFile())
+                throw new GradleException("Supply -P${property}=/absolute/path/to/the/official/runtime.jar")
+        if (new File(projectRedDirectory, 'ocfixture-projectred-world/level.dat').exists() || projectRedReport.exists())
+            throw new GradleException('This ProjectRed run already exists; choose a new run id. Existing worlds are never reset.')
+        def settings = new File(projectRedDirectory, 'config/opencomputers/settings.conf')
+        settings.parentFile.mkdirs()
+        def blacklist = providers.gradleProperty('ocProjectRedBlacklist').getOrElse('').split(',').collect { it.trim() }.findAll { !it.isEmpty() }
+        settings.text = fixtureConfiguration('projectred-fixture') +
+            '\nopencomputers.integration.modBlacklist = ' + groovy.json.JsonOutput.toJson(blacklist) + '\n'
+        def propertiesFile = new File(projectRedDirectory, 'server.properties')
+        if (!propertiesFile.exists()) propertiesFile.setText('''level-name=ocfixture-projectred-world
+level-type=minecraft\\:flat
+generator-settings={"layers":[{"block":"minecraft:bedrock","height":1}],"biome":"minecraft:plains"}
+online-mode=false
+server-ip=127.0.0.1
+server-port=25584
+gamemode=creative
+spawn-protection=0
+view-distance=2
+simulation-distance=2
+enable-command-block=false
+''', 'UTF-8')
+        def selected = new Properties(); propertiesFile.withInputStream { selected.load(it) }
+        if (selected.getProperty('level-name') != 'ocfixture-projectred-world') throw new GradleException('Refusing a different Minecraft world')
+        def eula = new File(projectRedDirectory, 'eula.txt')
+        def previous = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
+        if (!eula.exists() && previous.isFile()) {
+            def accepted = new Properties(); previous.withInputStream { accepted.load(it) }
+            if (accepted.getProperty('eula') == 'true') eula.bytes = previous.bytes
+        }
+        if (!eula.isFile()) throw new GradleException("Set the isolated server's EULA in ${eula}; acceptance is not generated")
+    }
+}
+tasks.matching { it.name == 'runProjectRedServer' }.configureEach {
+    dependsOn prepareProjectRedRun
+    doLast {
+        def lines = projectRedReport.isFile() ? projectRedReport.readLines('UTF-8') : []
+        if (lines.isEmpty() || lines[0] != 'status=PASS') throw new GradleException("The real ProjectRed scenario did not pass; see ${projectRedReport}")
+    }
 }
 def prepareMekanismRun = tasks.register('prepareMekanismRun') {
     outputs.upToDateWhen { false }
