@@ -2,8 +2,11 @@ package li.cil.oc.server;
 
 import li.cil.oc.OpenComputers;
 import li.cil.oc.Settings;
+import li.cil.oc.api.event.FileSystemAccessEvent;
+import li.cil.oc.api.event.NetworkActivityEvent;
 import li.cil.oc.api.network.EnvironmentHost;
 import li.cil.oc.api.network.Node;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -19,6 +22,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import java.util.*;
@@ -33,26 +37,44 @@ public final class PacketSender {
     public static void sendToPlayersTrackingBlock(BlockEntity entity,double requested,CustomPacketPayload payload){if(!(entity.getLevel() instanceof ServerLevel level))return;if(!level.getServer().isSameThread()){level.getServer().execute(()->sendToPlayersTrackingBlock(entity,requested,payload));return;}if(entity.isRemoved())return;double range=packetRange(level,requested),squared=range*range;var pos=entity.getBlockPos();for(ServerPlayer player:level.getChunkSource().chunkMap.getPlayers(new net.minecraft.world.level.ChunkPos(pos),false))if(player.distanceToSqr(pos.getX()+.5,pos.getY()+.5,pos.getZ()+.5)<=squared)PacketDistributor.sendToPlayer(player,payload);}
     public static void sendToPlayersNear(ServerLevel level,double x,double y,double z,double requested,CustomPacketPayload payload){if(!level.getServer().isSameThread()){level.getServer().execute(()->sendToPlayersNear(level,x,y,z,requested,payload));return;}PacketDistributor.sendToPlayersNear(level,null,x,y,z,packetRange(level,requested),payload);}
     public interface ActivityListener { void onComponentActivity(String address, boolean network); }
-    public static void sendNetworkActivity(Node node,EnvironmentHost host){ activity(node,host,true); }
-    private static void activity(Node node,EnvironmentHost host,boolean network){
-        if(host.world() instanceof ServerLevel level){double range=network?Settings.get().maxNetworkClientEffectPacketDistance:Settings.get().maxNetworkClientSoundPacketDistance;var packet=new Activity(level.dimension().location(),net.minecraft.core.BlockPos.containing(host.xPosition(),host.yPosition(),host.zPosition()),node.address()==null?"":node.address(),network);if(host instanceof BlockEntity block)sendToPlayersTrackingBlock(block,range,packet);else sendToPlayersNear(level,host.xPosition(),host.yPosition(),host.zPosition(),range,packet);}
+    public static void sendNetworkActivity(Node node,EnvironmentHost host){
+        if(!(host.world() instanceof ServerLevel level))return;
+        if(!level.getServer().isSameThread()){level.getServer().execute(()->sendNetworkActivity(node,host));return;}
+        NetworkActivityEvent.Server event=host instanceof BlockEntity block?new NetworkActivityEvent.Server(block,node):new NetworkActivityEvent.Server(level,host.xPosition(),host.yPosition(),host.zPosition(),node);
+        NeoForge.EVENT_BUS.post(event);
+        // NetworkActivityEvent was not @Cancelable in the pinned public API.
+        recordRackActivity(event.getTileEntity(),node,true);
+        sendActivity(host,new Activity(event.getWorld().dimension().location(),net.minecraft.core.BlockPos.containing(event.getX(),event.getY(),event.getZ()),node.address()==null?"":node.address(),true,event.getTileEntity()!=null,event.getX(),event.getY(),event.getZ(),"",event.getData().copy()));
     }
-    public record Activity(ResourceLocation dimension,net.minecraft.core.BlockPos pos,String address,boolean network) implements CustomPacketPayload {
+    private static void sendActivity(EnvironmentHost host,Activity packet){
+        if(host.world() instanceof ServerLevel level){double range=packet.network?Settings.get().maxNetworkClientEffectPacketDistance:Settings.get().maxNetworkClientSoundPacketDistance;if(host instanceof BlockEntity block)sendToPlayersTrackingBlock(block,range,packet);else sendToPlayersNear(level,host.xPosition(),host.yPosition(),host.zPosition(),range,packet);}
+    }
+    private static void recordRackActivity(BlockEntity tile,Node node,boolean network){
+        if(!(tile instanceof li.cil.oc.api.internal.Rack rack))return;
+        for(int slot=0;slot<rack.getContainerSize();slot++){
+            var mountable=rack.getMountable(slot);
+            if(mountable instanceof li.cil.oc.server.component.Server server&&server.componentSlot(node.address())>=0)server.onComponentActivity(node.address(),network);
+            else if(!network&&mountable instanceof li.cil.oc.server.component.DiskDriveMountable disk&&disk.filesystemNode()==node){disk.recordAccess();rack.markChanged(slot);}
+        }
+    }
+    public record Activity(ResourceLocation dimension,net.minecraft.core.BlockPos pos,String address,boolean network,boolean blockHosted,double x,double y,double z,String sound,CompoundTag data) implements CustomPacketPayload {
         public static final Type<Activity> TYPE=new Type<>(ResourceLocation.fromNamespaceAndPath(OpenComputers.ID,"component_activity"));
-        public static final StreamCodec<RegistryFriendlyByteBuf,Activity> CODEC=StreamCodec.of((b,p)->{b.writeResourceLocation(p.dimension);b.writeBlockPos(p.pos);b.writeUtf(p.address,64);b.writeBoolean(p.network);},b->new Activity(b.readResourceLocation(),b.readBlockPos(),b.readUtf(64),b.readBoolean()));
+        public static final StreamCodec<RegistryFriendlyByteBuf,Activity> CODEC=StreamCodec.of((b,p)->{b.writeResourceLocation(p.dimension);b.writeBlockPos(p.pos);b.writeUtf(p.address,64);b.writeBoolean(p.network);b.writeBoolean(p.blockHosted);b.writeDouble(p.x);b.writeDouble(p.y);b.writeDouble(p.z);b.writeUtf(p.sound);b.writeNbt(p.data);},b->new Activity(b.readResourceLocation(),b.readBlockPos(),b.readUtf(64),b.readBoolean(),b.readBoolean(),b.readDouble(),b.readDouble(),b.readDouble(),b.readUtf(),Objects.requireNonNull(b.readNbt())));
         public Type<? extends CustomPacketPayload> type(){return TYPE;}
     }
-    private static final Map<Node,Long> LAST_ACTIVITY=Collections.synchronizedMap(new WeakHashMap<>());
+    private static final Map<Node,com.google.common.cache.Cache<String,Long>> LAST_ACTIVITY=new WeakHashMap<>();
     public static void sendFileSystemActivity(Node node,EnvironmentHost host,String sound){
         // A direct filesystem callback holds its volume lock; never inspect chunk/player state there.
         if(host.world() instanceof ServerLevel server&&!server.getServer().isSameThread()){server.getServer().execute(()->sendFileSystemActivity(node,host,sound));return;}
-        activity(node,host,false);
-        if(!(host.world() instanceof ServerLevel level)||Settings.get().soundVolume<=0)return;
-        long now=System.currentTimeMillis();Long previous=LAST_ACTIVITY.get(node);
-        if(previous!=null&&now-previous<Math.max(0,Settings.get().diskActivitySoundDelay))return;
-        LAST_ACTIVITY.put(node,now);
-        ResourceLocation id=ResourceLocation.tryParse(sound.contains(":")?sound:OpenComputers.ID+":"+sound);
-        if(id!=null){double range=packetRange(level,Settings.get().maxNetworkClientSoundPacketDistance),squared=range*range;var packet=new net.minecraft.network.protocol.game.ClientboundSoundPacket(net.minecraft.core.Holder.direct(SoundEvent.createVariableRangeEvent(id)),SoundSource.BLOCKS,host.xPosition(),host.yPosition(),host.zPosition(),Settings.get().soundVolume,1,java.util.concurrent.ThreadLocalRandom.current().nextLong());Iterable<ServerPlayer> players=host instanceof BlockEntity block?level.getChunkSource().chunkMap.getPlayers(new net.minecraft.world.level.ChunkPos(block.getBlockPos()),false):level.players();for(ServerPlayer player:players)if(player.distanceToSqr(host.xPosition(),host.yPosition(),host.zPosition())<=squared)player.connection.send(packet);}
+        if(!(host.world() instanceof ServerLevel level))return;
+        long delay=Settings.get().diskActivitySoundDelay;if(delay<0)return;
+        var timeouts=LAST_ACTIVITY.computeIfAbsent(node,ignored->com.google.common.cache.CacheBuilder.newBuilder().maximumSize(250).expireAfterWrite(delay,java.util.concurrent.TimeUnit.MILLISECONDS).build());
+        Long timeout=timeouts.getIfPresent(sound);if(timeout!=null&&timeout>System.currentTimeMillis())return;
+        FileSystemAccessEvent.Server event=host instanceof BlockEntity block?new FileSystemAccessEvent.Server(sound,block,node):new FileSystemAccessEvent.Server(sound,level,host.xPosition(),host.yPosition(),host.zPosition(),node);
+        NeoForge.EVENT_BUS.post(event);if(event.isCanceled())return;
+        recordRackActivity(event.getTileEntity(),node,false);
+        timeouts.put(sound,System.currentTimeMillis()+delay);
+        sendActivity(host,new Activity(event.getWorld().dimension().location(),net.minecraft.core.BlockPos.containing(event.getX(),event.getY(),event.getZ()),node.address()==null?"":node.address(),false,event.getTileEntity()!=null,event.getX(),event.getY(),event.getZ(),event.getSound(),event.getData().copy()));
     }
     public static void sendSound(Level world,double x,double y,double z,int frequency,int duration){
         send(world,x,y,z,new Speaker(world.dimension().location(),x,y,z,Math.max(20,Math.min(2000,frequency)),Math.max(0,Math.min(10000,duration)),""));
@@ -87,7 +109,18 @@ public final class PacketSender {
             new java.util.concurrent.ArrayBlockingQueue<>(64),r->{Thread t=new Thread(r,"OpenComputers-Speaker");t.setDaemon(true);return t;},new java.util.concurrent.ThreadPoolExecutor.DiscardOldestPolicy());
         static void activity(Activity packet){
             var level=net.minecraft.client.Minecraft.getInstance().level;
-            if(level!=null&&level.dimension().location().equals(packet.dimension)&&level.getBlockEntity(packet.pos) instanceof ActivityListener listener)listener.onComponentActivity(packet.address,packet.network);
+            if(level==null||!level.dimension().location().equals(packet.dimension))return;
+            BlockEntity tile=level.getBlockEntity(packet.pos);if(packet.blockHosted&&tile==null)return;
+            if(packet.network){
+                NetworkActivityEvent.Client event=packet.blockHosted?new NetworkActivityEvent.Client(tile,packet.data):new NetworkActivityEvent.Client(level,packet.x,packet.y,packet.z,packet.data);
+                NeoForge.EVENT_BUS.post(event);
+            }else{
+                FileSystemAccessEvent.Client event=packet.blockHosted?new FileSystemAccessEvent.Client(packet.sound,tile,packet.data):new FileSystemAccessEvent.Client(packet.sound,level,packet.x,packet.y,packet.z,packet.data);
+                NeoForge.EVENT_BUS.post(event);if(event.isCanceled())return;
+                ResourceLocation sound=ResourceLocation.parse(event.getSound().contains(":")?event.getSound():OpenComputers.ID+":"+event.getSound());
+                event.getWorld().playLocalSound(event.getX(),event.getY(),event.getZ(),SoundEvent.createVariableRangeEvent(sound),SoundSource.BLOCKS,Settings.get().soundVolume,1,false);
+            }
+            if(tile instanceof ActivityListener listener)listener.onComponentActivity(packet.address,packet.network);
         }
         static void receive(Speaker packet){
             var client=net.minecraft.client.Minecraft.getInstance();

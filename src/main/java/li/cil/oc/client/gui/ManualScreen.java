@@ -46,7 +46,7 @@ public final class ManualScreen extends Screen {
         int hash = path.indexOf('#');
         String page = hash < 0 ? path : path.substring(0, hash);
         var content = manual.contentFor(page);
-        if (content == null) content = List.of("Document not found: " + page);
+        if (content == null) content = List.of(Component.translatable("oc:gui.Manual.Warning.PageMissing", page).getString());
         document = new MarkdownDocument(manual, page, content, font, PAGE_WIDTH);
         scrollTo(manual.current().offset());
         if (hash >= 0 && manual.current().offset() == 0) scrollTo(document.anchorOffset(path.substring(hash + 1)));

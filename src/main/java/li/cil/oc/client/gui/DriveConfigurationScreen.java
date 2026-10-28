@@ -1,42 +1,73 @@
 package li.cil.oc.client.gui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import java.util.function.BooleanSupplier;
 import li.cil.oc.common.item.ComponentItem;
 import li.cil.oc.common.item.data.DriveData;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.network.PacketDistributor;
 
+/** The original two-mode drive window, read-only lock and destructive-mode warnings. */
 public final class DriveConfigurationScreen extends Screen {
+    private static final ResourceLocation PANEL = texture("drive");
+    private static final ResourceLocation MODE = texture("button_drive_mode");
+    private static final int PANEL_WIDTH = 176, PANEL_HEIGHT = 120;
+    private final Player player;
     private final InteractionHand hand;
-    private final DriveData data;
-    private boolean unmanaged;
+    private DriveData data;
+    private Button lock;
+    private int left, top;
+
     public DriveConfigurationScreen(Player player, InteractionHand hand) {
-        super(Component.translatableWithFallback("gui.opencomputers.drive.configuration", "Drive configuration"));
-        this.hand = hand; data = new DriveData(player.getItemInHand(hand)); unmanaged = data.isUnmanaged;
+        super(player.getItemInHand(hand).getHoverName());
+        this.player = player; this.hand = hand; data = new DriveData(stack());
     }
+    private static ResourceLocation texture(String name) { return ResourceLocation.fromNamespaceAndPath("opencomputers", "textures/gui/" + name + ".png"); }
+    private ItemStack stack() { return player.getItemInHand(hand); }
     @Override public boolean isPauseScreen() { return false; }
-    private Component mode() { return Component.translatableWithFallback(unmanaged ? "gui.opencomputers.drive.raw" : "gui.opencomputers.drive.managed", unmanaged ? "Mode: raw sectors" : "Mode: managed filesystem"); }
     @Override protected void init() {
-        int x = width / 2 - 110, y = height / 2 - 15;
-        Button mode = addRenderableWidget(Button.builder(mode(), button -> { unmanaged = !unmanaged; button.setMessage(mode()); }).bounds(x, y, 220, 20).build());
-        mode.active = !data.isLocked();
-        Button lock = addRenderableWidget(Button.builder(Component.translatableWithFallback("gui.opencomputers.drive.lock", "Lock to your name"), button -> {
-            PacketDistributor.sendToServer(new ComponentItem.DriveSettingsPayload(hand, unmanaged, true)); onClose();
-        }).bounds(x, y + 25, 220, 20).build()); lock.active = !data.isLocked();
-        addRenderableWidget(Button.builder(Component.translatable("gui.done"), button -> {
-            if (!data.isLocked()) PacketDistributor.sendToServer(new ComponentItem.DriveSettingsPayload(hand, unmanaged, false)); onClose();
-        }).bounds(x, y + 50, 220, 20).build());
+        left = (width - PANEL_WIDTH) / 2; top = (height - PANEL_HEIGHT) / 2;
+        addRenderableWidget(new ModeButton(left + 11, top + 11, 74, Component.translatable("oc:gui.Drive.Managed"), () -> !data.isUnmanaged, () -> mode(false)));
+        addRenderableWidget(new ModeButton(left + 91, top + 11, 74, Component.translatable("oc:gui.Drive.Unmanaged"), () -> data.isUnmanaged, () -> mode(true)));
+        lock = addRenderableWidget(new ModeButton(left + 11, top + PANEL_HEIGHT - 42, 44, Component.translatable("oc:gui.Drive.ReadOnlyLock"), () -> data.isLocked(), this::lock));
+        update();
     }
-    @Override public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {}
+    private void update() { data = new DriveData(stack()); lock.active = !data.isLocked(); }
+    private void mode(boolean unmanaged) {
+        PacketDistributor.sendToServer(new ComponentItem.DriveSettingsPayload(hand, unmanaged, false));
+        DriveData.setUnmanaged(stack(), unmanaged); update();
+    }
+    private void lock() {
+        PacketDistributor.sendToServer(new ComponentItem.DriveSettingsPayload(hand, data.isUnmanaged, true));
+        DriveData.lock(stack(), player); update();
+    }
+    @Override public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        RenderSystem.enableBlend();
+        graphics.blit(PANEL, left, top, PANEL_WIDTH, PANEL_HEIGHT, 0, 0, 176, 111, 176, 111);
+        RenderSystem.disableBlend();
+    }
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderTransparentBackground(graphics);
-        graphics.fill(width / 2 - 126, height / 2 - 55, width / 2 + 126, height / 2 + 90, 0xEF242424);
-        graphics.drawCenteredString(font, title, width / 2, height / 2 - 43, 0xFFFFFF);
-        if (data.isLocked()) graphics.drawCenteredString(font, Component.literal(data.lockInfo), width / 2, height / 2 + 78, 0xFFCC66);
         super.render(graphics, mouseX, mouseY, partialTick);
+        graphics.drawWordWrap(font, Component.translatable("oc:gui.Drive.Warning"), left + 11, top + 37, PANEL_WIDTH - 20, 0x404040);
+        graphics.drawWordWrap(font, Component.translatable("oc:gui.Drive.ReadOnlyLockWarning"), left + 61, top + PANEL_HEIGHT - 48, PANEL_WIDTH - 68, 0x404040);
+    }
+    private final class ModeButton extends Button {
+        private final BooleanSupplier selected;
+        ModeButton(int x, int y, int width, Component text, BooleanSupplier selected, Runnable action) {
+            super(x, y, width, 18, text, button -> action.run(), DEFAULT_NARRATION); this.selected = selected;
+        }
+        @Override protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+            RenderSystem.enableBlend();
+            graphics.blit(MODE, getX(), getY(), getWidth(), getHeight(), selected.getAsBoolean() ? 74 : 0, isHovered() && active ? 18 : 0, 74, 18, 148, 36);
+            RenderSystem.disableBlend();
+            graphics.drawCenteredString(font, getMessage(), getX() + getWidth() / 2, getY() + 5, !active ? 0xA0A0A0 : isHovered() ? 0xFFFFA0 : 0x608060);
+        }
     }
 }

@@ -101,5 +101,5 @@ public final class FileSystem extends AbstractManagedEnvironment implements Devi
     private static String clean(String path){return li.cil.oc.server.fs.FileSystem.validatePath(path);}
     private static Mode mode(String mode){return switch(mode){case "r","rb"->Mode.Read;case "w","wb"->Mode.Write;case "a","ab"->Mode.Append;default->throw new IllegalArgumentException("unsupported mode");};}
     private void changed(){if(host!=null)host.markChanged();}
-    private void activity(){changed();if(host instanceof li.cil.oc.common.block.entity.RackBlockEntity rack)rack.recordDiskActivity(node().address());if(sound!=null&&host!=null)li.cil.oc.server.PacketSender.sendFileSystemActivity(node(),host,sound);}
+    private void activity(){changed();if(sound!=null&&host!=null)li.cil.oc.server.PacketSender.sendFileSystemActivity(node(),host,sound);}
 }

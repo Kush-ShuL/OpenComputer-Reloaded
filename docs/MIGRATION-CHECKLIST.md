@@ -5,9 +5,9 @@
 
 原版基线：[`258943363ea8fc4ef14948e6bc6f67375061580c`](https://github.com/MightyPirates/OpenComputers/tree/258943363ea8fc4ef14948e6bc6f67375061580c)。
 
-**总计 120 项，已闭合 107 项，剩余 13 项。**
+**总计 120 项，已闭合 111 项，剩余 9 项。**
 
-剩余包括：已有实现待核对/验收 6 项，有明确缺口 7 项。
+剩余包括：已有实现待核对/验收 3 项，有明确缺口 6 项。
 
 这是固定工作项数量，不是工时比例；已有实现待验收不等于尚未编写该功能。
 
@@ -27,10 +27,10 @@
 
 | 分组 | 总数 | 已闭合 | 剩余 |
 | --- | ---: | ---: | ---: |
-| 基础与交付 | 24 | 18 | 6 |
+| 基础与交付 | 24 | 21 | 3 |
 | 设备与组件 | 61 | 61 | 0 |
 | 工具与附加玩法 | 16 | 16 | 0 |
-| 可选集成 | 19 | 12 | 7 |
+| 可选集成 | 19 | 13 | 6 |
 
 ## 范围归属
 
@@ -242,37 +242,35 @@
 
 当前接入：[src/main/java/li/cil/oc/client/](../src/main/java/li/cil/oc/client/)、[src/main/resources/assets/opencomputers/](../src/main/resources/assets/opencomputers/)
 
-### C21 · 文字缓冲、字体、屏幕与着色渲染 · 已有实现，待核对/验收
+### C21 · 文字缓冲、字体、屏幕与着色渲染 · 已闭合
 
 完成条件：字体、缩放、颜色、Unicode、GPU缓冲显示与原屏幕交互正确；相关接口本身归D18/D37。
-
-剩余：源码与缓存修复已有；尚需闭合文字/显存显示场景。
 
 原版范围：`src/main/scala/li/cil/oc/common/component/`、`src/main/scala/li/cil/oc/client/renderer/font/`、`src/main/scala/li/cil/oc/client/renderer/gui/BufferRenderer.scala`
 
 当前接入：[src/main/java/li/cil/oc/common/component/](../src/main/java/li/cil/oc/common/component/)、[src/main/java/li/cil/oc/client/renderer/](../src/main/java/li/cil/oc/client/renderer/)
 
-### C22 · 客户端效果、声音、宠物、命令与更新提示 · 已有实现，待核对/验收
+闭合依据：[docs/text-rendering.md](../docs/text-rendering.md)、[build/api-compat-addon/integration-client/client-text-20261027-k3/client-results.txt](../build/api-compat-addon/integration-client/client-text-20261027-k3/client-results.txt)、[build/api-compat-addon/integration-client/client-text-world-20261028-l1/client-results.txt](../build/api-compat-addon/integration-client/client-text-world-20261028-l1/client-results.txt)
+
+### C22 · 客户端效果、声音、宠物、命令与更新提示 · 已闭合
 
 完成条件：原声音/粒子/宠物/显示设置/客户端及服务器命令/调试与更新提示各一条代表路径可用。PIN的Achievement是空占位，保留其无行为语义，无需创造额外成就。
-
-剩余：机箱/机器人循环声已通过Windows原生声道生命周期、移动、三轮静音恢复及无残留登记、暂停、重载和移除验收；磁盘声音范围、粒子、宠物、显示设置、命令及更新提示的代表路径仍待闭合。
 
 原版范围：`src/main/scala/li/cil/oc/client/Sound.scala`、`src/main/scala/li/cil/oc/common/Sound.scala`、`src/main/scala/li/cil/oc/client/renderer/PetRenderer.scala`、`src/main/scala/li/cil/oc/server/PetVisibility.scala`、`src/main/scala/li/cil/oc/client/command/`、`src/main/scala/li/cil/oc/common/Achievement.scala`、`src/main/scala/li/cil/oc/server/command/`、`src/main/scala/li/cil/oc/common/command/`
 
 当前接入：[src/main/java/li/cil/oc/client/](../src/main/java/li/cil/oc/client/)、[src/main/java/li/cil/oc/common/integration/UpdateChecker.java](../src/main/java/li/cil/oc/common/integration/UpdateChecker.java)
 
-闭合依据：[docs/client-effects.md](../docs/client-effects.md)、[build/api-compat-addon/integration-client/client-sound-20261027-h2/client-results.txt](../build/api-compat-addon/integration-client/client-sound-20261027-h2/client-results.txt)
+闭合依据：[docs/client-effects.md](../docs/client-effects.md)、[build/api-compat-addon/integration-client/client-sound-20261027-h2/client-results.txt](../build/api-compat-addon/integration-client/client-sound-20261027-h2/client-results.txt)、[build/api-compat-addon/integration-client/client-effects-20261028-l1/client-results.txt](../build/api-compat-addon/integration-client/client-effects-20261028-l1/client-results.txt)、[build/api-compat-addon/integration-client/client-labels-20261028-m1/client-results.txt](../build/api-compat-addon/integration-client/client-labels-20261028-m1/client-results.txt)
 
-### C23 · 翻译、全部菜单布局与提示文本 · 已有实现，待核对/验收
+### C23 · 翻译、全部菜单布局与提示文本 · 已闭合
 
 完成条件：原菜单族全部有背景、槽位、可读文本和本地化；提示不残留、不遮挡主操作，正常帧率。
-
-剩余：机器人GUI已由玩家确认约60FPS；其他原菜单族和长文本仍需一次可视验收。
 
 原版范围：`src/main/scala/li/cil/oc/Localization.scala`、`src/main/scala/li/cil/oc/client/gui/`、`src/main/resources/assets/opencomputers/lang/`
 
 当前接入：[src/main/java/li/cil/oc/client/gui/](../src/main/java/li/cil/oc/client/gui/)、[src/main/resources/assets/opencomputers/lang/](../src/main/resources/assets/opencomputers/lang/)
+
+闭合依据：[docs/menus-and-localization.md](../docs/menus-and-localization.md)、[build/api-compat-addon/integration-client/client-menus-20261027-k1/client-results.txt](../build/api-compat-addon/integration-client/client-menus-20261027-k1/client-results.txt)、[build/api-compat-addon/integration-client/client-case-20261027-k1/client-results.txt](../build/api-compat-addon/integration-client/client-case-20261027-k1/client-results.txt)、[build/api-compat-addon/integration-client/client-menus-20261027-k2/client-results.txt](../build/api-compat-addon/integration-client/client-menus-20261027-k2/client-results.txt)、[build/api-compat-addon/integration-client/client-menus-20261027-k3/client-results.txt](../build/api-compat-addon/integration-client/client-menus-20261027-k3/client-results.txt)、[build/api-compat-addon/integration-client/client-waypoint-20261027-j2/client-results.txt](../build/api-compat-addon/integration-client/client-waypoint-20261027-j2/client-results.txt)、[build/api-compat-addon/integration-client/client-menus-20261028-l1/client-results.txt](../build/api-compat-addon/integration-client/client-menus-20261028-l1/client-results.txt)、[build/api-compat-addon/integration-client/client-assembler-20261028-l2/client-results.txt](../build/api-compat-addon/integration-client/client-assembler-20261028-l2/client-results.txt)、[build/api-compat-addon/integration-client/client-assembler-empty-20261028-l3/client-results.txt](../build/api-compat-addon/integration-client/client-assembler-empty-20261028-l3/client-results.txt)
 
 ### C24 · 最终完整模组构建与玩家安装说明 · 已有实现，待核对/验收
 
@@ -1203,23 +1201,25 @@
 
 闭合依据：[docs/projectred-integration.md](../docs/projectred-integration.md)
 
-### I15 · railcraft · 有明确缺口
+### I15 · railcraft · 已闭合
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：已确认Railcraft Reborn 1.21.1目标及公开Crowbar接口；工具和Worldspike驱动未接入，现代WorldSpike已移除燃料库存/红石停用，与原三回调有语义差异待解决。
-
 原版范围：`src/main/scala/li/cil/oc/integration/railcraft/`
 
-闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
+当前接入：[src/main/java/li/cil/oc/common/integration/railcraft/](../src/main/java/li/cil/oc/common/integration/railcraft/)
+
+闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)、[docs/railcraft-integration.md](../docs/railcraft-integration.md)、[build/api-compat-addon/devices/railcraft-20261027-j1/device-results.txt](../build/api-compat-addon/devices/railcraft-20261027-j1/device-results.txt)、[build/api-compat-addon/devices/railcraft-disabled-20261027-j1/device-results.txt](../build/api-compat-addon/devices/railcraft-disabled-20261027-j1/device-results.txt)
 
 ### I16 · thaumcraft · 有明确缺口
 
 完成条件：该一级目录原公开驱动/转换/工具/能量/数据功能按现代公开API接入；可选加载和原禁用配置有效，完成相应实际调用；全部子模块/driver同一ID。
 
-剩余：原Thaumcraft四物品Aspects/AspectFilter转换器尚待Java迁移；官方公开目标仍1.12.2，未发现官方可用现代物品/API，保持未完成。
+剩余：原Thaumcraft四物品Aspects/AspectFilter转换器已迁移为Java并保留模组/黑名单门控；官方公开目标仍1.12.2，缺少可用现代物品/API的真实互操作证据，保持未完成。
 
 原版范围：`src/main/scala/li/cil/oc/integration/thaumcraft/`
+
+当前接入：[src/main/java/li/cil/oc/common/integration/thaumcraft/](../src/main/java/li/cil/oc/common/integration/thaumcraft/)
 
 闭合依据：[docs/legacy-integration-targets.md](../docs/legacy-integration-targets.md)
 

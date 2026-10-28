@@ -150,14 +150,9 @@ public final class ComponentItem extends Item implements Tiered {
                     ItemStack stack = context.player().getItemInHand(payload.hand());
                     if (!(stack.getItem() instanceof ComponentItem item) || !item.storage()) return;
                     CompoundTag root = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
-                    if (root.contains("oc:lootFactory") || !root.getString("oc:lock").isEmpty()) return;
-                    if (root.getBoolean("oc:unmanaged") != payload.unmanaged()) {
-                        CompoundTag data = root.getCompound("oc:data");
-                        CompoundTag node = data.getCompound("node"); node.remove("address"); data.put("node", node);
-                        root.put("oc:data", data); root.remove("oc:lock"); root.putBoolean("oc:unmanaged", payload.unmanaged());
-                    }
-                    if (payload.lock()) root.putString("oc:lock", context.player().getGameProfile().getName());
-                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
+                    if (root.contains("oc:lootFactory")) return;
+                    li.cil.oc.common.item.data.DriveData.setUnmanaged(stack, payload.unmanaged());
+                    if (payload.lock()) li.cil.oc.common.item.data.DriveData.lock(stack, context.player());
                     context.player().getInventory().setChanged();
                 })));
     }

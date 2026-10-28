@@ -19,6 +19,11 @@ java {
 repositories {
     mavenCentral()
     maven {
+        name = 'RailcraftOfficialDistribution'
+        url = 'https://api.modrinth.com/maven'
+        content { includeModule 'maven.modrinth', 'rO6kKst6' }
+    }
+    maven {
         name = 'ForestryOfficialDistribution'
         url = 'https://www.cursemaven.com'
         content { includeModule 'curse.maven', 'forestry-community-edition-1056828' }
@@ -95,6 +100,7 @@ var jnluaGameLibrary = tasks.register('jnluaGameLibrary', Jar) {
 }
 
 dependencies {
+    compileOnly('maven.modrinth:rO6kKst6:pFiPGIUN') { transitive = false }
     compileOnly('curse.maven:forestry-community-edition-1056828:8782913') { transitive = false }
     compileOnly 'mezz.jei:jei-1.21.1-common-api:19.21.0.247'
     compileOnly 'mezz.jei:jei-1.21.1-neoforge-api:19.21.0.247'

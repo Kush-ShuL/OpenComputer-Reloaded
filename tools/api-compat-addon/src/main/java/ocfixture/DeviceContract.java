@@ -135,9 +135,10 @@ public final class DeviceContract {
                 if(focus.contains("all")||focus.contains("redstone"))RedstoneComputerCraftContract.start(level,origin.south(192),results);return;
             }
             if(Boolean.getBoolean("ocfixture.completionBatchOnly")){
-                robotDone=rackDone=true;String focus=System.getProperty("ocfixture.completionFocus","all");require(List.of("all","recipes","forestry").contains(focus),"Unknown completion fixture focus");
+                robotDone=rackDone=true;String focus=System.getProperty("ocfixture.completionFocus","all");require(List.of("all","recipes","forestry","railcraft").contains(focus),"Unknown completion fixture focus");
                 if(focus.equals("all")||focus.equals("recipes"))RecipeVanillaContract.start(level,origin.south(12),results);
-                if(focus.equals("all")||focus.equals("forestry"))ForestryContract.start(level,origin.south(64),results);return;
+                if(focus.equals("all")||focus.equals("forestry"))ForestryContract.start(level,origin.south(64),results);
+                if(focus.equals("railcraft")||focus.equals("all")&&net.neoforged.fml.ModList.get().isLoaded("railcraft"))RailcraftContract.start(level,origin.south(128),results);return;
             }
             if(Boolean.getBoolean("ocfixture.vanillaOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;VanillaContract.start(level,origin.south(12),results);return;}
             if(Boolean.getBoolean("ocfixture.forgeEnergyOnly")){level.setChunkForced(origin.getX()>>4,origin.getZ()>>4,true);level.getChunkAt(origin);robotDone=rackDone=true;ForgeEnergyContract.start(level,origin.south(12),results);return;}
@@ -242,7 +243,7 @@ public final class DeviceContract {
             DebugCardContract.tick();
             OperatingSystemContract.tick();
             RobotDroneContract.tick();PortableDevicesContract.tick();TerminalNanoContract.tick();RedstoneComputerCraftContract.tick();
-            if(Boolean.getBoolean("ocfixture.completionBatchOnly")){RecipeVanillaContract.tick();if(net.neoforged.fml.ModList.get().isLoaded("forestry"))ForestryContract.tick();}
+            if(Boolean.getBoolean("ocfixture.completionBatchOnly")){RecipeVanillaContract.tick();if(net.neoforged.fml.ModList.get().isLoaded("forestry"))ForestryContract.tick();RailcraftContract.tick();if(RailcraftContract.isRunning())return;}
             if(robotDone&&rackDone&&!DiskConcurrencyContract.isRunning()&&!AgentFluidContract.isRunning()&&!ForgeEnergyContract.isRunning()&&!ExperienceContract.isRunning()&&!GeneratorContract.isRunning()&&!VanillaContract.isRunning()&&!RecipeConfigContract.isRunning()&&!EnderIOContract.isRunning()&&!Tis3dContract.isRunning()&&!UpgradeStorageContract.isRunning()&&!FlightUpgradeContract.isRunning()&&!CraftingTradingContract.isRunning()&&!ChunkloaderContract.isRunning()&&!InventoryControlContract.isRunning()&&!PowerDevicesContract.isRunning()&&!WorldSensorsContract.isRunning()&&!NetworkDevicesContract.isRunning()&&!RemoteAdapterContract.isRunning()&&!StorageFileSystemContract.isRunning()&&!ProductionDevicesContract.isRunning()&&!PlayerToolsContract.isRunning()&&!MachineHostsContract.isRunning()&&!GraphicsCardContract.isRunning()&&!HologramContract.isRunning()&&!InternetCardContract.isRunning()&&!SchedulerContract.isRunning()&&!CheckpointContract.isRunning()&&!ScreenKeyboardContract.isRunning()&&!PrintingContract.isRunning()&&!DebugCardContract.isRunning()&&!OperatingSystemContract.isRunning()&&!RobotDroneContract.isRunning()&&!PortableDevicesContract.isRunning()&&!TerminalNanoContract.isRunning()&&!RedstoneComputerCraftContract.isRunning()&&(!Boolean.getBoolean("ocfixture.completionBatchOnly")||(!RecipeVanillaContract.isRunning()&&(!net.neoforged.fml.ModList.get().isLoaded("forestry")||!ForestryContract.isRunning()))))finish();
         }
         void tickRobot(){
@@ -346,7 +347,7 @@ public final class DeviceContract {
             DebugCardContract.close();
             OperatingSystemContract.close();
             RobotDroneContract.close();PortableDevicesContract.close();TerminalNanoContract.close();RedstoneComputerCraftContract.close();
-            if(Boolean.getBoolean("ocfixture.completionBatchOnly")){RecipeVanillaContract.close();if(net.neoforged.fml.ModList.get().isLoaded("forestry"))ForestryContract.close();}
+            if(Boolean.getBoolean("ocfixture.completionBatchOnly")){RecipeVanillaContract.close();if(net.neoforged.fml.ModList.get().isLoaded("forestry"))ForestryContract.close();RailcraftContract.close();}
             if(player!=null)player.closeFixtureMenu();if(robot!=null){robot.machine().stop();robot.equipmentInventory().clearContent();robot.mainInventory().clearContent();}if(tablet!=null){tablet.machine().stop();tablet.machine().node().remove();}
             for(Probe probe:probes)probe.node().remove();probes.clear();
             var entries=new ArrayList<>(restored.entrySet());Collections.reverse(entries);for(var entry:entries){if(level.getBlockEntity(entry.getKey()) instanceof Rack existing)existing.clearContent();level.setBlock(entry.getKey(),entry.getValue(),3);}restored.clear();

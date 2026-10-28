@@ -295,7 +295,7 @@ public final class AgentScreen extends AbstractContainerScreen<AgentMenu> {
         double[] point = coordinates(x, y);
         if (draggingScreen && button >= 0 && button < 2) {
             draggingScreen = false;
-            if (point != null) send(AgentNetworking.Action.DROP, 0, 0, point[0], point[1], button, "");
+            send(AgentNetworking.Action.DROP, 0, 0, point == null ? -1 : point[0], point == null ? -1 : point[1], button, "");
             return true;
         }
         return super.mouseReleased(x, y, button);

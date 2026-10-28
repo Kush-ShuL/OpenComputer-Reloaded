@@ -21,13 +21,15 @@ public final class RobotBlockEntityRenderer implements BlockEntityRenderer<Robot
         li.cil.oc.client.RenderDiagnostics.checkError("RobotBlockEntityRenderer.render.enter");
         var robot=proxy.controller();pose.pushPose();
         if(robot.moveFrom!=null&&robot.animationTicks>0){float left=(robot.animationTicks-partial)/Math.max(1,robot.animationTotal);var delta=robot.moveFrom.subtract(proxy.getBlockPos());pose.translate(delta.getX()*left,delta.getY()*left,delta.getZ()*left);}
-        li.cil.oc.client.ClientBehaviors.robotLabel(proxy,pose,buffers,light);
+        pose.pushPose();
         pose.translate(.5,.5+(proxy.clientRunning?Math.sin((proxy.getLevel().getGameTime()+partial)/20+proxy.hashCode())*.03:-.03),.5);
         float turn=robot.animationTicks>0&&(robot.animationKind==3||robot.animationKind==4)?90f*(robot.animationTicks-partial)/Math.max(1,robot.animationTotal)*(robot.animationKind==3?1:-1):0;
         pose.mulPose(Axis.YP.rotationDegrees(-robot.facing().toYRot()+turn));pose.translate(-.5,-.5,-.5);
         drawChassis(pose,buffers,light,overlay,proxy.clientRunning,robot.info.lightColor,proxy.getLevel().getGameTime()+partial,proxy);
         var tool=robot.equipment.getItem(0);
         if(!tool.isEmpty()){pose.pushPose();pose.translate(.5,.35,.95);pose.scale(.5f,.5f,.5f);if(robot.animationKind==1&&robot.animationTicks>0)pose.mulPose(Axis.XP.rotationDegrees((float)Math.sin((robot.animationTicks-partial)/10*Math.PI)*45));Minecraft.getInstance().getItemRenderer().renderStatic(tool,ItemDisplayContext.FIXED,light,overlay,pose,buffers,proxy.getLevel(),0);pose.popPose();}
+        pose.popPose();
+        li.cil.oc.client.ClientBehaviors.robotLabel(proxy,pose,buffers,light);
         pose.popPose();
         li.cil.oc.client.RenderDiagnostics.checkError("RobotBlockEntityRenderer.render");
     }

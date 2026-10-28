@@ -35,6 +35,8 @@
 
 开发测试版的程序盘箱子掉落、存档自定义程序盘和更新提示，见 [程序盘与更新说明](docs/loot-and-updates.md)。
 
+本地测试用的 OPEN LAB 基地提供总控、编程、机器人、机架、物流、全息和打印等体验区，玩法见 [基地导览](docs/SHOWCASE.md)。
+
 ## 致谢与许可
 
 本项目仅以 [MightyPirates/OpenComputers](https://github.com/MightyPirates/OpenComputers) 原仓库为源码基础，是独立的社区移植。感谢 MightyPirates 与所有原版贡献者。

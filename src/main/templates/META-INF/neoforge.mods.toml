@@ -56,6 +56,13 @@ ordering="AFTER"
 side="BOTH"
 
 [[dependencies.opencomputers]]
+modId="railcraft"
+type="optional"
+versionRange="[1.2.15,1.3)"
+ordering="AFTER"
+side="BOTH"
+
+[[dependencies.opencomputers]]
 modId="forestry"
 type="optional"
 versionRange="[3.0.0-alpha8,)"

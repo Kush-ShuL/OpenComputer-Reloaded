@@ -74,6 +74,12 @@ def manualClientReport = new File(manualClientDirectory, 'manual-results.txt')
 def integrationClientId = providers.gradleProperty('ocIntegrationClientRunId').getOrElse('not-selected')
 def integrationClientDirectory = file("${repositoryRoot}/build/api-compat-addon/integration-client/${integrationClientId}")
 def integrationClientReport = new File(integrationClientDirectory, 'client-results.txt')
+def integrationClientFocus = providers.gradleProperty('ocIntegrationClientFocus').getOrElse('all')
+def showcaseDirectory = file("${repositoryRoot}/run")
+def showcaseReport = file("${repositoryRoot}/build/launch-support/showcase-creation.txt")
+def multiplayerId = providers.gradleProperty('ocMultiplayerRunId').getOrElse('not-selected')
+def multiplayerDirectory = file("${repositoryRoot}/build/api-compat-addon/multiplayer/${multiplayerId}")
+def multiplayerPort = providers.gradleProperty('ocMultiplayerPort').getOrElse('25585')
 def ae2PersistenceId = providers.gradleProperty('ocAe2PersistenceRunId').getOrElse('not-selected')
 def ae2PersistenceStage = providers.gradleProperty('ocAe2Stage').getOrElse('prepare')
 def ae2PersistenceDirectory = file("${repositoryRoot}/build/api-compat-addon/appeng-persistence/${ae2PersistenceId}")
@@ -98,6 +104,19 @@ neoForge {
             systemProperty 'ocfixture.computerCraftOnly', computerCraftScenario.toString()
         }
         client { client(); gameDirectory = file("${repositoryRoot}/build/api-compat-addon/client-run") }
+        showcaseClient {
+            client()
+            jvmArgument '-Xmx3G'
+            jvmArgument '-XX:ActiveProcessorCount=4'
+            gameDirectory = showcaseDirectory
+            programArgument '--width'; programArgument '1280'
+            programArgument '--height'; programArgument '720'
+            systemProperty 'ocfixture.showcase', 'true'
+            systemProperty 'ocfixture.showcaseResumeBuild', providers.gradleProperty('ocShowcaseResumeBuild').getOrElse('false')
+            systemProperty 'ocfixture.showcaseRepairPrint', providers.gradleProperty('ocShowcaseRepairPrint').getOrElse('false')
+            systemProperty 'ocfixture.showcaseDirectory', showcaseDirectory.absolutePath
+            systemProperty 'ocfixture.showcaseReport', showcaseReport.absolutePath
+        }
         tis3dClient {
             client()
             gameDirectory = tis3dClientDirectory
@@ -116,6 +135,8 @@ neoForge {
         }
         integrationClient {
             client()
+            jvmArgument '-Xmx2G'
+            jvmArgument '-XX:ActiveProcessorCount=2'
             gameDirectory = integrationClientDirectory
             programArgument '--width'; programArgument '1280'
             programArgument '--height'; programArgument '720'
@@ -123,7 +144,38 @@ neoForge {
             systemProperty 'ocfixture.integrationClientRunId', integrationClientId
             systemProperty 'ocfixture.integrationClientDirectory', integrationClientDirectory.absolutePath
             systemProperty 'ocfixture.integrationClientReport', integrationClientReport.absolutePath
-            systemProperty 'ocfixture.integrationClientFocus', providers.gradleProperty('ocIntegrationClientFocus').getOrElse('all')
+            systemProperty 'ocfixture.integrationClientFocus', integrationClientFocus
+            systemProperty 'ocfixture.menuFocus', providers.gradleProperty('ocMenuFocus').getOrElse('all')
+            systemProperty 'ocfixture.textFocus', providers.gradleProperty('ocTextFocus').getOrElse('all')
+            systemProperty 'ocfixture.effectsFocus', providers.gradleProperty('ocEffectsFocus').getOrElse('all')
+            if (integrationClientFocus == 'effects') {
+                programArgument '--username'; programArgument 'OcEffects'
+                programArgument '--uuid'; programArgument '9f1f262f-0d68-4e13-9161-9eeaf4a0a1a8'
+            }
+        }
+        tcpServer {
+            server()
+            jvmArgument '-Xmx1G'
+            jvmArgument '-XX:ActiveProcessorCount=2'
+            gameDirectory = new File(multiplayerDirectory, 'server')
+            programArgument '--nogui'
+            systemProperty 'ocfixture.multiplayerServer', 'true'
+            systemProperty 'ocfixture.multiplayerReport', new File(multiplayerDirectory, 'server/server-results.txt').absolutePath
+        }
+        for (String actor : ['One', 'Two']) {
+            create("tcp${actor}") {
+                client()
+                jvmArgument '-Xmx1536m'
+                jvmArgument '-XX:ActiveProcessorCount=2'
+                gameDirectory = new File(multiplayerDirectory, "OcTcp${actor}")
+                programArgument '--width'; programArgument '960'
+                programArgument '--height'; programArgument '540'
+                programArgument '--username'; programArgument "OcTcp${actor}"
+                systemProperty 'ocfixture.multiplayerClient', 'true'
+                systemProperty 'ocfixture.multiplayerPlayer', "OcTcp${actor}"
+                systemProperty 'ocfixture.multiplayerAddress', "127.0.0.1:${multiplayerPort}"
+                systemProperty 'ocfixture.multiplayerDirectory', new File(multiplayerDirectory, "OcTcp${actor}").absolutePath
+            }
         }
         ae2PersistenceServer {
             server()
@@ -256,11 +308,32 @@ dependencies {
         if (providers.gradleProperty(property).isPresent()) runtimeOnly files(providers.gradleProperty(property).get())
     if (providers.gradleProperty('ocCodeChickenLibJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocCodeChickenLibJar').get())
     if (providers.gradleProperty('ocJadeJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocJadeJar').get())
-    for (String property : ['ocJeiJar', 'ocForestryJar', 'ocPatchouliJar', 'ocForestryButterflyJar'])
+    for (String property : ['ocJeiJar', 'ocForestryJar', 'ocPatchouliJar', 'ocForestryButterflyJar', 'ocRailcraftJar'])
         if (providers.gradleProperty(property).isPresent()) runtimeOnly files(providers.gradleProperty(property).get())
     for (String property : ['ocProjectRedCoreJar', 'ocProjectRedTransmissionJar', 'ocCBMultipartJar'])
         if (providers.gradleProperty(property).isPresent()) runtimeOnly files(providers.gradleProperty(property).get())
 }
+def prepareShowcaseClient = tasks.register('prepareShowcaseClient') {
+    doLast {
+        if (!runtimeFile.isFile()) throw new GradleException("Build the current runtime JAR before launch: ${runtimeFile}")
+        def target = new File(showcaseDirectory, 'saves/OC-Showcase-20261028')
+        if (target.exists() && !new File(target, 'level.dat').isFile())
+            throw new GradleException('The showcase folder exists without level.dat and will not be overwritten')
+        showcaseDirectory.mkdirs()
+        showcaseReport.parentFile.mkdirs()
+        def optionsFile = new File(showcaseDirectory, 'options.txt')
+        def lines = optionsFile.isFile() ? optionsFile.readLines('UTF-8') : []
+        for (def option : [lang: 'zh_cn', guiScale: '2', pauseOnLostFocus: 'false']) {
+            def prefix = option.key + ':'
+            int index = lines.findIndexOf { it.startsWith(prefix) }
+            if (index < 0) lines.add(prefix + option.value)
+            else lines[index] = prefix + option.value
+        }
+        optionsFile.setText(lines.join('\n') + '\n', 'UTF-8')
+    }
+}
+tasks.matching { it.name == 'runShowcaseClient' }.configureEach { dependsOn prepareShowcaseClient }
+
 def prepareIntegrationClient = tasks.register('prepareIntegrationClient') {
     doLast {
         if (!providers.gradleProperty('ocIntegrationClientRunId').isPresent() || !(integrationClientId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
@@ -270,6 +343,56 @@ def prepareIntegrationClient = tasks.register('prepareIntegrationClient') {
         new File(integrationClientDirectory, 'options.txt').setText('lang:zh_cn\nguiScale:2\nrenderDistance:2\nsimulationDistance:2\nautoJump:false\npauseOnLostFocus:false\n', 'UTF-8')
         def settings = new File(integrationClientDirectory, 'config/opencomputers/settings.conf')
         settings.parentFile.mkdirs(); settings.text = fixtureConfiguration('client-integration-fixture')
+    }
+}
+def prepareMultiplayer = tasks.register('prepareMultiplayer') {
+    doLast {
+        if (!providers.gradleProperty('ocMultiplayerRunId').isPresent() || !(multiplayerId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/) || !(multiplayerPort ==~ /[0-9]{4,5}/))
+            throw new GradleException('Supply a fresh -PocMultiplayerRunId=NAME and optional -PocMultiplayerPort=PORT')
+        for (String actor : ['server', 'OcTcpOne', 'OcTcpTwo']) {
+            def directory = new File(multiplayerDirectory, actor)
+            if (new File(directory, 'logs/latest.log').exists()) throw new GradleException('Select a fresh multiplayer run id')
+            directory.mkdirs()
+            def settings = new File(directory, 'config/opencomputers/settings.conf')
+            settings.parentFile.mkdirs(); settings.text = fixtureConfiguration('tcp-player-fixture')
+            if (actor != 'server') new File(directory, 'options.txt').setText('lang:zh_cn\nguiScale:2\nrenderDistance:2\nsimulationDistance:2\nautoJump:false\npauseOnLostFocus:false\n', 'UTF-8')
+        }
+        def serverDirectory = new File(multiplayerDirectory, 'server')
+        new File(serverDirectory, 'eula.txt').text = 'eula=true\n'
+        new File(serverDirectory, 'server.properties').setText("""level-name=ocfixture-tcp-world
+level-type=minecraft\\:flat
+generator-settings={"layers":[{"block":"minecraft:bedrock","height":1}],"biome":"minecraft:plains"}
+online-mode=false
+server-ip=127.0.0.1
+server-port=${multiplayerPort}
+spawn-protection=0
+view-distance=3
+simulation-distance=3
+allow-flight=true
+enable-command-block=false
+generate-structures=false
+max-players=2
+sync-chunk-writes=true
+""", 'UTF-8')
+    }
+}
+tasks.register('writeMultiplayerLaunchers') {
+    dependsOn prepareMultiplayer, 'prepareTcpServerRun', 'prepareTcpOneRun', 'prepareTcpTwoRun', 'classes'
+    doLast {
+        for (String actor : ['Server', 'One', 'Two']) {
+            def run = tasks.named("runTcp${actor}").get()
+            def directory = new File(multiplayerDirectory, actor == 'Server' ? 'server' : "OcTcp${actor}")
+            def quote = { Object value -> "'" + value.toString().replace("'", "''") + "'" }
+            def command = [run.javaLauncher.get().executablePath.asFile.absolutePath] + run.allJvmArgs +
+                    ['-cp', run.classpathProvider.asPath, run.mainClass.get()] + run.args +
+                    run.argumentProviders.collectMany { it.asArguments() as List }
+            def lines = ["Set-Location -LiteralPath ${quote(directory.absolutePath)}"]
+            run.environmentProperty.get().each { key, value -> lines.add('$env:' + key + ' = ' + quote(value)) }
+            lines.add('$launchArguments = @(' + command.drop(1).collect(quote).join(',\r\n') + ')')
+            lines.add('& ' + quote(command.first()) + ' @launchArguments')
+            lines.add('exit $LASTEXITCODE')
+            new File(directory, 'launch.ps1').setText(lines.join('\r\n') + '\r\n', 'UTF-8')
+        }
     }
 }
 tasks.matching { it.name == 'runIntegrationClient' }.configureEach {

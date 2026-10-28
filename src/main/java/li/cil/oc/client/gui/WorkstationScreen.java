@@ -3,6 +3,7 @@ package li.cil.oc.client.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import li.cil.oc.common.menu.WorkstationMenu;
 import li.cil.oc.common.template.AssemblerTemplates;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.player.Inventory;
 /** Original production layouts; tooltips depend on pointer position, not retained button focus. */
 public final class WorkstationScreen extends AbstractContainerScreen<WorkstationMenu> {
     private static final ResourceLocation ASSEMBLER = texture("gui/robot_assembler"), DISASSEMBLER = texture("gui/disassembler"), SLOT = texture("gui/slot"), RUN = texture("gui/button_run");
+    private static final Set<String> SLOT_ICONS = Set.of("card", "component_bus", "container", "cpu", "eeprom", "floppy", "hdd", "memory", "rack_mountable", "tablet", "tool", "upgrade");
     private Button run;
     private static ResourceLocation texture(String path) { return ResourceLocation.fromNamespaceAndPath("opencomputers", "textures/" + path + ".png"); }
     public WorkstationScreen(WorkstationMenu menu, Inventory inventory, Component title) { super(menu, inventory, title); imageWidth = 176; imageHeight = menu.assembler ? 192 : 166; inventoryLabelY = menu.assembler ? 98 : 72; }
@@ -43,7 +45,8 @@ public final class WorkstationScreen extends AbstractContainerScreen<Workstation
             graphics.blit(SLOT, x - 1, y - 1, 0, 0, 18, 18, 18, 18);
             if (!slot.hasItem() && menu.assembler && !menu.busy()) {
                 if (spec != null && spec.tier >= 0 && spec.tier <= 2) graphics.blit(texture("icons/tier" + spec.tier), x, y, 0, 0, 16, 16, 16, 16);
-                graphics.blit(texture("icons/" + (index == 0 ? "template" : spec.kind)), x, y, 0, 0, 16, 16, 16, 16);
+                // Original Textures.Icons has no icon for the template slot or custom slot kinds.
+                if (spec != null && SLOT_ICONS.contains(spec.kind)) graphics.blit(texture("icons/" + spec.kind), x, y, 0, 0, 16, 16, 16, 16);
             }
         }
         int x = leftPos + (menu.assembler ? 28 : 18), y = topPos + (menu.assembler ? 92 : 65), width = menu.assembler ? 140 : 140;

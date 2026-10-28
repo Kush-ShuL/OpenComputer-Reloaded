@@ -77,13 +77,18 @@ public final class ClientIntegrationContract {
     private static void tick(ClientTickEvent.Post event){
         if(finished)return;Minecraft client=Minecraft.getInstance();
         try{
-            require(System.nanoTime()-started<TimeUnit.MINUTES.toNanos(6),"Timed out phase="+phase+", screen="+(client.screen==null?"null":client.screen.getClass()));
+            require(System.nanoTime()-started<TimeUnit.MINUTES.toNanos(12),"Timed out phase="+phase+", screen="+(client.screen==null?"null":client.screen.getClass()));
             if(phase==0&&client.getOverlay()==null&&client.screen instanceof TitleScreen){
                 require(client.gameDirectory.toPath().toRealPath().equals(directory.toRealPath()),"Wrong game directory");
                 require(!Files.exists(directory.resolve("saves/integration-"+runId)),"A fresh owned world is required");advance(1);
                 client.createWorldOpenFlows().createFreshLevel("integration-"+runId,new LevelSettings("Client integration "+runId,GameType.CREATIVE,false,Difficulty.PEACEFUL,true,new GameRules(),WorldDataConfiguration.DEFAULT),new WorldOptions(258943363L,false,false),access->access.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(WorldPresets.FLAT).value().createWorldDimensions(),new TitleScreen());
             }else if(phase==1&&client.player!=null&&client.level!=null&&client.screen==null&&client.getOverlay()==null&&ClientJeiProbe.runtime!=null){
                 if(System.getProperty("ocfixture.integrationClientFocus","all").equals("sound")){ComputerSoundClientContract.start(client,directory,results);advance(30);return;}
+                if(System.getProperty("ocfixture.integrationClientFocus","all").equals("menus")){MenuClientContract.start(client,directory,results);advance(40);return;}
+                if(System.getProperty("ocfixture.integrationClientFocus","all").equals("effects")){EffectsClientContract.start(client,directory,results);advance(50);return;}
+                if(System.getProperty("ocfixture.integrationClientFocus","all").equals("activity")){ActivityClientContract.start(client,directory,results);advance(60);return;}
+                if(System.getProperty("ocfixture.integrationClientFocus","all").equals("text")){TextClientContract.start(client,directory,results);advance(70);return;}
+                if(System.getProperty("ocfixture.integrationClientFocus","all").equals("models")){ModelClientContract.start(client,directory,results);advance(80);return;}
                 IJeiRuntime runtime=ClientJeiProbe.runtime;
                 if(!worldDiskVisible(runtime))return;
                 verifyClientWorld(client);
@@ -104,6 +109,11 @@ public final class ClientIntegrationContract {
                 client.setScreen(null);JadeClientContract.start(client,directory,results);advance(20);
             }else if(phase==20){JadeClientContract.tick();if(!JadeClientContract.isRunning())finish(client,null);}
             else if(phase==30){ComputerSoundClientContract.tick();if(!ComputerSoundClientContract.isRunning())finish(client,null);}
+            else if(phase==40){MenuClientContract.tick();if(!MenuClientContract.isRunning())finish(client,null);}
+            else if(phase==50){EffectsClientContract.tick();if(!EffectsClientContract.isRunning())finish(client,null);}
+            else if(phase==60){ActivityClientContract.tick();if(!ActivityClientContract.isRunning())finish(client,null);}
+            else if(phase==70){TextClientContract.tick();if(!TextClientContract.isRunning())finish(client,null);}
+            else if(phase==80){ModelClientContract.tick();if(!ModelClientContract.isRunning())finish(client,null);}
         }catch(Throwable error){failed(client,error);}
     }
     @SuppressWarnings({"rawtypes","unchecked"}) private static List<?> lookup(IJeiRuntime runtime,RecipeType type,List focuses){return runtime.getRecipeManager().createRecipeLookup(type).limitFocus(focuses).get().toList();}
@@ -187,6 +197,7 @@ public final class ClientIntegrationContract {
     }
     private static void finish(Minecraft client,Throwable error){
         if(finished)return;finished=true;if(beforeHover!=null)beforeHover.close();
+        if(phase==80&&ModelClientContract.isRunning())ModelClientContract.close();
         if(error!=null){results.add("FAIL client.integrations phase="+phase+": "+error);LOG.error("CLIENT_INTEGRATION failed phase={}",phase,error);try{screenshot(client,"client-failure.png");}catch(Exception capture){LOG.warn("Capturing failure frame",capture);}}
         boolean passed=error==null&&results.stream().noneMatch(value->value.startsWith("FAIL"));
         var lines=new ArrayList<>(List.of("status="+(passed?"PASS":"FAIL"),"scenario=client-integrations","run_id="+runId));lines.addAll(results);

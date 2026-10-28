@@ -33,6 +33,13 @@ public final class OcApiCompat {
     private static final AtomicBoolean AUTOMATED = new AtomicBoolean();
     private static boolean finished;
     public OcApiCompat(IEventBus bus) {
+        if (Boolean.getBoolean("ocfixture.showcase")) {
+            if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT) ShowcaseClient.register();
+            return;
+        }
+        if (MultiplayerServerContract.enabled() || Boolean.getBoolean("ocfixture.multiplayerClient")) bus.addListener(MultiplayerProtocol::register);
+        if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT
+                && Boolean.getBoolean("ocfixture.multiplayerClient")) MultiplayerClientContract.register();
         if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT
                 && Boolean.getBoolean("ocfixture.tis3dClient")) Tis3dClientContract.register();
         if (net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.CLIENT
@@ -46,6 +53,7 @@ public final class OcApiCompat {
         GeneratorContract.register(bus);
         WorldPersistenceContract.registerBlocks(bus);
         bus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(() -> {
+            if (MultiplayerServerContract.enabled() || Boolean.getBoolean("ocfixture.multiplayerClient")) return;
             if (Boolean.getBoolean("ocfixture.manualClient") || Boolean.getBoolean("ocfixture.integrationClient")) return;
             if(AppliedEnergisticsPersistenceContract.enabled()){AppliedEnergisticsPersistenceContract.register();return;}
             if (HostPersistenceContract.enabled()) { HostPersistenceContract.register(); return; }
@@ -75,6 +83,7 @@ public final class OcApiCompat {
             LOGGER.info("API_FIXTURE SDK={} owner={} registered", API.VERSION, API.ID_OWNER);
         }));
         bus.addListener((InterModEnqueueEvent event) -> {
+            if (MultiplayerServerContract.enabled() || Boolean.getBoolean("ocfixture.multiplayerClient")) return;
             if (Boolean.getBoolean("ocfixture.manualClient")) return;
             if (HostPersistenceContract.enabled()) return;
             if (DeviceContract.enabled()) return;
@@ -122,6 +131,7 @@ public final class OcApiCompat {
                 })));
     }
     @SubscribeEvent public static void started(ServerStartedEvent event) {
+        if (MultiplayerServerContract.enabled()) { MultiplayerServerContract.start(event.getServer()); return; }
         if(AppliedEnergisticsPersistenceContract.enabled()){AppliedEnergisticsPersistenceContract.start(event.getServer());return;}
         if (HostPersistenceContract.enabled()) { HostPersistenceContract.start(event.getServer()); return; }
         if (DeviceContract.enabled()) { DeviceContract.start(event.getServer()); return; }
@@ -132,6 +142,7 @@ public final class OcApiCompat {
         catch (Throwable error) { LOGGER.error("API_FIXTURE FAIL startup", error); throw new IllegalStateException("External API fixture failed", error); }
     }
     @SubscribeEvent public static void tick(ServerTickEvent.Post event) {
+        if (MultiplayerServerContract.enabled()) { MultiplayerServerContract.tick(); return; }
         if(AppliedEnergisticsPersistenceContract.enabled()){AppliedEnergisticsPersistenceContract.tick();return;}
         if (HostPersistenceContract.enabled()) { HostPersistenceContract.tick(); return; }
         if (DeviceContract.enabled()) { DeviceContract.tick(); return; }

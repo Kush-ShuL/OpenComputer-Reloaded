@@ -119,7 +119,7 @@ public final class ScreenClient {
                     var tag = data == null ? null : data.copyTag();
                     return Math.clamp(tag != null && tag.contains("oc:color") ? tag.getInt("oc:color") : 8, 0, 15) / 15F;
                 });
-                for (String name : new String[]{"tablet", "terminal"}) {
+                for (String name : new String[]{"tablet"}) {
                     var info = li.cil.oc.api.Items.get(name);
                     if (info != null) ItemProperties.register(info.item(), ResourceLocation.fromNamespaceAndPath(OpenComputers.ID, "running"), (stack, level, entity, seed) -> {
                         var data = stack.get(DataComponents.CUSTOM_DATA);

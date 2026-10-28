@@ -47,12 +47,25 @@ behavior.
 ## Current state
 
 Work in progress. This is a partial development implementation, not a complete
-playable release. The fixed checklist is currently **107/120 complete, with
-13 remaining**. The latest batch closed C17, I01, I08, I10, I12 and I18.
-The open platform/delivery items are C19, C20, C21, C22, C23 and C24; the open
+playable release. The fixed checklist is currently **111/120 complete, with
+9 remaining**. The latest batch closed I15, C21, C22 and C23 with actual Windows
+runtime and reviewed menu/font frames.
+The open platform/delivery items are C19, C20 and C24; the open
 integrations are I02 Charset, I03 CoFH, I05 ExtraCells, I09 IndustrialCraft²,
-I15 Railcraft, I16 Thaumcraft and I19 Wireless Redstone CBE. C22, including sound,
-remains under review and is not counted complete.
+I16 Thaumcraft and I19 Wireless Redstone CBE. C22's sounds, commands, particles,
+supporter pet, clipboard, official update query and Robot label on/off pairs have
+actual passing results. Front and close-overhead label frames were reviewed for
+complete glyphs and an opaque chassis. C19 has real two-client
+TCP evidence, with remaining Robot/Drone/Tablet and tracking families still open.
+
+The local Windows demonstration save `run/saves/OC-Showcase-20261028` contains
+a 64-by-48 laboratory with eight stations. Its actual commissioning saved
+`opencomputers/showcase/READY.txt` after all ten native Lua/OpenOS machines ran,
+the transposer moved items and the printer consumed its real supplies. The
+separate `PRINT-REPAIR.txt` records the real fabrication EEPROM update and live
+preview correction from the missing old quartz texture to `quartz_block_top`.
+This playable demonstration does not close the remaining shared port items.
+See [the player guide](SHOWCASE.md).
 
 The development record below retains the earlier stages and their validation
 limits. Statements that a module was still awaiting acceptance describe those
