@@ -21,6 +21,10 @@ try {
         "-PocMultiplayerRunId=$RunId", "-PocMultiplayerPort=$Port", 'writeMultiplayerLaunchers', '--console=plain')
     & .\gradlew.bat @arguments
     if ($LASTEXITCODE -ne 0) { throw "Multiplayer preparation failed: $LASTEXITCODE" }
+    foreach ($actor in 'OcTcpOne', 'OcTcpTwo') {
+        $options = Join-Path $runDirectory "$actor\options.txt"
+        [System.IO.File]::AppendAllText($options, "maxFps:15`nfullscreen:false`n", [System.Text.UTF8Encoding]::new($false))
+    }
     # A real world-local program catalog must exist before LevelEvent.Load/login;
     # its normal production DiskSync then populates both independent clients.
     $lootDirectory = Join-Path $runDirectory 'server\ocfixture-tcp-world\opencomputers\loot'

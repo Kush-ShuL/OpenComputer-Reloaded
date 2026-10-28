@@ -9,7 +9,9 @@ param(
     [ValidateSet('all', 'world')]
     [string]$TextFocus = 'all',
     [ValidateSet('all', 'labels')]
-    [string]$EffectsFocus = 'all'
+    [string]$EffectsFocus = 'all',
+    [ValidateSet('all', 'supplement')]
+    [string]$ModelFocus = 'all'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -23,7 +25,7 @@ $arguments = @('--offline', '-p', 'tools/api-compat-addon',
     "-PlegacyApiJar=$projectDirectory/build/api-compat-addon/legacy-sdk/opencomputers-api-two-arg.jar",
     "-PocJeiJar=$projectDirectory/build/jei-integration-deps/maven/mezz/jei/jei-1.21.1-neoforge/19.21.0.247/jei-1.21.1-neoforge-19.21.0.247.jar",
     "-PocJadeJar=$projectDirectory/build/libraries/Jade-1.21.1-NeoForge-15.10.6.jar",
-    "-PocIntegrationClientRunId=$RunId", "-PocIntegrationClientFocus=$Focus", "-PocMenuFocus=$MenuFocus", "-PocTextFocus=$TextFocus", "-PocEffectsFocus=$EffectsFocus",
+    "-PocIntegrationClientRunId=$RunId", "-PocIntegrationClientFocus=$Focus", "-PocMenuFocus=$MenuFocus", "-PocTextFocus=$TextFocus", "-PocEffectsFocus=$EffectsFocus", "-PocModelFocus=$ModelFocus",
     'runIntegrationClient', '--console=plain')
 Push-Location $projectDirectory
 try {

@@ -22,6 +22,12 @@ GUI 与 GROUND 渲染。状态列中列出的活动层还需要真实设备状�
 玩家视点和世界相机到达；活动场景给真实节点供能，等装配机和拆解机的客户端
 工作状态到达后再保存图片，避免把未工作的设备算成工作层验收。
 
+仅这个模型测试窗口临时限制为 12 FPS，结束时恢复原上限，减少与玩家客户端
+同时运行时的显卡占用。该场景检验实际画面，不用它判断正常游戏帧率。画廊随
+相机逐组等待真实区块跟踪和模型到达，不要求初始视距一次加载 72 格长的全画廊。
+装配机和拆解机通过实际补料连续工作；每组活动截图仍要求客户端当前工作状态
+为真。机架使用实际机架式软盘驱动器，不能用同名的外置方块代替。
+
 图片对应关系：`models-world-default-*` / `models-world-active-*` 按原注册
 方块每组三个排列，分别拍摄两侧；`models-items-*` 收录实际注册物品、创造预设、
 16 色盘和真实绑定终端；其余图片名直接标明 Drone、HoverBoots、运行平板、
@@ -91,4 +97,37 @@ Pet、机器人外挂等若已经在同一个真实 Effects 场景里渲染，�
 确切 PNG；不能把未执行的场景计划计为通过。GUI 背景另归 C18，文字及字体
 另归 C21，网络包是否到达另归 C19。
 
-目前这份矩阵固定范围，不把源码或资源存在视作 41 族视觉验收完成。
+M38 已有实际证据：[client-effects-20261028-l1 报告](../build/api-compat-addon/integration-client/client-effects-20261028-l1/client-results.txt)
+为 PASS，原资格玩家实际进入宠物渲染路径并保留原颜色；
+[`effects-pet-visible.png`](../build/api-compat-addon/integration-client/client-effects-20261028-l1/effects-pet-visible.png)
+和 [`effects-pet-hidden.png`](../build/api-compat-addon/integration-client/client-effects-20261028-l1/effects-pet-hidden.png)
+已由主代理实际查看，显示／隐藏正确。此项可以复用，不要求为模型画廊再重复该场景。
+
+这份矩阵固定 C20 的 41 族模型范围，验收依据为实际画面。
+
+`client-models-20261028-m1` 已在 Windows 原生客户端实际执行并正常退出，
+报告为 PASS，保存 65 张 1280×720 原始 PNG。六页共 186 个原生物品条目，
+默认两侧画廊以及活动、外挂、实体等图片已经逐张查看，未见缺失纹理棋盘。
+其中首次远距离传送后的活动首排正面和 Print 高亮截图存在区块网格尚未就绪，
+全息投影的独立展台也缺少真实底部储能。这三种情况不作为通过图片使用。
+
+[`client-models-supplement-20261028-m2` 报告](../build/api-compat-addon/integration-client/client-models-supplement-20261028-m2/client-results.txt)
+为 PASS，Windows 原生客户端正常保存全部维度并退出，Gradle 构建成功。
+`ocfixture.modelFocus=supplement` 补拍的十张 1280×720 原始 PNG 已逐张查看：
+
+| 补拍 | 实际结果 |
+| --- | --- |
+| 活动首排前、后两侧 | Adapter、Assembler、Cable 网格完整，装配机真实工作层可见 |
+| 两档全息投影 | 实际底部电容器供电，客户端 `hasPower`、体素、色板、比例和 T2 旋转同步；两档投影均出现 |
+| 外置驱动器插盘、退盘 | 同机位真实执行 `ejectMedium`，客户端槽位变空，盘片模型和指示灯随之改变 |
+| Print 平板高亮 | 完整世界网格、真实打印形状、选中面和逐形状轮廓同时可见 |
+| 配电器发光 | 实际客户端网络电量为 2766.34 / 3000，原发光层可见 |
+| 机箱错误灯亮、灭 | 真实 `machine.crash` 后，同机位红色错误灯按原渲染时钟闪烁 |
+
+补拍首次运行 `client-models-supplement-20261028-m1` 在第四张后因测试脚本从
+客户端线程读取服务器方块实体而失败，报告保留；修复的是补拍脚本的读取线程，
+未为此修改生产模型。后续 m2 的十张取代初次画廊中尚未就绪的画面。
+
+固定的 C20 模型族验收已完成：原画廊 65 张、补拍 10 张与上述 M38 宠物证据
+共同覆盖这 41 族，未见缺失纹理棋盘或应有模型面缺失。该结论对应这里列出的
+模型族、状态和机位；GUI、文字、网络及完整移植进度仍由各自验收项记录。

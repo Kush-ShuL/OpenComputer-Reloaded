@@ -55,6 +55,36 @@ repositories {
         metadataSources { artifact() }
         content { includeModule 'li.cil', 'OC-LuaJ'; includeModule 'li.cil', 'OC-JNLua'; includeModule 'li.cil', 'OC-JNLua-Natives' }
     }
+    // These distributions belong to their own repositories. Inclusion filters
+    // alone still let Gradle probe unrelated repositories, including NeoForge.
+    exclusiveContent {
+        forRepositories(getByName('RailcraftOfficialDistribution'))
+        filter { includeModule 'maven.modrinth', 'rO6kKst6' }
+    }
+    exclusiveContent {
+        forRepositories(getByName('ForestryOfficialDistribution'))
+        filter { includeModule 'curse.maven', 'forestry-community-edition-1056828' }
+    }
+    exclusiveContent {
+        forRepositories(getByName('JEIOfficial'))
+        filter { includeGroup 'mezz.jei' }
+    }
+    exclusiveContent {
+        forRepositories(getByName('ComputerCraftOfficial'))
+        filter { includeGroup 'cc.tweaked' }
+    }
+    exclusiveContent {
+        forRepositories(getByName('JadeOfficialDistribution'))
+        filter { includeModule 'maven.modrinth', 'jade' }
+    }
+    exclusiveContent {
+        forRepositories(getByName('Tis3dOfficialDistribution'))
+        filter { includeModule 'maven.modrinth', 'tis3d'; includeModule 'maven.modrinth', 'markdownmanual' }
+    }
+    exclusiveContent {
+        forRepositories(getByName('OriginalOpenComputersLuaLibraries'))
+        filter { includeModule 'li.cil', 'OC-LuaJ'; includeModule 'li.cil', 'OC-JNLua'; includeModule 'li.cil', 'OC-JNLua-Natives' }
+    }
 }
 
 sourceSets {

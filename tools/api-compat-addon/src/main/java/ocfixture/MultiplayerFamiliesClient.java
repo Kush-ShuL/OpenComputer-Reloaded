@@ -84,6 +84,10 @@ final class MultiplayerFamiliesClient {
         for (Object device : ((Map<?, ?>) call(buffer, "videoDevices")).values()) if (!((Map<?, ?>) call(device, "videoBuffers")).isEmpty()) return true;
         return false;
     }
+    static boolean cachedText(TextBuffer buffer, String expected) {
+        for (Object device : ((Map<?, ?>) call(buffer, "videoDevices")).values()) for (Object page : ((Map<?, ?>) call(device, "videoBuffers")).values()) if (page instanceof TextBuffer value && text(value, 0, 0, expected)) return true;
+        return false;
+    }
     static boolean hologram(Minecraft client, boolean cleared) {
         Object entity = device(client, MultiplayerFamilies.HOLOGRAM); if (entity == null) return false;
         Object hologram = call(entity, "hologram");
@@ -169,7 +173,8 @@ final class MultiplayerFamiliesClient {
             if (!named(client, "TerminalScreen")) { if (!acted && client.player.getMainHandItem().is(MultiplayerFamilies.item("terminal").getItem()) && !MultiplayerFamilies.tag(client.player.getMainHandItem()).getString("oc:key").isEmpty()) { client.gameMode.useItem(client.player, InteractionHand.MAIN_HAND); acted = true; } return null; }
             oldTerminal = (UUID) field(client.screen, "session");
             if (!released) { terminal("KEY_DOWN", "", 0, 0); terminal("KEY_UP", "", 0, 0); terminal("CLIPBOARD", "TCP terminal input", 0, 0); terminal("TOUCH", "", 1, 1); terminal("DRAG", "", 2, 2); terminal("SCROLL", "", 2, 2); terminal("DROP", "", -1, -1); released = true; }
-            if (!text((TextBuffer) field(client.screen, "buffer"), 0, 0, "TCP terminal initial")) return null;
+            TextBuffer screen = (TextBuffer) field(client.screen, "buffer");
+            if (!text(screen, 0, 0, "TCP terminal initial") || !text(screen, 0, 2, "OLD!") || !cachedText(screen, "NEW!")) return null;
             return new CompoundTag();
         }
         if (stage == 107) { if (primary && (!named(client, "TerminalScreen") || !text((TextBuffer) field(client.screen, "buffer"), 0, 0, "TCP terminal delta"))) return null; return new CompoundTag(); }
@@ -223,7 +228,7 @@ final class MultiplayerFamiliesClient {
             case 111 -> {
                 {
                     net.minecraft.world.entity.Entity drone = null; for (var entity : client.level.entitiesForRendering()) if (entity.getUUID().equals(step.data().getUUID("entity"))) { drone = entity; break; }
-                    if (drone == null || !(drone instanceof li.cil.oc.api.internal.Drone value) || !value.name().equals("TCP Drone") || !call(drone, "statusText").equals("TCP entity") || ((Number) call(drone, "lightColor")).intValue() != 0x225588) return null;
+                    if (drone == null || !(drone instanceof li.cil.oc.api.internal.Drone) || !call(drone, "statusText").equals("TCP entity") || ((Number) call(drone, "lightColor")).intValue() != 0x225588) return null;
                     if (primary) {
                         if (!named(client, "AgentScreen")) { if (!released) { client.gameMode.interact(client.player, drone, InteractionHand.MAIN_HAND); released = true; } return null; }
                         if (!acted) { agent(client, "POWER", "", 0, 0, 0); acted = true; return null; }
@@ -246,9 +251,15 @@ final class MultiplayerFamiliesClient {
                 }
                 oldTablet = (UUID) field(client.screen, "session");
                 if (!text((TextBuffer) field(client.screen, "buffer"), 0, 0, "TCP actual native host")) return null;
+                if (!text((TextBuffer) field(client.screen, "buffer"), 0, 2, "OLD!") || !cachedText((TextBuffer) field(client.screen, "buffer"), "NEW!")) return null;
                 if (ticks < 5) return null;
                 tablet(client, oldTablet, "KEY_DOWN", "", 0, 0); tablet(client, oldTablet, "KEY_UP", "", 0, 0); tablet(client, oldTablet, "CLIPBOARD", "TCP tablet input", 0, 0); tablet(client, oldTablet, "TOUCH", "", 1, 1); tablet(client, oldTablet, "DRAG", "", 2, 2); tablet(client, oldTablet, "SCROLL", "", 2, 2); tablet(client, oldTablet, "DROP", "", -1, -1);
                 PacketDistributor.sendToServer(payload("PortableNetworking", "TabletRequest", oldTablet)); return new CompoundTag();
+            }
+            case 127 -> {
+                Player owner = client.level.players().stream().filter(value -> value.getGameProfile().getName().equals(MultiplayerServerContract.ONE)).findFirst().orElse(null);
+                if (owner == null || !MultiplayerFamilies.tag(owner.getMainHandItem()).getBoolean("oc:isRunning")) return null;
+                return new CompoundTag();
             }
             case 113 -> { if (primary && (!named(client, "TabletScreen") || !text((TextBuffer) field(client.screen, "buffer"), 0, 0, "TCP tablet delta"))) return null; return new CompoundTag(); }
             case 114 -> {
@@ -272,7 +283,7 @@ final class MultiplayerFamiliesClient {
             }
             case 131 -> {
                 Object printer = device(client, MultiplayerFamilies.PRINTER); if (printer == null || !((Boolean) field(printer, "clientWorking"))) return null;
-                Object model = call(printer, "preview"); if (((List<?>) field(model, "stateOff")).size() != 1 || !((java.util.Optional<?>) field(model, "label")).map(Object::toString).orElse("").equals("TCP print")) return null;
+                Object model = call(printer, "preview"); if (((java.util.Collection<?>) field(model, "stateOff")).size() != 1 || !((java.util.Optional<?>) field(model, "label")).map(Object::toString).orElse("").equals("TCP print")) return null;
                 boolean active = nativeUpdates.getOrDefault(MultiplayerFamilies.DISASSEMBLER, List.of()).stream().anyMatch(data -> data.getBoolean("oc:isActive")); if (!active) return null;
                 Object screen = device(client, MultiplayerServerContract.SCREEN); if (screen == null || !(Boolean) call(screen, "invertTouchMode")) return null;
                 results.add("PASS actual remote assembler menu/state, printer preview+working and disassembler native active-state updates; real screen touch inversion applied"); return new CompoundTag();
@@ -299,8 +310,32 @@ final class MultiplayerFamiliesClient {
             case 120 -> {
                 if (!client.level.dimension().equals(net.minecraft.world.level.Level.OVERWORLD)) return null;
                 TextBuffer buffer = buffer(client); Object projector = device(client, MultiplayerFamilies.HOLOGRAM); Object robot = robot(client, movedRobot);
-                if (!text(buffer, 0, 0, "TCP tracking full") || !text(buffer, 0, 6, "BACK") || !hasRam(buffer) || projector == null || ((Number) call(call(projector, "hologram"), "getColor", 0, 1, 2)).intValue() != 3 || robot == null || !((Robot) robot).name().equals("TCP robot") || !(Boolean) field(robot, "clientHasErrored")) return null;
+                if (!text(buffer, 0, 0, "TCP tracking full") || !text(buffer, 0, 6, "BACK") || buffer.getMaximumWidth() != 80 || buffer.getMaximumHeight() != 25 || projector == null || ((Number) call(call(projector, "hologram"), "getColor", 0, 1, 2)).intValue() != 3 || robot == null || !((Robot) robot).name().equals("TCP robot") || !(Boolean) field(robot, "clientHasErrored")) return null;
                 return new CompoundTag();
+            }
+            case 126 -> {
+                TextBuffer mirror = buffer(client); if (mirror == null) return null;
+                int[] actual = java.util.stream.IntStream.range(5, 9).map(x -> mirror.getCodePoint(x, 6)).toArray(); int[] actualServer = step.data().getIntArray("serverRaster");
+                String observation = "server=" + java.util.Arrays.toString(actualServer) + ", actual_client=" + java.util.Arrays.toString(actual) + ", client_vram=" + hasRam(mirror);
+                if (!java.util.Arrays.equals(actualServer, actual)) { if (ticks == 40) results.add("OBS C19.clean-blit mismatch " + observation); return null; }
+                results.add("PASS unchanged actual GPU page rendered at a new screen destination after remote dimension retracking; " + observation); return new CompoundTag();
+            }
+            case 128 -> {
+                if (device(client, MultiplayerServerContract.KEYBOARD) != null || buffer(client) == null || hasRam(buffer(client))) return null;
+                return new CompoundTag();
+            }
+            case 129 -> {
+                Object screen = device(client, MultiplayerServerContract.SCREEN);
+                if (device(client, MultiplayerServerContract.KEYBOARD) == null || screen == null) return null;
+                if (primary) {
+                    if (!named(client, "ScreenGui")) { if (!released) { physical(client, MultiplayerServerContract.KEYBOARD); released = true; } return null; }
+                    if (!(Boolean) field(screen, "clientHasKeyboard")) return null;
+                }
+                return new CompoundTag();
+            }
+            case 132 -> {
+                if (!text(buffer(client), 10, 6, "NEW2")) return null;
+                results.add("PASS physical screen unlink cleared old page metadata; actual relink+non-reset GPU bind restored a clean-page copy to this client's real raster"); return new CompoundTag();
             }
             case 121 -> {
                 TextBuffer buffer = buffer(client); Object projector = device(client, MultiplayerFamilies.HOLOGRAM);

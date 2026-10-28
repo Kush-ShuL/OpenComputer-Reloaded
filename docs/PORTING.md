@@ -30,15 +30,18 @@ The fixed units are 61 device/component families, 16 other player feature famili
 19 original integration modules and 24 platform/delivery requirements. Existing
 code awaiting fidelity review or acceptance still counts as open. A regression
 reopens its existing ID; a bug, helper, tier or additional test does not add scope.
-The fixed original commit determines behavior. Old integrations without a confirmed
-modern target remain on the list until resolved; they are not silently discarded.
+The fixed original commit determines behavior. Old integrations keep their IDs
+and source inventory. On 2026-10-28 the user explicitly requested that the six
+without an available, clearly licensed modern dependency be skipped; they remain
+listed as skipped, separate from completed items.
 
 Shared rendering, menus and remote networking are tracked once under C20/C23/C19.
 A runtime-only device or integration item may close while those shared items remain
 open. Closure does not demand testing every behavior of an external mod or every
 Cartesian combination of host and architecture. The checklist records each item's
-bounded acceptance and evidence, and the whole goal requires all 120 items closed
-including the final delivery item C24.
+bounded acceptance and evidence. The current agreed goal requires all 114 active
+items closed, including final delivery C24; the six explicit skips are excluded
+from the supported integration scope.
 
 Systems awaiting Java migration remain incomplete, even if the current Java
 modules compile. Empty components are not a substitute for their original
@@ -46,17 +49,26 @@ behavior.
 
 ## Current state
 
-Work in progress. This is a partial development implementation, not a complete
-playable release. The fixed checklist is currently **111/120 complete, with
-9 remaining**. The latest batch closed I15, C21, C22 and C23 with actual Windows
-runtime and reviewed menu/font frames.
-The open platform/delivery items are C19, C20 and C24; the open
+The fixed checklist is now **114 complete, 6 skipped,
+0 remaining out of 120 recorded items**. Devices, tools, supported integrations,
+menus, models, text and effects have bounded runtime acceptance. C19's real
+dedicated server and two independent TCP clients passed in `tcp-20261028-m7`,
+including reconnect, dimension retracking, clean/dirty VRAM copies and physical
+network relinking. C20's 41 model families passed the main and supplemental
+Windows captures. C24 passed with the same packaged main JAR on a normal Windows
+dedicated server and client in `final-20261028-b`. The server saved all dimensions
+and exited normally; the client opened the existing demonstration base and was
+left interactive. Both actual mod lists contain only Minecraft, NeoForge and
+OpenComputers. See [final runtime evidence](final-runtime.md).
+The six skipped
 integrations are I02 Charset, I03 CoFH, I05 ExtraCells, I09 IndustrialCraft²,
 I16 Thaumcraft and I19 Wireless Redstone CBE. C22's sounds, commands, particles,
 supporter pet, clipboard, official update query and Robot label on/off pairs have
 actual passing results. Front and close-overhead label frames were reviewed for
-complete glyphs and an opaque chassis. C19 has real two-client
-TCP evidence, with remaining Robot/Drone/Tablet and tracking families still open.
+complete glyphs and an opaque chassis. Filesystem activity cancellation, exact
+coordinates, custom NBT and cooldown behavior passed the separate real client
+activity contract. See [network evidence](network-payload-map.md) and
+[model evidence](models-and-textures.md).
 
 The local Windows demonstration save `run/saves/OC-Showcase-20261028` contains
 a 64-by-48 laboratory with eight stations. Its actual commissioning saved
@@ -64,7 +76,8 @@ a 64-by-48 laboratory with eight stations. Its actual commissioning saved
 the transposer moved items and the printer consumed its real supplies. The
 separate `PRINT-REPAIR.txt` records the real fabrication EEPROM update and live
 preview correction from the missing old quartz texture to `quartz_block_top`.
-This playable demonstration does not close the remaining shared port items.
+The demonstration is separate from the device, model and multiplayer contracts;
+their acceptance is recorded in the fixed checklist.
 See [the player guide](SHOWCASE.md).
 
 The development record below retains the earlier stages and their validation

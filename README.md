@@ -2,7 +2,7 @@
 
 使用 **Java 21** 将 OpenComputers 的可编程电脑和机器人带到 **Minecraft Java 1.21.1 · NeoForge**。
 
-**目前正在移植，尚无可游玩的 1.21.1 模组正式版。** 当前源码、已转换资源和 API 包不代表所有游戏功能已经可用。请等待 Releases 中明确标注的模组版本。
+**使用请自行构建，本仓库不提供预编译的主模组 JAR。** 构建和安装方法见下文。
 
 ## 在 Minecraft 里编程
 
@@ -15,23 +15,33 @@
 
 不同等级的硬件拥有不同的性能、插槽和能耗。原有 Lua 程序、系统磁盘与游戏内手册会随移植保留。
 
-## 安装与下载
+## 自行构建与安装
 
 目标环境为 Minecraft **1.21.1**、**NeoForge 21.1.224 或更新的 21.1.x**、**Java 21**。客户端与服务器需要安装相同版本。
 
-可游玩版本发布后，从 [Releases](https://github.com/Kush-ShuL/OpenComputer-Reloaded/releases) 中明确标为模组版本的发布页下载主 JAR，放入实例的 `mods` 文件夹。API 发布页供模组开发者使用，不提供游戏模组下载；API、sources 和 Javadoc 包无需放入玩家的 `mods` 文件夹。
+安装 **JDK 21**，下载或克隆本仓库源码，在项目目录执行：
+
+```powershell
+.\gradlew.bat jar
+```
+
+Linux / macOS 使用 `./gradlew jar`。首次构建需要联网下载依赖。
+
+构建完成后，将 `build/libs/` 中的 `OpenComputer-Reloaded-<版本>.jar` 放入实例的 `mods` 文件夹。客户端与服务器使用同一个主模组 JAR。
+
+Releases 中的 API 发布供模组开发者通过 JitPack 使用；API、sources 和 Javadoc 包无需放入玩家的 `mods` 文件夹。
 
 旧版 Minecraft 存档和已安装的电脑不能直接视为兼容。迁移支持确认前，请保留原存档备份。
 
 ## 入门
 
-可游玩版发布后，建议从一级机箱、CPU、内存、显卡、屏幕、键盘和硬盘开始，搭配 EEPROM 与 OpenOS 安装软盘完成系统安装，再使用游戏内手册了解设备与 Lua API。
+建议从一级机箱、CPU、内存、显卡、屏幕、键盘和硬盘开始，搭配 EEPROM 与 OpenOS 安装软盘完成系统安装，再使用游戏内手册了解设备与 Lua API。
 
 开发测试版的手册可用一本书和一级芯片无序合成，或用 `/give @s opencomputers:manual` 获取。拿着手册右键阅读；蹲下右键重置阅读位置，对有文档的方块右键可打开对应页面。
 
 配置位置和常用开关见 [配置说明](docs/CONFIGURATION.md)，CC:Tweaked 兼容需要手动启用。当前迁移进展与已知缺口见 [移植说明](docs/PORTING.md)。遇到问题可提交 [Issue](https://github.com/Kush-ShuL/OpenComputer-Reloaded/issues)，附上模组版本、游戏日志和复现步骤。
 
-移植范围已锁定为 [120 项固定清单](docs/MIGRATION-CHECKLIST.md)，其中逐项列出完成条件、当前状态和剩余工作；已有代码但尚未完成核对或验收的项目仍计入剩余。
+移植记录见 [120 项固定清单](docs/MIGRATION-CHECKLIST.md)：114 项已完成验收。缺少可用现代依赖的 Charset、CoFH、ExtraCells、IC²、Thaumcraft、WRCBE 六项联动已按要求跳过，不属于当前版本的支持范围。
 
 开发测试版的程序盘箱子掉落、存档自定义程序盘和更新提示，见 [程序盘与更新说明](docs/loot-and-updates.md)。
 

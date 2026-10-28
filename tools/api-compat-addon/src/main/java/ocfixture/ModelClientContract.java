@@ -127,13 +127,18 @@ public final class ModelClientContract {
     }
     private static void afterFrame(RenderFrameEvent.Post event) {
         Run run = active;
-        if (run == null || run.finishing || run.shot == null || run.worldFrames < run.shotAfter + 6) return;
-        if (!run.cameraReady()) return;
-        if (run.sheet != null && (run.client.screen != run.sheet || run.sheet.renders < 3)) return;
-        try (NativeImage pixels = Screenshot.takeScreenshot(run.client.getMainRenderTarget())) {
-            Path path = run.directory.resolve(run.shot); pixels.writeToFile(path);
-            run.results.add("SCREENSHOT C20 " + path + " actual=" + pixels.getWidth() + "x" + pixels.getHeight() + " " + run.caption);
-            run.shot = null; run.shotDone = true;
+        if (run == null || run.finishing || run.shot == null || run.worldFrames < run.shotAfter + 12) return;
+        try {
+            if (!run.cameraReady()) return;
+            if (run.shot.startsWith("models-world-") && !run.galleryReady()) return;
+            if (run.shotTarget != null && !run.client.levelRenderer.isSectionCompiled(run.shotTarget)) return;
+            if (run.shot.contains("error-blink-") && !run.errorBlinkReady()) return;
+            if (run.sheet != null && (run.client.screen != run.sheet || run.sheet.renders < 3)) return;
+            try (NativeImage pixels = Screenshot.takeScreenshot(run.client.getMainRenderTarget())) {
+                Path path = run.directory.resolve(run.shot); pixels.writeToFile(path);
+                run.results.add("SCREENSHOT C20 " + path + " actual=" + pixels.getWidth() + "x" + pixels.getHeight() + " " + run.caption);
+                run.shot = null; run.shotDone = true;
+            }
         } catch (Throwable error) { run.fail(error); }
     }
     private static void require(boolean condition, String message) { if (!condition) throw new AssertionError(message); }
@@ -154,11 +159,16 @@ public final class ModelClientContract {
         int phase, page, worldFrames, shotAfter, framesAtAim; String shot, caption = ""; boolean shotDone, finishing; volatile boolean activeTour; ItemSheet sheet; BlockPos movedRobot;
         Vec3 cameraEye; boolean oldMayfly, oldFlying, oldNoGravity, oldOnGround, playerCaptured;
         final boolean oldClientNoGravity;
+        final int oldFrameLimit;
+        final boolean supplementOnly = "supplement".equals(System.getProperty("ocfixture.modelFocus", "all"));
+        BlockPos shotTarget;
+        int galleryGroup;
         Run(Minecraft client, Path directory, List<String> results) {
             this.client = client; server = client.getSingleplayerServer(); level = server.getLevel(client.level.dimension()); this.directory = directory; this.results = results;
             base = client.player.blockPosition().east(20).above(8); oldPosition = client.player.position(); oldYaw = client.player.getYRot(); oldPitch = client.player.getXRot();
             oldCamera = client.options.getCameraType(); oldHideGui = client.options.hideGui;
             oldClientNoGravity = client.player.isNoGravity();
+            oldFrameLimit = client.getWindow().getFramerateLimit();
         }
         ItemStack item(String name) {
             var descriptor = li.cil.oc.api.Items.get(name); require(descriptor != null, "Missing real model material " + name); return descriptor.createItemStack(1);
@@ -232,6 +242,9 @@ public final class ModelClientContract {
         }
         void start() {
             client.setScreen(null); client.options.setCameraType(CameraType.FIRST_PERSON); client.options.hideGui = false;
+            client.getWindow().setFramerateLimit(12);
+            results.add("C20.models.capture actual model test window capped at 12 FPS; original limit restored on finish; this scenario checks visuals rather than gameplay performance");
+            results.add("C20.models.focus " + (supplementOnly ? "supplement: ten native frames for the remaining visual states" : "all"));
             client.player.setNoGravity(true);
             task(() -> {
                 savedHand = player().getMainHandItem().copy(); savedBoots = player().getItemBySlot(EquipmentSlot.FEET).copy();
@@ -258,7 +271,7 @@ public final class ModelClientContract {
                 require(robot.equipmentInventory().canPlaceItem(0, new ItemStack(Items.IRON_PICKAXE)), "Actual Robot rejected the vanilla tool slot");
                 robot.equipmentInventory().setItem(0, new ItemStack(Items.IRON_PICKAXE));
                 rack = (Rack) level.getBlockEntity(samples.get("rack").position);
-                rack.setItem(0, item("servercreative")); rack.setItem(1, item("terminalserver")); rack.setItem(2, item("diskdrive"));
+                rack.setItem(0, item("servercreative")); rack.setItem(1, item("terminalserver")); rack.setItem(2, item("diskdrivemountable"));
                 ((Container) level.getBlockEntity(samples.get("diskdrive").position)).setItem(0, item("floppy"));
                 Container raid = (Container) level.getBlockEntity(samples.get("raid").position); for (int slot = 0; slot < 3; slot++) raid.setItem(slot, item("hdd1"));
                 BlockPos dronePos = base.east(16); block(dronePos.below(), Blocks.SMOOTH_STONE.defaultBlockState());
@@ -300,10 +313,13 @@ public final class ModelClientContract {
                 icons.add(new Icon("terminal real bound", boundTerminal.copy())); energized = true;
             }
             for (Machine machine : computers) if (machine.node() instanceof Connector connector) connector.changeBuffer(Double.POSITIVE_INFINITY);
+            if (activeTour) feedWorkstations();
             if (activeTour && serverTicks % 5 == 0 && host.machine().isRunning()) {
                 for (Node node : host.machine().node().network().nodes()) if (node instanceof Component file && file.name().equals("filesystem") && host.componentSlot(node.address()) >= 0) file.invoke("exists", host.machine(), "/model-gallery");
                 for (String name : List.of("diskdrive", "raid")) {
-                    Node node = (Node) invoke(level.getBlockEntity(samples.get(name).position), "filesystemNode", new Class<?>[0]);
+                    Object device = level.getBlockEntity(samples.get(name).position);
+                    if (name.equals("diskdrive") && ((Container) device).isEmpty()) continue;
+                    Node node = (Node) invoke(device, "filesystemNode", new Class<?>[0]);
                     require(node instanceof Component, "Actual model filesystem missing " + name); ((Component) node).invoke("exists", host.machine(), "/model-gallery");
                 }
                 installed(host.machine(), "modem").invoke("broadcast", host.machine(), 41720, "actual gallery activity");
@@ -314,6 +330,17 @@ public final class ModelClientContract {
         Component installed(Machine machine, String name) {
             for (Node node : machine.node().network().nodes()) if (node instanceof Component component && component.name().equals(name)) return component;
             throw new AssertionError("Actual mounted component missing " + name);
+        }
+        void feedWorkstations() throws Exception {
+            Object assembler = level.getBlockEntity(samples.get("assembler").position);
+            if (!Boolean.TRUE.equals(invoke(assembler, "busy", new Class<?>[0]))) {
+                Container inventory = (Container) assembler;
+                inventory.setItem(0, item("case1")); inventory.setItem(16, item("cpu1")); inventory.setItem(17, item("ram1"));
+                require(Boolean.TRUE.equals(invoke(assembler, "start", new Class<?>[]{boolean.class}, false)), "Actual repeated gallery assembly did not start");
+            }
+            Object disassembler = level.getBlockEntity(samples.get("disassembler").position);
+            if (!Boolean.TRUE.equals(invoke(disassembler, "busy", new Class<?>[0])) && ((Container) disassembler).isEmpty())
+                ((Container) disassembler).setItem(0, item("graphicscard3"));
         }
         void activate() throws Exception {
             for (Machine machine : computers) require(machine.start(), "Actual model computer refused native BIOS " + machine.lastError());
@@ -335,6 +362,8 @@ public final class ModelClientContract {
                 Component hologram = component(name); hologram.invoke("clear", host.machine());
                 hologram.invoke("fill", host.machine(), 20, 20, 1, 14, 1); hologram.invoke("fill", host.machine(), 28, 20, 1, 14, 1);
                 hologram.invoke("fill", host.machine(), 24, 20, 8, 9, 1); hologram.invoke("setScale", host.machine(), .5);
+                hologram.invoke("setPaletteColor", host.machine(), 1, name.equals("hologram1") ? 0x55ddff : 0xbb88ff);
+                if (name.equals("hologram2")) { hologram.invoke("setRotation", host.machine(), 20, 0, 1, 0); hologram.invoke("setRotationSpeed", host.machine(), 12, 0, 1, 0); }
             }
             invoke(level.getBlockEntity(samples.get("print").position), "toggle", new Class<?>[0]);
             // Actual adjacent blocks select cable arms and the multidirectional baked model.
@@ -381,31 +410,160 @@ public final class ModelClientContract {
         }
         void screenshot(String name, String text) { shot = name; caption = text; shotDone = false; shotAfter = worldFrames; }
         void gallery(int index, boolean rear) {
+            shotTarget = null;
+            galleryGroup = index;
             int first = index * 3; Sample middle = samples.get(BLOCKS[first + 1]);
-            aim(Vec3.atCenterOf(middle.position).add(0, .15, 0), rear ? new Vec3(-1.4, 1.8, -8.5) : new Vec3(1.4, 2.6, 8.5));
+            aim(Vec3.atCenterOf(middle.position).add(0, .15, 0), rear ? new Vec3(-1.4, activeTour ? 4.2 : 1.8, -8.5) : new Vec3(1.4, activeTour ? 4.5 : 2.6, 8.5));
             caption = (activeTour ? "active " : "default ") + String.join(", ", BLOCKS[first], BLOCKS[first + 1], BLOCKS[first + 2]) + (rear ? " rear/top" : " front/top") + "; nearby ItemEntity are real drops";
             client.setScreen(new Caption(this));
             screenshot(String.format("models-world-%s-%02d-%s.png", activeTour ? "active" : "default", index + 1, rear ? "rear" : "front"), caption);
         }
-        void checkWorld() {
-            for (Sample sample : samples.values()) {
+        boolean galleryReady() {
+            for (int index = galleryGroup * 3; index < galleryGroup * 3 + 3; index++) {
+                Sample sample = samples.get(BLOCKS[index]);
                 if (sample.name.equals("robotafterimage")) continue;
                 BlockState state = client.level.getBlockState(sample.position);
-                require(!state.isAir(), "Actual gallery block has not arrived " + sample.name);
+                if (state.isAir() || !client.levelRenderer.isSectionCompiled(sample.position)) return false;
                 BakedModel model = client.getBlockRenderer().getBlockModel(state);
                 require(model != client.getModelManager().getMissingModel(), "Real native missing baked block model " + sample.name);
                 if (!sample.name.equals("robot") && !sample.name.equals("print")) require(!model.getParticleIcon().contents().name().equals(MissingTextureAtlasSprite.getLocation()), "Real native missing block particle sprite " + sample.name);
+                if (activeTour && (sample.name.equals("assembler") || sample.name.equals("disassembler"))) {
+                    Object device = client.level.getBlockEntity(sample.position);
+                    try { if (device == null || !Boolean.TRUE.equals(invoke(device, "active", new Class<?>[0]))) return false; }
+                    catch (Exception error) { throw new IllegalStateException("Observing actual workstation activity", error); }
+                }
+            }
+            return true;
+        }
+        void closeup(String sample, Vec3 offset, String image, String text) {
+            shotTarget = samples.get(sample).position;
+            aim(Vec3.atCenterOf(shotTarget), offset);
+            client.setScreen(new Caption(this)); screenshot(image, text);
+        }
+        void prepareSupplement() throws Exception {
+            activate();
+            for (String name : List.of("hologram1", "hologram2")) {
+                // The original projector only connects underneath and owns no energy capacity.
+                // A real adjacent Capacitor supplies storage; filling an isolated projector cannot power it.
+                block(samples.get(name).position.below(), li.cil.oc.api.Items.get("capacitor").block().defaultBlockState());
+                Component hologram = component(name);
+                hologram.invoke("setScale", host.machine(), 1.0);
+                hologram.invoke("setTranslation", host.machine(), 0.0, .25, 0.0);
+            }
+        }
+        boolean hologramReady(String name) throws Exception {
+            Object entity = client.level.getBlockEntity(samples.get(name).position);
+            if (entity == null) return false;
+            Object hologram = invoke(entity, "hologram", new Class<?>[0]);
+            if (!hologram.getClass().getField("hasPower").getBoolean(hologram)) return false;
+            int[] volume = (int[]) hologram.getClass().getField("volume").get(hologram);
+            boolean occupied = false; for (int bits : volume) if (bits != 0) { occupied = true; break; }
+            if (!occupied || hologram.getClass().getField("scale").getDouble(hologram) != 1.0) return false;
+            int[] colors = (int[]) hologram.getClass().getField("colors").get(hologram);
+            if (colors[0] != (name.equals("hologram1") ? 0x55ddff : 0xbb88ff)) return false;
+            if (name.equals("hologram2") && hologram.getClass().getField("rotationSpeed").getFloat(hologram) != 12) return false;
+            return true;
+        }
+        boolean errorBlinkReady() throws Exception {
+            Object entity = client.level.getBlockEntity(samples.get("casecreative").position);
+            if (entity == null || !entity.getClass().getField("hasErrored").getBoolean(entity)) return false;
+            long millis = Math.floorMod(System.currentTimeMillis() + entity.hashCode(), 1000);
+            return shot.contains("-on.") ? millis >= 100 && millis <= 350 : millis >= 600 && millis <= 850;
+        }
+        void supplementTick() throws Exception {
+            switch (phase) {
+                case 200 -> {
+                    if (!complete() || !host.machine().isRunning() || !robot.machine().isRunning()) return;
+                    activeTour = true;
+                    gallery(0, false); phase = 201;
+                }
+                case 201 -> { if (!shotDone) return; gallery(0, true); phase = 202; }
+                case 202 -> {
+                    if (!shotDone) return;
+                    closeup("hologram1", new Vec3(1.5, 1.6, 2.7), "models-hologram1-powered.png", "M11 T1 real bottom Capacitor, actual synchronized voxels/palette and native projection"); phase = 203;
+                }
+                case 203 -> {
+                    if (!hologramReady("hologram1")) { shotAfter = worldFrames; return; }
+                    if (!shotDone) return;
+                    results.add("OBSERVE C20.models.hologram1 actual client hasPower=true, nonempty synchronized voxels, scale=1, real Capacitor below and original palette callback");
+                    closeup("hologram2", new Vec3(1.5, 1.6, 2.7), "models-hologram2-powered-rotating.png", "M11 T2 actual powered native projection, palette and component rotation speed"); phase = 204;
+                }
+                case 204 -> {
+                    if (!hologramReady("hologram2")) { shotAfter = worldFrames; return; }
+                    if (!shotDone) return;
+                    results.add("OBSERVE C20.models.hologram2 actual client hasPower=true, nonempty synchronized voxels, scale=1, real Capacitor below and original palette/rotation callbacks");
+                    Object drive = client.level.getBlockEntity(samples.get("diskdrive").position);
+                    if (drive == null) return;
+                    Direction front = (Direction) invoke(drive, "facing", new Class<?>[0]);
+                    closeup("diskdrive", Vec3.atLowerCornerOf(front.getNormal()).scale(2.3).add(.4, .9, 0), "models-diskdrive-inserted.png", "M09 actual inserted floppy before native eject callback"); phase = 205;
+                }
+                case 205 -> {
+                    if (!shotDone) return;
+                    task(() -> {
+                        Object drive = level.getBlockEntity(samples.get("diskdrive").position);
+                        require(Boolean.TRUE.equals(invoke(drive, "ejectMedium", new Class<?>[]{double.class}, 0.0)), "Actual floppy eject rejected its inserted medium");
+                        require(((Container) drive).isEmpty(), "Actual drive remained occupied after eject");
+                    }); phase = 206;
+                }
+                case 206 -> {
+                    if (!complete()) return;
+                    Object drive = client.level.getBlockEntity(samples.get("diskdrive").position);
+                    if (!(drive instanceof Container inventory) || !inventory.isEmpty()) return;
+                    screenshot("models-diskdrive-ejected.png", "M09 same native camera after actual ejectMedium, actual client disk slot is empty"); phase = 207;
+                }
+                case 207 -> {
+                    if (!shotDone) return;
+                    task(() -> player().setItemInHand(InteractionHand.MAIN_HAND, preset("tablet"))); phase = 208;
+                }
+                case 208 -> {
+                    if (!complete() || !client.player.getMainHandItem().is(item("tablet").getItem())) return;
+                    closeup("print", new Vec3(1.2, 1.2, 2.5), "models-highlight-print-tablet-warm.png", "M41 actual held Tablet selected face and per-shape Print outline after native section compilation"); phase = 209;
+                }
+                case 209 -> {
+                    if (!shotDone) return;
+                    require(client.hitResult instanceof BlockHitResult hit && hit.getBlockPos().equals(samples.get("print").position), "Actual Tablet raycast did not hit the configured Print");
+                    task(() -> player().setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY)); phase = 214;
+                }
+                case 214 -> {
+                    if (!complete() || !client.player.getMainHandItem().isEmpty()) return;
+                    closeup("powerdistributor", new Vec3(1.7, 1.5, 2.8), "models-powerdistributor-powered.png", "M15 actual synchronized network fill controls original emissive overlay"); phase = 210;
+                }
+                case 210 -> {
+                    Object device = client.level.getBlockEntity(samples.get("powerdistributor").position);
+                    if (device == null || ((Number) invoke(device, "globalBuffer", new Class<?>[0])).doubleValue() <= 0) { shotAfter = worldFrames; return; }
+                    if (!shotDone) return;
+                    results.add("OBSERVE C20.models.powerdistributor actual client network energy=" + invoke(device, "globalBuffer", new Class<?>[0]) + "/" + invoke(device, "globalBufferSize", new Class<?>[0]));
+                    task(() -> host.machine().crash("C20 actual error overlay")); phase = 211;
+                }
+                case 211 -> {
+                    if (!complete()) return;
+                    Object clientCase = client.level.getBlockEntity(samples.get("casecreative").position);
+                    if (clientCase == null || !clientCase.getClass().getField("hasErrored").getBoolean(clientCase)) return;
+                    Vec3 front = Vec3.atLowerCornerOf(host.facing().getNormal()).scale(2.3).add(.35, .7, 0);
+                    closeup("casecreative", front, "models-case-error-blink-on.png", "M05 real machine.crash error overlay, actual renderer clock phase ON"); phase = 212;
+                }
+                case 212 -> {
+                    if (!shotDone) return;
+                    screenshot("models-case-error-blink-off.png", "M05 same native camera and real errored Case, actual renderer clock phase OFF"); phase = 213;
+                }
+                case 213 -> {
+                    if (!shotDone) return;
+                    results.add("PASS C20.models.supplement actual warm native gallery, both powered projector tiers, inserted/ejected real drive, real Tablet Print outline, network-power overlay and real error blink on/off frames; visual review still required");
+                    finish();
+                }
+                default -> throw new AssertionError("Unknown model supplement phase " + phase);
             }
         }
         void tick() throws Exception {
             if (finishing) return;
             require(System.nanoTime() - began < TimeUnit.MINUTES.toNanos(5), "Model contract timed out phase=" + phase + " page=" + page + " frames=" + worldFrames + " paused=" + client.isPaused() + " screen=" + client.screen);
             if (serverError != null) throw new IllegalStateException("Actual model server operation failed", serverError);
+            if (phase >= 200) { supplementTick(); return; }
             switch (phase) {
                 case 0 -> {
                     if (!complete() || !energized || worldFrames < 10) return;
-                    for (Sample sample : samples.values()) if (!sample.name.equals("robotafterimage") && client.level.getBlockState(sample.position).isAir()) return;
-                    checkWorld(); page = 0; gallery(0, false); phase = 1;
+                    if (supplementOnly) { task(this::prepareSupplement); phase = 200; }
+                    else { page = 0; gallery(0, false); phase = 1; }
                 }
                 case 1 -> {
                     if (!shotDone) return;
@@ -559,7 +717,7 @@ public final class ModelClientContract {
                 case 23 -> {
                     if (!shotDone) return;
                     results.add("PASS C20.models.robot actual component movement/tool and Case real crash error mirror rendered");
-                    results.add("C20.models.external M38 entitled Pet needs exact Effects report/PNG; native world/items PNGs still require visual review");
+                    results.add("C20.models.external M38 reuses client-effects-20261028-l1 actual entitled Pet visible/hidden frames and original tint observation; native world/items PNGs still require visual review");
                     finish();
                 }
                 default -> throw new AssertionError("Unknown model phase " + phase);
@@ -568,6 +726,7 @@ public final class ModelClientContract {
         void fail(Throwable error) { results.add("FAIL C20.models phase=" + phase + " page=" + page + " " + error); finish(); }
         void finish() {
             if (finishing) return; finishing = true; shot = null; sheet = null; client.setScreen(null); client.options.setCameraType(oldCamera); client.options.hideGui = oldHideGui;
+            client.getWindow().setFramerateLimit(oldFrameLimit);
             if (client.player != null) client.player.setNoGravity(oldClientNoGravity);
             cleanup = CompletableFuture.runAsync(() -> {
                 for (Machine machine : computers) machine.stop();

@@ -77,6 +77,8 @@ def integrationClientReport = new File(integrationClientDirectory, 'client-resul
 def integrationClientFocus = providers.gradleProperty('ocIntegrationClientFocus').getOrElse('all')
 def showcaseDirectory = file("${repositoryRoot}/run")
 def showcaseReport = file("${repositoryRoot}/build/launch-support/showcase-creation.txt")
+def finalRuntimeId = providers.gradleProperty('ocFinalRuntimeRunId').getOrElse('not-selected')
+def finalRuntimeDirectory = file("${repositoryRoot}/build/final-runtime/${finalRuntimeId}")
 def multiplayerId = providers.gradleProperty('ocMultiplayerRunId').getOrElse('not-selected')
 def multiplayerDirectory = file("${repositoryRoot}/build/api-compat-addon/multiplayer/${multiplayerId}")
 def multiplayerPort = providers.gradleProperty('ocMultiplayerPort').getOrElse('25585')
@@ -87,10 +89,12 @@ def ae2PersistenceReport = new File(ae2PersistenceDirectory, "${ae2PersistenceSt
 sourceSets {
     legacy { java.srcDir 'src/legacy/java'; resources.srcDirs = [] }
     main { compileClasspath += sourceSets.legacy.output; runtimeClasspath += sourceSets.legacy.output }
+    productionRuntime { java.srcDirs = []; resources.srcDirs = [] }
 }
 neoForge {
     version = providers.gradleProperty('ocNeoVersion').getOrElse('21.1.224')
     addModdingDependenciesTo sourceSets.legacy
+    addModdingDependenciesTo sourceSets.productionRuntime
     runs {
         server {
             server()
@@ -104,6 +108,27 @@ neoForge {
             systemProperty 'ocfixture.computerCraftOnly', computerCraftScenario.toString()
         }
         client { client(); gameDirectory = file("${repositoryRoot}/build/api-compat-addon/client-run") }
+        finalServer {
+            server()
+            sourceSet = sourceSets.productionRuntime
+            loadedMods.set([])
+            gameDirectory = new File(finalRuntimeDirectory, 'server')
+            jvmArgument '-Xmx2G'
+            jvmArgument '-XX:ActiveProcessorCount=4'
+            programArgument '--nogui'
+        }
+        finalClient {
+            client()
+            sourceSet = sourceSets.productionRuntime
+            loadedMods.set([])
+            gameDirectory = file("${repositoryRoot}/run")
+            jvmArgument '-Xmx3G'
+            jvmArgument '-XX:ActiveProcessorCount=4'
+            programArgument '--width'; programArgument '1280'
+            programArgument '--height'; programArgument '720'
+            programArgument '--username'; programArgument 'Dev'
+            programArgument '--quickPlaySingleplayer'; programArgument 'OC-Showcase-20261028'
+        }
         showcaseClient {
             client()
             jvmArgument '-Xmx3G'
@@ -148,6 +173,7 @@ neoForge {
             systemProperty 'ocfixture.menuFocus', providers.gradleProperty('ocMenuFocus').getOrElse('all')
             systemProperty 'ocfixture.textFocus', providers.gradleProperty('ocTextFocus').getOrElse('all')
             systemProperty 'ocfixture.effectsFocus', providers.gradleProperty('ocEffectsFocus').getOrElse('all')
+            systemProperty 'ocfixture.modelFocus', providers.gradleProperty('ocModelFocus').getOrElse('all')
             if (integrationClientFocus == 'effects') {
                 programArgument '--username'; programArgument 'OcEffects'
                 programArgument '--uuid'; programArgument '9f1f262f-0d68-4e13-9161-9eeaf4a0a1a8'
@@ -298,6 +324,7 @@ dependencies {
     compileOnly('maven.modrinth:markdownmanual:MC1.21.1-neoforge-1.2.7') { transitive = false }
     legacyCompileOnly files(legacyFile)
     runtimeOnly files(runtimeFile)
+    productionRuntimeRuntimeOnly files(runtimeFile)
     if (providers.gradleProperty('ocComputerCraftJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocComputerCraftJar').get())
     if (providers.gradleProperty('ocMekanismJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocMekanismJar').get())
     if (providers.gradleProperty('ocAppliedEnergisticsJar').isPresent()) runtimeOnly files(providers.gradleProperty('ocAppliedEnergisticsJar').get())
@@ -313,6 +340,82 @@ dependencies {
     for (String property : ['ocProjectRedCoreJar', 'ocProjectRedTransmissionJar', 'ocCBMultipartJar'])
         if (providers.gradleProperty(property).isPresent()) runtimeOnly files(providers.gradleProperty(property).get())
 }
+def prepareFinalRuntime = tasks.register('prepareFinalRuntime') {
+    doLast {
+        if (!providers.gradleProperty('ocFinalRuntimeRunId').isPresent() || !(finalRuntimeId ==~ /[A-Za-z0-9][A-Za-z0-9._-]{0,63}/))
+            throw new GradleException('Supply an explicit -PocFinalRuntimeRunId=NAME')
+        if (!runtimeFile.isFile()) throw new GradleException("The final runtime JAR is missing: ${runtimeFile}")
+        def expectedJar = file("${repositoryRoot}/build/hardware/libs/OpenComputer-Reloaded-0.1.0-SNAPSHOT.jar")
+        if (runtimeFile.canonicalFile != expectedJar.canonicalFile)
+            throw new GradleException('Final runtime acceptance uses the current build/hardware runtime JAR')
+        if (!new File(repositoryRoot, 'run/saves/OC-Showcase-20261028/level.dat').isFile())
+            throw new GradleException('The existing player showcase save is required; this task never creates or replaces it')
+        def hash = java.security.MessageDigest.getInstance('SHA-256').digest(runtimeFile.bytes).encodeHex().toString()
+        def manifest = new File(finalRuntimeDirectory, 'runtime-manifest.json')
+        if (manifest.exists()) {
+            def previous = new groovy.json.JsonSlurper().parse(manifest)
+            if (previous.jarSha256 != hash) throw new GradleException('The runtime JAR changed; choose a new final-runtime run ID')
+            return
+        }
+        finalRuntimeDirectory.mkdirs()
+        def serverDirectory = new File(finalRuntimeDirectory, 'server')
+        serverDirectory.mkdirs()
+        def acceptedEula = file("${repositoryRoot}/build/api-compat-addon/run/eula.txt")
+        def eula = new Properties()
+        if (acceptedEula.isFile()) acceptedEula.withInputStream { eula.load(it) }
+        if (eula.getProperty('eula') != 'true') throw new GradleException('No existing accepted local Minecraft server EULA is available')
+        new File(serverDirectory, 'eula.txt').bytes = acceptedEula.bytes
+        new File(serverDirectory, 'server.properties').setText('''level-name=oc-final-runtime
+level-seed=258943363
+level-type=minecraft\\:flat
+online-mode=false
+server-ip=127.0.0.1
+server-port=25587
+gamemode=creative
+difficulty=peaceful
+spawn-protection=0
+view-distance=4
+simulation-distance=4
+generate-structures=false
+''', 'UTF-8')
+        manifest.setText(groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([
+            jar: runtimeFile.canonicalPath, jarSha256: hash, minecraft: '1.21.1',
+            neoforge: providers.gradleProperty('ocNeoVersion').getOrElse('21.1.224'),
+            sourceSet: 'productionRuntime', loadedMods: [],
+            serverDirectory: serverDirectory.canonicalPath, clientDirectory: file("${repositoryRoot}/run").canonicalPath,
+            clientWorld: 'OC-Showcase-20261028'
+        ])) + '\n', 'UTF-8')
+    }
+}
+tasks.matching { it.name in ['prepareFinalServerRun', 'prepareFinalClientRun'] }.configureEach { dependsOn prepareFinalRuntime }
+tasks.register('writeFinalRuntimeLaunchers') {
+    dependsOn 'prepareFinalServerRun', 'prepareFinalClientRun', 'productionRuntimeClasses'
+    doLast {
+        def forbidden = (sourceSets.main.output.files + sourceSets.legacy.output.files).collect { it.canonicalFile } as Set
+        for (String actor : ['Server', 'Client']) {
+            def run = tasks.named("runFinal${actor}").get()
+            def classpath = run.classpathProvider.files.collect { it.canonicalFile }
+            def legacyClasspathFile = tasks.named("writeFinal${actor}LegacyClasspath").get().outputs.files.singleFile
+            def legacyClasspath = legacyClasspathFile.readLines('UTF-8').findAll { !it.isBlank() }.collect { file(it).canonicalFile }
+            if ((classpath + legacyClasspath).any { forbidden.contains(it) || it == legacyFile.canonicalFile })
+                throw new GradleException('Fixture output or legacy SDK leaked into the final runtime classpath')
+            if (classpath.count { it == runtimeFile.canonicalFile } != 1) throw new GradleException('Final runtime classpath must contain exactly the selected main JAR')
+            def arguments = run.allJvmArgs + ['-cp', run.classpathProvider.asPath, run.mainClass.get()] + run.args +
+                run.argumentProviders.collectMany { it.asArguments() as List }
+            if (arguments.any { it.contains('ocfixture.') || it.contains('oc_api_compat') }) throw new GradleException('Fixture arguments leaked into the final runtime')
+            def modFolders = arguments.findAll { it.startsWith('-Dfml.modFolders=') }
+            if (modFolders.any { it != '-Dfml.modFolders=' }) throw new GradleException('Final runtime has source mod folders')
+            def launch = [executable: run.javaLauncher.get().executablePath.asFile.canonicalPath,
+                workingDirectory: run.gameDirectory.get().asFile.canonicalPath, arguments: arguments,
+                environment: run.environmentProperty.get(), classpath: classpath.collect { it.path },
+                legacyClasspathFile: legacyClasspathFile.canonicalPath, legacyClasspath: legacyClasspath.collect { it.path },
+                modFolders: modFolders]
+            new File(finalRuntimeDirectory, "${actor.toLowerCase()}-launch.json").setText(
+                groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(launch)) + '\n', 'UTF-8')
+        }
+    }
+}
+
 def prepareShowcaseClient = tasks.register('prepareShowcaseClient') {
     doLast {
         if (!runtimeFile.isFile()) throw new GradleException("Build the current runtime JAR before launch: ${runtimeFile}")

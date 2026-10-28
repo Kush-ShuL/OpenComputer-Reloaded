@@ -81,7 +81,8 @@ final class MultiplayerFamilies {
     Rack rack; Robot robot; Drone drone; Entity droneEntity; MachineHost tablet, microcontroller; ItemStack tabletStack;
     Component gpu, hologram; int page, stage, age; TextBuffer buffer, terminalBuffer;
     boolean spawning, activityEnabled, printingPower; String activityMarker;
-    Object terminal; BlockPos movedRobot;
+    Object terminal, terminalDirtyPage, tabletDirtyPage; BlockPos movedRobot;
+    net.minecraft.world.level.block.state.BlockState keyboardState;
     MultiplayerFamilies(MinecraftServer server, ServerLevel level, Case computer, List<String> results, BiConsumer<Integer, CompoundTag> advance) {
         this.server = server; this.level = level; this.computer = computer; this.results = results; this.advance = advance;
         active = this;
@@ -192,6 +193,7 @@ final class MultiplayerFamilies {
                 invoke(gpu, computer, "freeBuffer", page); buffer.setPowerState(false); call(buffer, "flushCommands"); invoke(hologram, computer, "clear"); call(level.getBlockEntity(HOLOGRAM), "flushPendingUpdates"); step(102);
             }
             case 102 -> {
+                require(((CompoundTag) call(level.getBlockEntity(MultiplayerServerContract.SCREEN), "snapshot")).getList("vram", Tag.TAG_COMPOUND).isEmpty(), "Actual full snapshot retained a published page after native ramDestroy");
                 results.add("PASS C19.screen-clear both real remote handlers apply ramDestroy and screen power-off; actual hologram clear reaches both clients");
                 buffer.setPowerState(true); buffer.set(0, 0, "TCP before tracking", false); call(buffer, "flushCommands");
                 call(computer, "setColor", 0x224466);
@@ -228,10 +230,13 @@ final class MultiplayerFamilies {
                 player(true).closeContainer(); player(true).setItemInHand(InteractionHand.MAIN_HAND, item("terminal")); terminal = rack.getMountable(2);
                 require(((RackMountable) terminal).onActivate(player(true), InteractionHand.MAIN_HAND, player(true).getMainHandItem(), .5f, .5f), "Actual rack terminal did not pair its held item");
                 terminalBuffer = (TextBuffer) call(terminal, "buffer"); observe(terminalBuffer.node()); terminalBuffer.setResolution(32, 8); terminalBuffer.set(0, 0, "TCP terminal initial", false); call(terminalBuffer, "flushCommands");
+                call(rack, "connect", 2, 0, Direction.EAST.get3DDataValue()); terminalDirtyPage = prepareDirtyPage(blade, terminalBuffer);
                 player(true).inventoryMenu.broadcastChanges(); observer.clear(); step(106);
             }
             case 106 -> {
                 if (!observer.contains("TCP terminal input") || !observer.drop()) return false;
+                require((Boolean) field(terminalDirtyPage, "dirty"), "A real Terminal full snapshot changed the actual GPU page dirty state");
+                results.add("PASS C19.terminal-snapshot actual mounted GPU cached+dirty page remains dirty across the real paired terminal full open");
                 results.add("PASS C19.terminal actual paired held terminal opens remotely; production key/clipboard/touch/drag/scroll/outside-drop input reaches the actual terminal buffer network");
                 terminalBuffer.set(0, 0, "TCP terminal delta", false); call(terminalBuffer, "flushCommands"); step(107);
             }
@@ -243,7 +248,7 @@ final class MultiplayerFamilies {
     void prepareRack() {
         ItemStack blade = item("server3"); IItemHandler inventory = Driver.itemHandlerFor(blade, player(true)); require(inventory != null, "Actual blade inventory provider absent");
         ItemStack cpu = item("cpu1"); ((MutableProcessor) Driver.driverFor(cpu)).setArchitecture(cpu, li.cil.oc.api.Machine.architectures().stream().filter(type -> "Lua 5.3".equals(li.cil.oc.api.Machine.getArchitectureName(type))).findFirst().orElseThrow());
-        for (ItemStack part : List.of(cpu, item("ram3"), li.cil.oc.api.Items.registerEEPROM("TCP blade BIOS", BIOS, new byte[0], false))) {
+        for (ItemStack part : List.of(cpu, item("ram3"), item("graphicscard3"), li.cil.oc.api.Items.registerEEPROM("TCP blade BIOS", "while true do computer.pullSignal(.05) end".getBytes(StandardCharsets.UTF_8), new byte[0], false))) {
             boolean inserted = false; for (int slot = 0; slot < inventory.getSlots(); slot++) if (inventory.insertItem(slot, part.copy(), true).isEmpty()) { require(inventory.insertItem(slot, part, false).isEmpty(), "Blade insertion changed"); inserted = true; break; } require(inserted, "Actual blade rejected " + part);
         }
         rack.setItem(0, blade); rack.setItem(1, item("diskdrivemountable")); rack.setItem(2, item("terminalserver"));
@@ -303,14 +308,20 @@ final class MultiplayerFamilies {
             }
             case 111 -> {
                 require(drone.machine().isRunning(), "Remote DronePower did not start the actual native Drone");
-                results.add("PASS C19.drone actual vanilla entity tracking carries Drone name/status/light and real Agent menu power starts its native VM over TCP");
+                results.add("PASS C19.drone actual vanilla entity tracking carries Drone status/light and real Agent menu power starts its native VM over TCP; pinned Drone name remains server-side item data");
                 near(MultiplayerServerContract.SCREEN); player(true).setItemInHand(InteractionHand.MAIN_HAND, tabletStack); tablet = (MachineHost) call(type("li.cil.oc.server.portable.TabletManager"), "get", tabletStack, player(true));
                 require(tablet.machine().node() instanceof Connector, "Actual held Tablet has no connector"); ((Connector) tablet.machine().node()).changeBuffer(Double.POSITIVE_INFINITY);
-                observe(tablet.machine().node()); require(tablet.machine().start(), "Actual native TCP Tablet did not start"); player(true).inventoryMenu.broadcastChanges(); observer.clear(); step(112);
+                observe(tablet.machine().node()); require(tablet.machine().start(), "Actual native TCP Tablet did not start"); player(true).inventoryMenu.broadcastChanges(); observer.clear(); step(127);
+            }
+            case 127 -> {
+                if (tabletBuffer().getCodePoint(0, 0) != 'T') return false;
+                tabletDirtyPage = prepareDirtyPage(tablet, tabletBuffer()); step(112);
             }
             case 112 -> {
                 if (!observer.contains("TCP tablet input") || !observer.drop()) return false;
                 require(tag(tabletStack).getBoolean("oc:isRunning"), "Actual running Tablet did not write its real held-stack state");
+                require((Boolean) field(tabletDirtyPage, "dirty"), "A real Tablet full open/request changed the actual GPU page dirty state");
+                results.add("PASS C19.tablet-snapshot actual installed GPU cached+dirty page remains dirty across real Tablet open and full-state request");
                 results.add("PASS C19.tablet actual native held-stack running state and production Tablet open/full/session input reach the actual host, including outside DROP");
                 TextBuffer screen = tabletBuffer(); screen.set(0, 0, "TCP tablet delta", false); call(screen, "flushCommands"); step(113);
             }
@@ -344,7 +355,7 @@ final class MultiplayerFamilies {
             case 130 -> {
                 require((Boolean) call(level.getBlockEntity(ASSEMBLER), "busy"), "Actual remote RobotAssemblerStart did not consume its valid real template");
                 player(true).closeContainer();
-                Object printer = level.getBlockEntity(PRINTER); Container inventory = (Container) printer; inventory.setItem(0, item("chamelium")); inventory.setItem(1, item("inkcartridge"));
+                Object printer = level.getBlockEntity(PRINTER); Container inventory = (Container) printer; inventory.setItem(0, item("chamelium").copyWithCount(2)); inventory.setItem(1, item("inkcartridge"));
                 Component printing = (Component) ((Environment) printer).node(); invoke(printing, computer, "addShape", 0, 0, 0, 16, 16, 16, "minecraft:block/stone"); invoke(printing, computer, "setLabel", "TCP print");
                 require(Boolean.TRUE.equals(invoke(printing, computer, "commit", 1)[0]), "Actual printer template failed to commit");
                 printingPower = true;
@@ -375,12 +386,38 @@ final class MultiplayerFamilies {
                 near(MultiplayerServerContract.SCREEN); step(120);
             }
             case 120 -> {
-                results.add("PASS C19.dimension-tracking both actual clients leave the dimension/old chunks, reject old screen tokens and release held keys; re-entry rebuilds changed screen+VRAM/hologram and Robot full mirrors");
+                results.add("PASS C19.dimension-tracking both actual clients leave the dimension/old chunks, reject old screen tokens and release held keys; re-entry rebuilds changed screen raster, hologram and Robot full mirrors");
+                Object cached = ((java.util.Optional<?>) call(gpu.host(), "getBuffer", page)).orElseThrow();
+                require(!(Boolean) field(cached, "dirty"), "The retracking test must use an unchanged native VRAM page");
+                require(Boolean.TRUE.equals(invoke(gpu, computer, "bitblt", 0, 6, 7, 4, 1, page, 1, 1)[0]), "The actual clean VRAM copy was rejected");
+                require(buffer.getCodePoint(5, 6) == 'B' && buffer.getCodePoint(6, 6) == 'A' && buffer.getCodePoint(7, 6) == 'C' && buffer.getCodePoint(8, 6) == 'K', "The native clean bitblt did not update the actual server raster");
+                CompoundTag observed = new CompoundTag(); observed.putIntArray("serverRaster", java.util.stream.IntStream.range(5, 9).map(x -> buffer.getCodePoint(x, 6)).toArray());
+                call(buffer, "flushCommands"); step(126, observed);
+            }
+            case 126 -> {
+                results.add("PASS C19.clean-blit an unchanged actual GPU VRAM page copies into new visible screen cells on both remote clients after dimension retracking");
                 buffer.set(0, 0, "TCP delta after return", false); invoke(gpu, computer, "setActiveBuffer", page); invoke(gpu, computer, "set", 1, 1, "NEW2"); invoke(gpu, computer, "setActiveBuffer", 0); invoke(gpu, computer, "bitblt", 0, 1, 7, 4, 1, page, 1, 1); call(buffer, "flushCommands");
                 invoke(hologram, computer, "set", 1, 2, 3, 1); call(level.getBlockEntity(HOLOGRAM), "flushPendingUpdates"); step(121);
             }
             case 121 -> {
                 results.add("PASS C19.continuity production screen/VRAM/hologram deltas remain continuous after actual unload, dimension roundtrip and full-state recovery on both independent TCP clients");
+                keyboardState = level.getBlockState(MultiplayerServerContract.KEYBOARD); require(level.removeBlock(MultiplayerServerContract.KEYBOARD, false), "Actual keyboard network link could not be removed"); step(128);
+            }
+            case 128 -> {
+                require(((CompoundTag) call(level.getBlockEntity(MultiplayerServerContract.SCREEN), "snapshot")).getList("vram", Tag.TAG_COMPOUND).isEmpty(), "Actual unlinked GPU retained its published full-snapshot pages");
+                require(level.setBlock(MultiplayerServerContract.KEYBOARD, keyboardState, 3), "Actual keyboard network link could not be restored");
+                player(true).setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY); player(true).inventoryMenu.broadcastChanges(); step(129);
+            }
+            case 129 -> {
+                if (gpu.network().node(buffer.node().address()) == null) return false;
+                Object cached = ((java.util.Optional<?>) call(gpu.host(), "getBuffer", page)).orElseThrow(); require(!(Boolean) field(cached, "dirty"), "Network relinking must retain the actual unchanged GPU page");
+                require(Boolean.TRUE.equals(invoke(gpu, computer, "bind", buffer.node().address(), false)[0]), "Actual GPU could not rebind through the restored physical link");
+                require(Boolean.TRUE.equals(invoke(gpu, computer, "bitblt", 0, 11, 7, 4, 1, page, 1, 1)[0]), "Actual clean page copy after physical relinking failed");
+                require(buffer.getCodePoint(10, 6) == 'N' && buffer.getCodePoint(11, 6) == 'E' && buffer.getCodePoint(12, 6) == 'W' && buffer.getCodePoint(13, 6) == '2', "Actual relinked GPU did not update the server raster");
+                call(buffer, "flushCommands"); step(132);
+            }
+            case 132 -> {
+                results.add("PASS C19.cache-lifecycle real GPU free removes published pages; physically unlinking its screen clears full-cache metadata and relinking+bind(reset=false) republishes a still-clean page before the next actual copy to both clients");
                 results.add("SCOPE C19: original 88-entry map retained, including fifteen text subcommands and the pinned non-dispatched MultiPartPlace declaration; these finite scenes verify transport/application, with device semantics and visual/audio quality reusing their independent actual reports");
                 return true;
             }
@@ -389,8 +426,18 @@ final class MultiplayerFamilies {
         return false;
     }
     TextBuffer tabletBuffer() { return (TextBuffer) call(field(tablet, "runtime"), "screen"); }
+    Object prepareDirtyPage(MachineHost host, TextBuffer screen) throws Exception {
+        Component graphics = component(host, "gpu"); require(Boolean.TRUE.equals(invoke(graphics, host, "bind", screen.node().address(), false)[0]), "Actual host GPU could not bind its physically connected screen");
+        int id = ((Number) invoke(graphics, host, "allocateBuffer", 4, 1)[0]).intValue();
+        invoke(graphics, host, "setActiveBuffer", id); invoke(graphics, host, "set", 1, 1, "OLD!"); invoke(graphics, host, "setActiveBuffer", 0); invoke(graphics, host, "bitblt", 0, 1, 3, 4, 1, id, 1, 1);
+        require(((Map<?, ?>) call(screen, "videoDevices")).containsKey(graphics.address()), "The real bitblt did not establish its native screen page reference");
+        invoke(graphics, host, "setActiveBuffer", id); invoke(graphics, host, "set", 1, 1, "NEW!"); invoke(graphics, host, "setActiveBuffer", 0);
+        Object page = ((java.util.Optional<?>) call(graphics.host(), "getBuffer", id)).orElseThrow(); require((Boolean) field(page, "dirty"), "Actual edited GPU page was not dirty before opening its viewer"); return page;
+    }
     void prepareWorkstations() {
         near(ASSEMBLER); Container inventory = (Container) level.getBlockEntity(ASSEMBLER); inventory.setItem(0, item("case1")); inventory.setItem(16, item("cpu1")); inventory.setItem(17, item("ram1"));
+        require((Boolean) call(inventory, "canStart"), "Actual TCP assembler template is invalid");
+        player(true).setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
         player(true).setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY); player(true).inventoryMenu.broadcastChanges();
     }
     void close() { active = null; observer.node().remove(); if (robot != null) robot.machine().stop(); if (microcontroller != null) microcontroller.machine().stop(); if (droneEntity != null) droneEntity.discard(); if (tablet != null) tablet.machine().stop(); ServerLevel nether = server.getLevel(Level.NETHER); if (nether != null) nether.setChunkForced(0, 0, false); }

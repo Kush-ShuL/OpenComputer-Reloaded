@@ -40,8 +40,10 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -63,6 +65,8 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
     private final AtomicBoolean pendingSave = new AtomicBoolean();
     private final AtomicBoolean pendingSnapshot = new AtomicBoolean();
     private final ConcurrentLinkedQueue<List<TextBuffer.Command>> queuedCommands = new ConcurrentLinkedQueue<>();
+    private final Map<String, Map<Integer, CompoundTag>> publishedVideoPages = new LinkedHashMap<>();
+    private final ConcurrentLinkedQueue<String> invalidatedVideoOwners = new ConcurrentLinkedQueue<>();
     private final WeakHashMap<Entity, BlockPos> lastWalked = new WeakHashMap<>();
 
     public ScreenBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int tier) {
@@ -71,7 +75,15 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
     }
     public synchronized Screen buffer() {
         if (buffer == null) {
-            buffer = new Screen(this, new Services());
+            buffer = new Screen(this, new Services()) {
+                @Override public boolean addBuffer(li.cil.oc.common.component.GpuTextBuffer ram) {
+                    // GPU bitblt already holds this buffer's normal execution lock.
+                    // Remove detached references here, never from the server tick.
+                    String owner;
+                    while ((owner = invalidatedVideoOwners.poll()) != null) removeAllBuffers(owner);
+                    return super.addBuffer(ram);
+                }
+            };
             int[] size = Settings.screenResolutionsByTier[Math.clamp(tier, 0, Settings.screenResolutionsByTier.length - 1)];
             buffer.setMaximumResolution(size[0], size[1]);
             buffer.setMaximumColorDepth(Settings.screenDepthsByTier[Math.clamp(tier, 0, Settings.screenDepthsByTier.length - 1)]);
@@ -263,6 +275,7 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
         if (!level.isClientSide) {
             if (pendingSave.getAndSet(false)) super.setChanged();
             drainQueuedCommands();
+            discardUnlinkedVideoPages();
         }
         if (!level.isClientSide && groupDirty) rebuildGroup();
         if (!level.isClientSide && isOrigin()) {
@@ -280,11 +293,12 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
         super.onLoad();
         if (level != null && !level.isClientSide) Network.joinOrCreateNetwork(this);
     }
-    @Override public void onChunkUnloaded() { if (node() != null) node().remove(); resetGroup(true); super.onChunkUnloaded(); }
-    @Override public void setRemoved() { if (node() != null) node().remove(); resetGroup(true); super.setRemoved(); }
+    @Override public void onChunkUnloaded() { if (node() != null) node().remove(); clearVideoPages(); queuedCommands.clear(); resetGroup(true); super.onChunkUnloaded(); }
+    @Override public void setRemoved() { if (node() != null) node().remove(); clearVideoPages(); queuedCommands.clear(); resetGroup(true); super.setRemoved(); }
     @Override protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         if (tag.contains("screenSync")) { applySnapshot(tag.getCompound("screenSync"), tag.getLong("revision")); return; }
+        invalidatedVideoOwners.addAll(publishedVideoPages.keySet()); publishedVideoPages.clear();
         buffer().load(tag.contains("oc:screen")?tag.getCompound("oc:screen"):tag, registries);
         if(tag.contains("oc:renderColor"))color=net.minecraft.world.item.DyeColor.byId(tag.getInt("oc:renderColor")).getTextureDiffuseColor();
         if(tag.contains("oc:renderColorRGB"))color=tag.getInt("oc:renderColorRGB");
@@ -299,7 +313,12 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
         tag.putByte("oc:tier",(byte)tier);tag.putInt("oc:renderColorRGB",color);tag.putBoolean("oc:hadRedstoneInput",hadRedstone);
     }
     public CompoundTag snapshot() {
+        if (onServerThread()) discardUnlinkedVideoPages();
         CompoundTag tag = new CompoundTag(); buffer().data().save(tag);
+        ListTag pages = new ListTag();
+        for (Map<Integer, CompoundTag> device : publishedVideoPages.values()) for (CompoundTag page : device.values()) pages.add(page.copy());
+        tag.put("vram", pages);
+        tag.putInt("maxWidth", buffer().getMaximumWidth()); tag.putInt("maxHeight", buffer().getMaximumHeight());
         tag.putLong("origin", origin.asLong()); tag.putInt("physicalWidth", groupWidth); tag.putInt("physicalHeight", groupHeight);
         tag.putBoolean("on", buffer().getPowerState()); tag.putBoolean("render", buffer().getPowerState() && buffer().hasPower());
         tag.putInt("viewportWidth", buffer().getViewportWidth()); tag.putInt("viewportHeight", buffer().getViewportHeight());
@@ -311,7 +330,13 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
     public void applySnapshot(CompoundTag tag, long sequence) {
         BlockPos previousOrigin = origin;
         int previousWidth = groupWidth, previousHeight = groupHeight, previousColor = color;
+        if (tag.contains("maxWidth", Tag.TAG_INT) && tag.contains("maxHeight", Tag.TAG_INT)) buffer().setMaximumResolution(tag.getInt("maxWidth"), tag.getInt("maxHeight"));
         buffer().data().load(tag); origin = BlockPos.of(tag.getLong("origin"));
+        buffer().videoDevices().clear();
+        for (Tag raw : tag.getList("vram", Tag.TAG_COMPOUND)) {
+            CompoundTag page = (CompoundTag) raw;
+            buffer().loadBuffer(page.getString("owner"), page.getInt("id"), page);
+        }
         groupWidth = Math.max(1, tag.getInt("physicalWidth")); groupHeight = Math.max(1, tag.getInt("physicalHeight"));
         buffer().setViewport(Math.clamp(tag.getInt("viewportWidth"), 1, buffer().getWidth()), Math.clamp(tag.getInt("viewportHeight"), 1, buffer().getHeight()));
         buffer().setPowerState(tag.getBoolean("on")); buffer().setRenderingEnabled(tag.getBoolean("render"));
@@ -362,7 +387,35 @@ public class ScreenBlockEntity extends BlockEntity implements Screen.Owner, Envi
         drainQueuedCommands();
         publishCommandsNow(commands);
     }
-    private void publishCommandsNow(List<TextBuffer.Command> commands) { revision++; ScreenNetworking.broadcast(this, false, ScreenNetworking.commands(commands)); }
+    private void publishCommandsNow(List<TextBuffer.Command> commands) {
+        for (TextBuffer.Command command : commands) {
+            Object[] values = command.payload();
+            if (command.type().equals("ramInit")) {
+                CompoundTag page = ((CompoundTag) values[2]).copy();
+                page.putString("owner", (String) values[0]); page.putInt("id", (Integer) values[1]);
+                publishedVideoPages.computeIfAbsent((String) values[0], owner -> new LinkedHashMap<>()).put((Integer) values[1], page);
+            } else if (command.type().equals("ramDestroy")) {
+                Map<Integer, CompoundTag> device = publishedVideoPages.get((String) values[0]);
+                if (device != null) { device.remove((Integer) values[1]); if (device.isEmpty()) publishedVideoPages.remove((String) values[0]); }
+            }
+        }
+        revision++; ScreenNetworking.broadcast(this, false, ScreenNetworking.commands(commands));
+    }
+    private void discardUnlinkedVideoPages() {
+        if (publishedVideoPages.isEmpty()) return;
+        var screenNode = buffer == null ? null : buffer.node();
+        var network = screenNode == null ? null : screenNode.network();
+        publishedVideoPages.keySet().removeIf(owner -> {
+            boolean unlinked = network == null || network.node(owner) == null;
+            if (unlinked) invalidatedVideoOwners.add(owner);
+            return unlinked;
+        });
+    }
+    private void clearVideoPages() {
+        publishedVideoPages.clear();
+        invalidatedVideoOwners.clear();
+        if (buffer != null) buffer.videoDevices().clear();
+    }
     private void drainQueuedCommands() {
         List<TextBuffer.Command> commands;
         while ((commands = queuedCommands.poll()) != null) publishCommandsNow(commands);
